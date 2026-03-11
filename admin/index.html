@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MX | Multi-Cloud Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --mx-orange: #ec7000;
+            --mx-orange-glow: rgba(236, 112, 0, 0.4);
+            --mx-bg: #0a0c10;
+            --mx-card: rgba(255, 255, 255, 0.03);
+            --mx-border: rgba(255, 255, 255, 0.08);
+            --mx-text: #ffffff;
+            --mx-text-dim: rgba(255, 255, 255, 0.6);
+            --mx-success: #10b981;
+            --mx-danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--mx-bg);
+            color: var(--mx-text);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Premium Background */
+        .page-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 50% 0%, rgba(236, 112, 0, 0.12) 0%, rgba(10, 12, 16, 1) 70%);
+            z-index: -1;
+        }
+
+        .orb {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--mx-orange-glow) 0%, transparent 70%);
+            z-index: -1;
+            filter: blur(60px);
+            animation: orb-float 10s infinite ease-in-out;
+        }
+
+        @keyframes orb-float {
+            0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+            50% { transform: translate(20px, 30px); opacity: 0.5; }
+        }
+
+        /* Navbar */
+        .navbar {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--mx-border);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-mx {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to bottom, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .admin-tag {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--mx-orange);
+            background: rgba(236, 112, 0, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Login Section */
+        #login-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: calc(100vh - 100px);
+            text-align: center;
+        }
+
+        .login-card {
+            background: var(--mx-card);
+            border: 1px solid var(--mx-border);
+            border-radius: 32px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 18px;
+            border-radius: 16px;
+            border: 1px solid var(--mx-border);
+            background: rgba(0,0,0,0.2);
+            color: white;
+            font-family: inherit;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--mx-orange);
+            background: rgba(0,0,0,0.4);
+            box-shadow: 0 0 0 4px rgba(236, 112, 0, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 18px;
+            border-radius: 16px;
+            border: none;
+            background: var(--mx-orange);
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(236, 112, 0, 0.2);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* Users View */
+        #admin-view {
+            display: none;
+        }
+
+        .header-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--mx-card);
+            border: 1px solid var(--mx-border);
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--mx-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .user-item {
+            background: var(--mx-card);
+            border: 1px solid var(--mx-border);
+            border-radius: 20px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.3s;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--mx-border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--mx-orange);
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--mx-text);
+        }
+
+        .user-meta {
+            font-size: 11px;
+            color: var(--mx-text-dim);
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .4s;
+            border-radius: 24px;
+            border: 1px solid var(--mx-border);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        input:checked + .slider {
+            background-color: var(--mx-success);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(255,255,255,0.95);
+            color: black;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Loading Spinner */
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-bg"></div>
+    <div class="orb"></div>
+
+    <nav class="navbar">
+        <div class="logo-area">
+            <span class="logo-mx">MONEXA</span>
+            <span class="admin-tag">Cloud Admin</span>
+        </div>
+        <div id="logout-btn" style="display: none; cursor: pointer; color: var(--mx-danger); background: rgba(239, 68, 68, 0.1); padding: 8px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; border: 1px solid rgba(239, 68, 68, 0.2);">Cerrar</div>
+    </nav>
+
+    <div class="container">
+        <!-- Login Form -->
+        <section id="login-view">
+            <div class="login-card">
+                <h2 style="margin-top: 0; font-weight: 800; font-size: 32px; letter-spacing: -1px;">Acceso Remoto</h2>
+                <p style="color: var(--mx-text-dim); margin-bottom: 30px;">Ingresa el identificador maestro para gestionar usuarios.</p>
+                <input type="text" id="admin-user" placeholder="USUARIO..." autocomplete="off">
+                <button class="btn-primary" id="login-action">ACCEDER AL PANEL</button>
+            </div>
+        </section>
+
+        <!-- Admin View -->
+        <section id="admin-view">
+            <div class="header-stats">
+                <div class="stat-card">
+                    <span class="stat-value" id="total-users">0</span>
+                    <span class="stat-label">Usuarios</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="active-users">0</span>
+                    <span class="stat-label">Habilitados</span>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding: 0 5px;">
+                <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--mx-text-dim);">Lista de Auditores</h3>
+                <div id="refresh-btn" style="cursor: pointer; padding: 5px;">🔄</div>
+            </div>
+
+            <div class="user-list" id="user-list-container">
+                <!-- Users will be injected here -->
+            </div>
+        </section>
+    </div>
+
+    <div class="loading-overlay" id="global-loader">
+        <div class="loader"></div>
+    </div>
+
+    <div id="toast" class="toast">¡Cambios guardados!</div>
+
+    <script>
+        const API_URL = "https://monexa-b1a87-default-rtdb.firebaseio.com/users.json";
+        let usersData = [];
+
+        // DOM Elements
+        const loginView = document.getElementById('login-view');
+        const adminView = document.getElementById('admin-view');
+        const adminInput = document.getElementById('admin-user');
+        const loginBtn = document.getElementById('login-action');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userListContainer = document.getElementById('user-list-container');
+        const loader = document.getElementById('global-loader');
+        const toast = document.getElementById('toast');
+        const totalUsersEl = document.getElementById('total-users');
+        const activeUsersEl = document.getElementById('active-users');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        // Check session
+        if (localStorage.getItem('mx_admin_auth') === 'true') {
+            showAdmin();
+        }
+
+        // Login Action
+        loginBtn.onclick = () => {
+            const val = adminInput.value.trim().toLowerCase();
+            if (val === 'admin') {
+                localStorage.setItem('mx_admin_auth', 'true');
+                showAdmin();
+            } else {
+                adminInput.style.borderColor = 'var(--mx-danger)';
+                setTimeout(() => adminInput.style.borderColor = '', 2000);
+            }
+        };
+
+        logoutBtn.onclick = () => {
+            localStorage.removeItem('mx_admin_auth');
+            location.reload();
+        };
+
+        refreshBtn.onclick = () => fetchUsers();
+
+        function showAdmin() {
+            loginView.style.display = 'none';
+            adminView.style.display = 'block';
+            logoutBtn.style.display = 'block';
+            fetchUsers();
+        }
+
+        async function fetchUsers() {
+            loader.style.display = 'flex';
+            try {
+                const res = await fetch(`${API_URL}?t=${Date.now()}`);
+                if (!res.ok) throw new Error("Error fetching users");
+                const data = await res.json();
+                
+                // Cloud data might be null, object or array
+                if (!data) {
+                    usersData = [];
+                } else if (Array.isArray(data)) {
+                    usersData = data.filter(u => u !== null);
+                } else {
+                    usersData = Object.values(data);
+                }
+
+                renderUsers();
+            } catch (e) {
+                console.error(e);
+                alert("Error de conexión con el servidor");
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        function renderUsers() {
+            userListContainer.innerHTML = '';
+            
+            totalUsersEl.innerText = usersData.length;
+            activeUsersEl.innerText = usersData.filter(u => u.enabled).length;
+
+            if (usersData.length === 0) {
+                userListContainer.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--mx-text-dim);">No hay usuarios registrados</div>`;
+                return;
+            }
+
+            usersData.forEach((user, index) => {
+                const initials = user.name ? user.name.substring(0, 2).toUpperCase() : '??';
+                const lastSeen = user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Nunca';
+                
+                const item = document.createElement('div');
+                item.className = 'user-item';
+                item.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-avatar">${initials}</div>
+                        <div>
+                            <span class="user-name">${user.name}</span>
+                            <span class="user-meta">${user.role === 'admin' ? 'Administrador' : 'Auditor'} • Vista: ${lastSeen}</span>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" ${user.enabled ? 'checked' : ''} onchange="toggleUser(${index}, this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                `;
+                userListContainer.appendChild(item);
+            });
+        }
+
+        async function toggleUser(index, enabled) {
+            usersData[index].enabled = enabled;
+            
+            // Re-render stats locally for instant feedback
+            activeUsersEl.innerText = usersData.filter(u => u.enabled).length;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(usersData)
+                });
+                
+                if (res.ok) {
+                    showToast();
+                } else {
+                    throw new Error("Failed to update");
+                }
+            } catch (e) {
+                alert("Error al actualizar: " + e.message);
+                fetchUsers(); // Rollback
+            }
+        }
+
+        function showToast() {
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+    </script>
+</body>
+</html>

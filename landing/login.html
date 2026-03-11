@@ -49,11 +49,20 @@
     <script>
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
+            const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value;
             const error = document.getElementById('error-msg');
             
-            if (pass === '1234') {
+            if (user.toLowerCase() === 'lucas' && pass === '123456789') {
                 localStorage.setItem('mx_authenticated', 'true');
+                localStorage.setItem('mx_user', 'Lucas');
+                localStorage.setItem('mx_role', 'admin');
+                window.location.href = 'index.html';
+            } else if (pass === '1234') {
+                // Mantener el acceso anterior para compatibilidad o demo
+                localStorage.setItem('mx_authenticated', 'true');
+                localStorage.setItem('mx_user', user || 'Demo');
+                localStorage.setItem('mx_role', 'user');
                 window.location.href = 'index.html';
             } else {
                 error.style.display = 'block';
