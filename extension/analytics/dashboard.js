@@ -1511,3 +1511,4 @@ function showExtraDetails(rawExtra, hash) {
     body.innerHTML = html;
 }
 
+
