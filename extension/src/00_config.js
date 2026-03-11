@@ -5,7 +5,7 @@
 
 'use strict';
 
-const VERSION = "1.2.1";;;;
+const VERSION = "1.2.2";;;;;
 const AUTHOR = "Monexa Systems";
 
 // Claves de almacenamiento en chrome.storage.local
