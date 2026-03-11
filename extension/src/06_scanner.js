@@ -462,15 +462,18 @@ const Scanner = {
                     title="${auditTip}"
                 style="${inputStyle} width: 70px; font-weight: 600; color: ${(data.ruleColor && RULE_COLORS[data.ruleColor]) ? RULE_COLORS[data.ruleColor].hex : '#059669'};"
                 >
-                <input
-                    type="text"
-                    class="it-field-note"
-                    placeholder="Nota..."
-                    aria-label="Nota"
-                    value="${DataCore.sanitizeText(data.note || '')}"
-                    title="${auditTip}"
-                    style="${inputStyle} width: 120px; font-style: ${data.note ? 'normal' : 'italic'}; color: ${data.note ? '#374151' : '#9ca3af'};"
-                >
+                <div style="position: relative; display: flex; align-items: center; width: 120px;">
+                    <input
+                        type="text"
+                        class="it-field-note"
+                        placeholder="Nota..."
+                        aria-label="Nota"
+                        value="${DataCore.sanitizeText(data.note || '')}"
+                        title="${auditTip}"
+                        style="${inputStyle} width: 120px; font-style: ${data.note ? 'normal' : 'italic'}; color: ${data.note ? '#374151' : '#9ca3af'}; position: relative; z-index: 2; background: transparent;"
+                    >
+                    <div class="it-note-suggestion" style="position: absolute; left: 10px; top: 0; bottom: 0; display: flex; align-items: center; color: rgba(0,0,0,0.2); font-family: 'Outfit', sans-serif; font-size: 11px; pointer-events: none; z-index: 1; white-space: nowrap; overflow: hidden; width: 100px;"></div>
+                </div>
                 <button
                     class="it-btn-cycle"
                     title="${statusInfo.label}"
@@ -659,8 +662,57 @@ const Scanner = {
 
         // Guarda al perder foco o al presionar Enter
         [inTag, inNote].forEach(input => {
-            input.onblur = () => updateRecord(data.status);
-            input.onkeydown = (e) => { if (e.key === 'Enter') updateRecord(data.status); };
+            input.onblur = () => {
+                updateRecord(data.status);
+                if (input === inNote) {
+                    const sugg = td.querySelector('.it-note-suggestion');
+                    if (sugg) sugg.textContent = '';
+                }
+            };
+            input.onkeydown = (e) => { 
+                if (e.key === 'Enter') updateRecord(data.status); 
+                if (input === inNote && (e.key === 'Tab' || e.key === 'ArrowRight')) {
+                    const sugg = td.querySelector('.it-note-suggestion');
+                    if (sugg && sugg.textContent) {
+                        e.preventDefault();
+                        input.value = sugg.textContent;
+                        sugg.textContent = '';
+                        updateRecord(data.status);
+                    }
+                }
+            };
+        });
+
+        // --- Lógica de autocompletado sugerido ---
+        inNote.addEventListener('input', async (e) => {
+            const val = inNote.value.trim().toLowerCase();
+            const sugg = td.querySelector('.it-note-suggestion');
+            if (!sugg) return;
+
+            if (val.length < 2) {
+                sugg.textContent = '';
+                return;
+            }
+
+            try {
+                const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+                const allNotes = Object.values(db.items)
+                    .map(i => (i.note || '').trim())
+                    .filter(n => n && n.toLowerCase() !== 'auto-match' && !n.includes('Auto-Match'));
+                
+                // Buscar una nota única que empiece con lo que el usuario escribe
+                const match = allNotes.find(n => n.toLowerCase().startsWith(val));
+                
+                if (match && match.toLowerCase() !== val) {
+                    // Solo mostramos si el texto sugerido es diferente al actual
+                    // y mantenemos el casing original de la nota encontrada
+                    sugg.textContent = match;
+                } else {
+                    sugg.textContent = '';
+                }
+            } catch (err) {
+                sugg.textContent = '';
+            }
         });
     },
 
