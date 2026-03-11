@@ -5,7 +5,7 @@
 
 'use strict';
 
-const VERSION = "1.3.1";
+const VERSION = "1.1.0";
 const AUTHOR = "Monexa Systems";
 
 // Claves de almacenamiento en chrome.storage.local
@@ -65,6 +65,7 @@ const RULE_COLORS = {
     naranja: { hex: '#ea580c', label: 'Naranja' },
     gris: { hex: '#64748b', label: 'Gris' }
 };
+
 
 
 
