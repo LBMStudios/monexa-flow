@@ -400,17 +400,23 @@ a { text-decoration: none; color: inherit; }
     filter: brightness(0.9);
 }
 
+/* Skeletons para anonimizar datos bancarios */
+.bank-skeleton {
+    background: #f0f0f0;
+    border-radius: 4px;
+    height: 12px;
+}
+
 .bank-row {
     display: flex;
-    justify-content: space-between;
-    padding: 15px 0;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 0;
     border-bottom: 1px solid #eee;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
 }
 
 .bank-row.highlight {
-    background: rgba(236, 112, 0, 0.05);
+    background: rgba(236, 112, 0, 0.03);
     position: relative;
 }
 
