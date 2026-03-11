@@ -187,41 +187,42 @@
             </div>
 
             <div class="hub-steps-grid">
-                <!-- Step 1 -->
+                <!-- Paso 1 -->
                 <div class="hub-step-card">
-                    <div class="step-visual">
-                        <img src="assets/img/step1.png" alt="Descarga">
+                    <div class="step-visual glow-amber">
+                        <span>⚡</span>
                     </div>
                     <div class="step-info">
                         <span class="step-tag">Paso 1</span>
                         <h4>Descarga el ZIP</h4>
-                        <p>Baja el paquete de la extensión y extráelo en una carpeta cómoda (ej: Escritorio).</p>
+                        <p>Baja el paquete de la extensión y extráelo en tu Escritorio.</p>
                         <a href="https://github.com/lbmstudios/monexa-flow/archive/refs/heads/main.zip" class="btn-hub-action">Descargar (.zip)</a>
                     </div>
                 </div>
 
-                <!-- Step 2 -->
+                <!-- Paso 2 -->
                 <div class="hub-step-card">
-                    <div class="step-visual">
-                        <img src="assets/img/step2.png" alt="Chrome">
+                    <div class="step-visual glow-green">
+                        <span>📊</span>
                     </div>
                     <div class="step-info">
                         <span class="step-tag">Paso 2</span>
                         <h4>Modo Desarrollador</h4>
-                        <p>Escribe <code class="code-amber">chrome://extensions</code> en tu barra y activa el interruptor arriba a la derecha.</p>
-                        <button onclick="window.open('chrome://extensions')" class="btn-hub-secondary">Ir a Extensiones</button>
+                        <p>Abre el panel de extensiones y activa el interruptor arriba a la derecha.</p>
+                        <button id="copy-ext-btn" class="btn-hub-secondary">Copiar Dirección</button>
+                        <p id="copy-toast" style="font-size: 11px; color: var(--green); margin-top: 5px; opacity: 0; transition: 0.3s; text-align: center; width: 100%;">¡Copiado! Pégalo en tu navegador</p>
                     </div>
                 </div>
 
-                <!-- Step 3 -->
+                <!-- Paso 3 -->
                 <div class="hub-step-card">
-                    <div class="step-visual">
-                        <img src="assets/img/step3.png" alt="Cargar">
+                    <div class="step-visual glow-blue">
+                        <span>🔒</span>
                     </div>
                     <div class="step-info">
                         <span class="step-tag">Paso 3</span>
-                        <h4>Carga Monexa</h4>
-                        <p>Haz clic en "Cargar descomprimida" y selecciona la carpeta <code class="code-amber">/extension</code> dentro de lo que descargaste.</p>
+                        <h4>Carga la Carpeta</h4>
+                        <p>Haz clic en "Cargar descomprimida" y selecciona la carpeta <code class="code-amber">/extension</code>.</p>
                     </div>
                 </div>
             </div>
@@ -234,6 +235,50 @@
             </div>
         </div>
     </div>
+
+    <!-- Scripts de Funcionalidad -->
+    <script>
+        // Copiar chrome://extensions al portapapeles
+        document.getElementById('copy-ext-btn').addEventListener('click', function() {
+            const el = document.createElement('textarea');
+            el.value = 'chrome://extensions';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            
+            const toast = document.getElementById('copy-toast');
+            toast.style.opacity = '1';
+            this.innerText = '¡Copiado!';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                this.innerText = 'Copiar Dirección';
+            }, 2000);
+
+            // Intentar abrir como fallback (por si es local o tiene permiso)
+            window.open('chrome://extensions');
+        });
+
+        // Abrir modal
+        document.querySelectorAll('.btn-open-install').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('install-modal').classList.add('active');
+            });
+        });
+
+        // Cerrar modal
+        document.querySelector('.modal-close').addEventListener('click', () => {
+            document.getElementById('install-modal').classList.remove('active');
+        });
+
+        // Cerrar al clickear fuera
+        document.querySelector('.modal-overlay').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
 
 </body>
 </html>
