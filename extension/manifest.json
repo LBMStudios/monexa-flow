@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Monexa Flow V1 — Auditoría Bancaria",
-  "version": "1.2.0",
+  "version": "1.2.1",,
   "icons": {
     "128": "icons/icon128.png"
   },
@@ -40,6 +40,7 @@
         "src/08b_ui_login.js",
         "src/08_ui.js",
         "src/09_cloud.js",
+        "src/09_updates.js",
         "src/09_boot.js"
       ],
       "all_frames": true

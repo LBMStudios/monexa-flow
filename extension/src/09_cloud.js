@@ -9,12 +9,12 @@
 
 const CloudConnector = {
     /**
-     * Resuelve la URL remota base para Firebase (Solo para la rama de usuarios).
+     * Resuelve la URL remota base para Firebase.
      */
     async _getFirebaseUrl() {
         const config = await DB_Engine.fetch(KEYS.SETTINGS, {});
-        let masterUrl = config.remote_admin_url;
-        if (!masterUrl || !masterUrl.includes('firebaseio.com')) return null;
+        let masterUrl = config.remote_admin_url || "https://monexa-b1a87-default-rtdb.firebaseio.com/";
+        if (!masterUrl.includes('firebaseio.com')) return null;
         
         if (!masterUrl.endsWith('/')) masterUrl += '/';
         return `${masterUrl}users.json`;
@@ -47,7 +47,7 @@ const CloudConnector = {
     async syncRemoteUsers() {
         try {
             const config = await DB_Engine.fetch(KEYS.SETTINGS, {});
-            const masterUrl = config.remote_admin_url;
+            let masterUrl = config.remote_admin_url || "https://monexa-b1a87-default-rtdb.firebaseio.com/";
 
             if (!masterUrl || masterUrl.trim() === "") return false;
 
@@ -101,6 +101,63 @@ const CloudConnector = {
         } catch (e) {
             console.warn("CloudConnector: Error sync users.", e.message);
         }
+        return false;
+    },
+
+    /**
+     * Sincronización de Versión Maestra (Pull)
+     */
+    async syncRemoteVersion() {
+        try {
+            const config = await DB_Engine.fetch(KEYS.SETTINGS, {});
+            let masterUrl = config.remote_admin_url || "https://monexa-b1a87-default-rtdb.firebaseio.com/";
+            if (!masterUrl.includes('firebaseio.com')) return null;
+
+            let url = masterUrl.endsWith('/') ? masterUrl : masterUrl + '/';
+            url += 'version.json';
+
+            const response = await fetch(url + "?t=" + Date.now());
+            if (!response.ok) return null;
+
+            const versionData = await response.json();
+            if (versionData && versionData.version) {
+                await DB_Engine.commit(KEYS.REMOTE_VERSION, versionData);
+                return versionData;
+            }
+        } catch (e) { console.warn("CloudConnector.syncRemoteVersion:", e.message); }
+        return null;
+    },
+
+    /**
+     * Publicación de Versión Maestra (Push — Solo Admin)
+     */
+    async publishRemoteVersion(version, changelog = "") {
+        try {
+            const config = await DB_Engine.fetch(KEYS.SETTINGS, {});
+            let masterUrl = config.remote_admin_url || "https://monexa-b1a87-default-rtdb.firebaseio.com/";
+            if (!masterUrl.includes('firebaseio.com')) return false;
+
+            let url = masterUrl.endsWith('/') ? masterUrl : masterUrl + '/';
+            url += 'version.json';
+
+            const payload = {
+                version: version,
+                changelog: changelog,
+                url: "https://monexa-flow.vercel.app/archive.zip",
+                timestamp: Date.now()
+            };
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            if (response.ok) {
+                await DB_Engine.commit(KEYS.REMOTE_VERSION, payload);
+                return true;
+            }
+        } catch (e) { console.warn("CloudConnector.publishRemoteVersion:", e.message); }
         return false;
     }
 };

@@ -1917,7 +1917,6 @@ body.loading .dash-main .hero-card {
     color: #fbbf24;
     letter-spacing: 0.5px;
 }
-
 /* ===== FALLBACK RECEIPT TEXT ===== */
 .extra-fallback-text {
     color: #ffd080;
@@ -1932,4 +1931,123 @@ body.loading .dash-main .hero-card {
     font-family: 'Inter', 'Roboto Mono', monospace;
     max-height: 400px;
     overflow-y: auto;
+}
+
+/* ===== ROCKET LAUNCH ANIMATION ===== */
+.mx-rocket-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(10, 12, 18, 0.95);
+    backdrop-filter: blur(20px);
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.mx-rocket-overlay.active { display: flex; animation: mx-fade-in 0.5s ease; }
+
+.rocket-container {
+    position: relative;
+    width: 200px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rocket-icon {
+    font-size: 80px;
+    position: relative;
+    z-index: 2;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.5));
+}
+
+.rocket-flame {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 100px;
+    background: linear-gradient(to bottom, #f59e0b, transparent);
+    border-radius: 50%;
+    filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.mx-rocket-overlay.launching .rocket-icon {
+    animation: rocket-vibrate 0.1s infinite, rocket-takeoff 2.5s forwards cubic-bezier(0.47, 0, 0.745, 0.715);
+}
+
+.mx-rocket-overlay.launching .rocket-flame {
+    opacity: 1;
+    animation: flame-flicker 0.1s infinite;
+}
+
+@keyframes rocket-vibrate {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(2px, 2px); }
+    50% { transform: translate(-2px, -2px); }
+    75% { transform: translate(2px, -2px); }
+}
+
+@keyframes rocket-takeoff {
+    0% { transform: translateY(0) scale(1); }
+    40% { transform: translateY(20px) scale(0.95); }
+    100% { transform: translateY(-1000px) scale(1.2); }
+}
+
+@keyframes flame-flicker {
+    0%, 100% { height: 100px; opacity: 0.8; }
+    50% { height: 120px; opacity: 1; }
+}
+
+.launch-success-msg {
+    margin-top: 40px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s 2.2s;
+}
+
+.mx-rocket-overlay.launching .launch-success-msg {
+    opacity: 1; transform: translateY(0);
+}
+
+.launch-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #10b981;
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+}
+
+.launch-subtitle {
+    color: rgba(255,255,255,0.6);
+    font-size: 16px;
+}
+
+.launch-particles {
+     position: absolute; width: 100%; height: 100%;
+     pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    background: #f59e0b;
+    border-radius: 50%;
+    opacity: 0;
+}
+
+.mx-rocket-overlay.launching .particle {
+    animation: particle-fly 2s forwards;
+}
+
+@keyframes particle-fly {
+    0% { transform: translate(0,0); opacity: 0.8; }
+    100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
 }

@@ -196,8 +196,16 @@ const UILogin = {
                 }
             }
 
-            // Iniciar sesión y guardar contexto
-            await DB_Engine.commit(KEYS.SETTINGS, { user, role, enabled: true });
+            // Iniciar sesión y guardar contexto (Preservando configuración existente como remote_admin_url)
+            const currentSettings = await DB_Engine.fetch(KEYS.SETTINGS, {});
+            const newSettings = { 
+                ...currentSettings, 
+                user, 
+                role, 
+                enabled: true 
+            };
+            
+            await DB_Engine.commit(KEYS.SETTINGS, newSettings);
             await DB_Engine.commit(KEYS.SYSTEM_STATE, { enabled: true });
             await Logger.info(`Sesión iniciada por ${user} (${role})`);
             window.location.reload(); // Recarga limpia para renderizar el panel

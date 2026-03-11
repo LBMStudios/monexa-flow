@@ -30,6 +30,11 @@
             CloudConnector.syncRemoteUsers();
         }
 
+        // --- Verificación de Actualizaciones ---
+        if (typeof UpdateSystem !== 'undefined') {
+            UpdateSystem.check();
+        }
+
         await UI.init();
 
         // --- Registro de Actividad Silencioso (Check-in) ---

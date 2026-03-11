@@ -7,15 +7,8 @@
 'use strict';
 
 // ============================================================
-// Constantes (mirrors de 00_config.js)
+// Estado local del dashboard
 // ============================================================
-const KEYS = {
-    TRANSACTIONS: "mx_db_tx_v65",
-    RULES: "mx_db_rules_v65",
-    SETTINGS: "mx_db_settings_v65",
-    LOGS: "mx_db_logs_v65",
-    SYSTEM_STATE: "mx_system_state_v65"
-};
 
 const STATUS_CONFIG = {
     VERDE: { label: 'Validado', icon: '✓', color: '#10b981', bg: '#d1fae5' },
@@ -85,18 +78,25 @@ chrome.storage.onChanged.addListener((changes, area) => {
 // ============================================================
 async function checkUpdate() {
     try {
-        const manifest = chrome.runtime.getManifest();
-        const currentVersion = manifest.version;
-        
-        // URL de la landing page (donde se sube el version.json)
-        const UPDATE_URL = "https://raw.githubusercontent.com/lbmstudios/monexa-flow/main/landing/version.json"; 
-        
-        const response = await fetch(UPDATE_URL);
-        if (!response.ok) return;
-        
-        const data = await response.json();
-        const latestVersion = data.version;
-        
+        const currentVersion = VERSION; // Usar la constante global sync
+        let latestVersion = null;
+
+        // 1. Intentar desde Cloud (Firebase) para aviso instantáneo
+        if (typeof CloudConnector !== 'undefined') {
+            const cloudVer = await CloudConnector.syncRemoteVersion();
+            if (cloudVer) latestVersion = cloudVer.version;
+        }
+
+        // 2. Fallback a GitHub (Landing)
+        if (!latestVersion) {
+            const UPDATE_URL = "https://raw.githubusercontent.com/lbmstudios/monexa-flow/main/landing/version.json"; 
+            const response = await fetch(UPDATE_URL + "?t=" + Date.now());
+            if (response.ok) {
+                const data = await response.json();
+                latestVersion = data.version;
+            }
+        }
+
         if (latestVersion && latestVersion !== currentVersion) {
             const banner = document.getElementById('mx-update-banner');
             const versionVal = document.getElementById('mx-new-version-val');
@@ -137,13 +137,69 @@ document.addEventListener('DOMContentLoaded', async () => {
             now.toLocaleDateString('es-UY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
 
-    // Check for updates (Sideloading support)
-    checkUpdate();
-
-    // Mostrar link de usuarios si es admin
+    // Admin Features
     if (config.role === 'admin') {
         const navUsers = document.getElementById('nav-users');
         if (navUsers) navUsers.style.display = 'flex';
+
+        const adminReleaseSec = document.getElementById('admin-release-section');
+        if (adminReleaseSec) adminReleaseSec.style.display = 'block';
+
+        const btnPublish = document.getElementById('btn-admin-publish');
+        if (btnPublish) {
+            btnPublish.onclick = async () => {
+                const newVer = document.getElementById('admin-new-ver-input').value.trim();
+                const changelog = document.getElementById('admin-changelog-input').value.trim();
+
+                if (!newVer) { alert("Por favor indica la versión."); return; }
+                
+                btnPublish.disabled = true;
+                btnPublish.textContent = "Publicando...";
+                
+                try {
+                    const ok = await CloudConnector.publishRemoteVersion(newVer, changelog);
+                    if (ok) {
+                        // Lanzar cohete
+                        const overlay = document.getElementById('mx-rocket-overlay');
+                        const particles = document.getElementById('mx-rocket-particles');
+                        if (overlay) {
+                            // Generar partículas aleatorias
+                            particles.innerHTML = "";
+                            for(let i=0; i<30; i++) {
+                                const p = document.createElement('div');
+                                p.className = 'particle';
+                                p.style.left = '50%'; p.style.top = '50%';
+                                p.style.width = Math.random() * 8 + 4 + 'px';
+                                p.style.height = p.style.width;
+                                p.style.setProperty('--tx', (Math.random() - 0.5) * 800 + 'px');
+                                p.style.setProperty('--ty', (Math.random() - 0.5) * 800 + 'px');
+                                particles.appendChild(p);
+                            }
+
+                            overlay.classList.add('active');
+                            setTimeout(() => overlay.classList.add('launching'), 100);
+
+                            const btnCloseRocket = document.getElementById('btn-close-rocket');
+                            if (btnCloseRocket) {
+                                btnCloseRocket.onclick = () => {
+                                    overlay.classList.remove('active', 'launching');
+                                };
+                            }
+                        }
+
+                        document.getElementById('admin-new-ver-input').value = "";
+                        document.getElementById('admin-changelog-input').value = "";
+                    } else {
+                        alert("Error al publicar. Verifica la configuración de Firebase.");
+                    }
+                } catch (e) {
+                    alert("Falla crítica: " + e.message);
+                } finally {
+                    btnPublish.disabled = false;
+                    btnPublish.textContent = "Lanzar Actualización";
+                }
+            };
+        }
     }
 
     const btnPurge = document.getElementById('btn-purge-audit');
@@ -174,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const footerInfo = document.getElementById('footer-info');
     if (footerInfo) {
         footerInfo.innerHTML =
-            `<b>Versión 1.2 (V1.2)</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
+            `<b>Versión 1.2.1 (V1.2.1)</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
     }
 
     // Cargar datos

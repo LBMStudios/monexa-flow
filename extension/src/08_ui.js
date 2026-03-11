@@ -86,6 +86,11 @@ const UI = {
                 user-select: none;
             }
 
+            @keyframes mx-pulse {
+                0%, 100% { border-color: rgba(245, 158, 11, 0.3); box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+                50% { border-color: rgba(245, 158, 11, 0.6); box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+            }
+
             #mx-master-launcher:hover {
                 transform: scale(1.1) translateY(-5px);
                 box-shadow: 0 15px 40px rgba(236,112,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4);
@@ -437,6 +442,31 @@ const UI = {
         const existing = document.getElementById("mx-control-panel");
         if (existing) existing.remove();
 
+        const updateStatus = typeof UpdateSystem !== 'undefined' ? await UpdateSystem.getStatus() : { newVersion: null };
+        let updateHtml = "";
+        
+        if (updateStatus.newVersion) {
+            updateHtml = `
+                <!-- Banner de Actualización -->
+                <div class="mx-card" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); padding: 14px 16px; margin-bottom: 20px; animation: mx-pulse 2s infinite;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                        <span style="font-size: 16px;">🚀</span>
+                        <div style="font-size: 13px; font-weight: 800; color: #f59e0b;">Nueva V${updateStatus.newVersion} Disponible</div>
+                    </div>
+                    <p style="font-size: 11px; color: rgba(255,255,255,0.7); line-height: 1.4; margin-bottom: 12px; font-family: 'Inter', sans-serif;">
+                        Nuevas mejoras detectadas. Actualiza ahora para disfrutar de la mejor experiencia.
+                    </p>
+                    <a href="${updateStatus.url || "https://monexa-flow.vercel.app"}" target="_blank" style="
+                        display: block; width: 100%; text-align: center;
+                        background: #f59e0b; color: #000; padding: 10px;
+                        border-radius: 10px; font-size: 11px; font-weight: 800;
+                        text-decoration: none; transition: 0.3s;
+                        font-family: 'Inter', sans-serif;
+                    " onmouseenter="this.style.filter='brightness(1.1)'" onmouseleave="this.style.filter='none'">Descargar V${updateStatus.newVersion} (.zip)</a>
+                </div>
+            `;
+        }
+
         const panel = document.createElement('div');
         panel.id = "mx-control-panel";
         panel.innerHTML = `
@@ -530,6 +560,7 @@ const UI = {
             <div style="height: 3px; background: linear-gradient(90deg, var(--itau-blue), var(--itau-blue-dark), transparent);"></div>
 
             <div class="mx-content">
+                ${updateHtml}
                 <!-- Control del sistema -->
                 <div class="mx-card" style="padding: 18px 20px;">
                     <h4 style="margin-bottom: 12px;">Control del Sistema</h4>
@@ -751,9 +782,16 @@ const UI = {
         if (btnLogout) {
             btnLogout.onclick = async (e) => {
                 e.preventDefault();
-                await DB_Engine.commit(KEYS.SETTINGS, { user: '', enabled: false });
+                const currentSettings = await DB_Engine.fetch(KEYS.SETTINGS, {});
+                const newSettings = { 
+                    ...currentSettings, 
+                    user: '', 
+                    role: 'user', 
+                    enabled: false 
+                };
+                await DB_Engine.commit(KEYS.SETTINGS, newSettings);
                 await DB_Engine.commit(KEYS.SYSTEM_STATE, { enabled: false });
-                await Logger.info(`Sesión de ${config.user} finalizada`);
+                await Logger.info(`Sesión finalizada`);
                 location.reload();
             };
         }

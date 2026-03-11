@@ -5,7 +5,7 @@
 
 'use strict';
 
-const VERSION = "1.2.0";
+const VERSION = "1.2.1";;
 const AUTHOR = "Monexa Systems";
 
 // Claves de almacenamiento en chrome.storage.local
@@ -16,6 +16,8 @@ const KEYS = {
     LOGS: "mx_db_logs_v65",
     SESSIONS: "mx_db_sessions_v65",
     SYSTEM_STATE: "mx_system_state_v65",
+    UPDATE_STATUS: "mx_db_updates_v65",
+    REMOTE_VERSION: "mx_remote_ver_v65",
     USERS: "mx_db_users_v65"
 };
 
