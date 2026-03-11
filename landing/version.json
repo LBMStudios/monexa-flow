@@ -1,9 +1,10 @@
 {
-  "version": "1.2.8",
-  "name": "Monexa Flow 1.2.8",
+  "version": "1.2.9",
+  "name": "Monexa Flow 1.2.9",
   "url": "https://monexa-flow.vercel.app/archive.zip",
   "changelog": "Mejoras en el dashboard y sistema de notificaciones de actualización."
 }
+
 
 
 

@@ -59,7 +59,7 @@
             <div class="hero-content">
                 <div class="badge-new">
                     <span class="badge-pulse"></span>
-                    v1.2.8 ahora disponible
+                    v1.2.9 ahora disponible
                 </div>
                 <h1 class="hero-title">Tu flujo bancario, finalmente bajo control.</h1>
                 <p class="hero-subtitle">
@@ -91,23 +91,31 @@
                     <!-- Filas anonimizadas -->
                     <div class="bank-row">
                         <div class="bank-skeleton" style="width: 60px;"></div>
-                        <div class="bank-skeleton" style="width: 180px;"></div>
-                        <div class="bank-skeleton" style="width: 80px; margin-left: auto; background: #e0e0e0;"></div>
+                        <div class="bank-skeleton" style="width: 140px;"></div>
+                        <div class="bank-skeleton" style="width: 80px; margin-left: auto;"></div>
+                        <div class="bank-btn-mock">Etiqueta</div>
+                        <div class="bank-input-mock">Nota...</div>
                     </div>
                     <div class="bank-row highlight">
                         <div class="bank-skeleton" style="width: 60px;"></div>
-                        <div class="bank-skeleton" style="width: 220px;"></div>
-                        <div class="bank-skeleton" style="width: 80px; margin-left: auto; background: #ffdcb8;"></div>
+                        <div class="bank-skeleton" style="width: 180px;"></div>
+                        <div class="bank-skeleton" style="width: 80px; margin-left: auto;"></div>
+                        <div class="bank-btn-mock">Etiqueta</div>
+                        <div class="bank-input-mock">Nota...</div>
                     </div>
                     <div class="bank-row">
                         <div class="bank-skeleton" style="width: 60px;"></div>
-                        <div class="bank-skeleton" style="width: 140px;"></div>
-                        <div class="bank-skeleton" style="width: 80px; margin-left: auto; background: #e0e0e0;"></div>
+                        <div class="bank-skeleton" style="width: 160px;"></div>
+                        <div class="bank-skeleton" style="width: 80px; margin-left: auto;"></div>
+                        <div class="bank-btn-mock">Etiqueta</div>
+                        <div class="bank-input-mock">Nota...</div>
                     </div>
                     <div class="bank-row">
                         <div class="bank-skeleton" style="width: 60px;"></div>
-                        <div class="bank-skeleton" style="width: 200px;"></div>
-                        <div class="bank-skeleton" style="width: 80px; margin-left: auto; background: #e0e0e0;"></div>
+                        <div class="bank-skeleton" style="width: 150px;"></div>
+                        <div class="bank-skeleton" style="width: 80px; margin-left: auto;"></div>
+                        <div class="bank-btn-mock">Etiqueta</div>
+                        <div class="bank-input-mock">Nota...</div>
                     </div>
                 </div>
 
@@ -136,59 +144,37 @@
                         </div>
                     </div>
 
-                    <div class="sidebar-body-mockup" style="padding: 15px 20px; gap: 15px; overflow-y: hidden;">
-                        <!-- Alerta de Actualización -->
-                        <div class="mx-card-mockup" style="background: rgba(236,112,0,0.05); border-color: rgba(236,112,0,0.2); padding: 15px;">
-                            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: var(--primary);">
-                                <span>🚀</span> NUEVA V1.2.6 DISPONIBLE
-                            </div>
-                            <div style="font-size: 11px; font-weight: 600; background: var(--primary); color: white; padding: 8px; border-radius: 10px; text-align: center; margin-top: 10px;">Descargar V1.2.6 (.zip)</div>
-                        </div>
-
-                        <!-- Control del Sistema -->
-                        <div class="mx-card-mockup" style="padding: 15px;">
-                            <h4 style="font-size: 10px; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase; font-weight: 800;">CONTROL DEL SISTEMA</h4>
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <div style="font-size: 12px; font-weight: 700;">Sistema ACTIVO</div>
-                                    <div style="font-size: 9px; color: var(--text-dim);">La extensión está escaneando</div>
+                    <div class="sidebar-body-mockup" style="padding: 20px; gap: 20px;">
+                        <!-- Resumen del Control (Según captura) -->
+                        <div class="mx-card-mockup" style="padding: 20px; background: rgba(255,255,255,0.02);">
+                            <h4 style="font-size: 11px; color: var(--text-dim); margin-bottom: 15px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">RESUMEN DEL CONTROL</h4>
+                            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                                <div class="mx-stat-card-mock" style="background: var(--green);">
+                                    <div style="font-size: 18px; font-weight: 800;">0</div>
+                                    <div style="font-size: 9px; font-weight: 700;">Validados</div>
                                 </div>
-                                <div style="width: 40px; height: 22px; background: #10b981; border-radius: 99px; position: relative;">
-                                    <div style="position: absolute; top: 3px; left: 20px; width: 16px; height: 16px; background: white; border-radius: 50%;"></div>
+                                <div class="mx-stat-card-mock" style="background: var(--amber);">
+                                    <div style="font-size: 18px; font-weight: 800;">0</div>
+                                    <div style="font-size: 9px; font-weight: 700;">Alertas</div>
+                                </div>
+                                <div class="mx-stat-card-mock" style="background: var(--rose);">
+                                    <div style="font-size: 18px; font-weight: 800;">0</div>
+                                    <div style="font-size: 9px; font-weight: 700;">Rojos</div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Integridad Card -->
-                        <div class="mx-card-mockup" style="padding: 15px; border-left: 3px solid #64748b;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <h4 style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 800;">INTEGRIDAD CONTABLE</h4>
-                                <div style="font-size: 8px; font-weight: 800; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-dim);">PENDIENTE</div>
+                            
+                            <div class="mx-btn-dashboard-mock">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
+                                </svg>
+                                VER DASHBOARD COMPLETO
                             </div>
                         </div>
 
-                        <!-- Motor de Reglas (Etiquetas) -->
-                        <div class="mx-card-mockup" style="padding: 15px;">
-                            <h4 style="font-size: 10px; color: var(--text-dim); margin-bottom: 12px; text-transform: uppercase; font-weight: 800;">ETIQUETAS DE ESTADO</h4>
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; padding: 8px; font-size: 10px; color: var(--text-dim);">Patrón: "Transferencia..."</div>
-                                <div style="display: flex; gap: 6px;">
-                                    <div style="width: 20px; height: 20px; border-radius: 6px; background: #10b981; border: 1px solid white;"></div>
-                                    <div style="width: 20px; height: 20px; border-radius: 6px; background: #f59e0b;"></div>
-                                    <div style="width: 20px; height: 20px; border-radius: 6px; background: #ef4444;"></div>
-                                </div>
-                                <div style="margin-top: 5px; background: var(--primary); color: white; border-radius: 8px; padding: 8px; font-size: 10px; font-weight: 800; text-align: center;">CREAR REGLA</div>
-                            </div>
-                        </div>
-
-                        <!-- Herramientas Footer -->
-                        <div style="margin-top: auto; padding-top: 10px; border-top: 1px solid var(--border);">
-                            <h4 style="font-size: 9px; color: var(--text-dim); margin-bottom: 10px; text-transform: uppercase; font-weight: 800;">HERRAMIENTAS DE DATOS</h4>
-                            <div style="display: flex; gap: 8px;">
-                                <div style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px; border-radius: 10px; text-align: center; font-size: 10px; font-weight: 700;">📤 Exportar CSV</div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px; border-radius: 10px; text-align: center; font-size: 10px; font-weight: 700;">📥 Importar Audit.</div>
-                            </div>
-                            <div style="width: 100%; border: 1px dashed rgba(225, 29, 72, 0.3); color: #ef4444; font-size: 9px; padding: 8px; border-radius: 8px; text-align: center; font-weight: 800; margin-top: 10px;">⚠️ RESETEAR AUDITORÍA COMPLETA</div>
+                        <!-- Buscador de Notas -->
+                        <div class="mx-card-mockup" style="padding: 20px; background: rgba(255,255,255,0.02);">
+                            <h4 style="font-size: 11px; color: var(--text-dim); margin-bottom: 15px; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px;">BUSCADOR DE NOTAS</h4>
+                            <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 12px; color: var(--text-dim);">Filtrar por concepto o nota...</div>
                         </div>
                     </div>
                 </div>

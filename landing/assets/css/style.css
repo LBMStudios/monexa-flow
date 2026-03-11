@@ -8,6 +8,8 @@
     --primary-dim: rgba(236, 112, 0, 0.1);
     --green: #10b981;
     --green-glow: rgba(16, 185, 129, 0.2);
+    --amber: #f59e0b;
+    --rose: #ef4444;
     --text-main: #f8fafc;
     --text-dim: rgba(248, 250, 252, 0.6);
     --border: rgba(255, 255, 255, 0.08);
@@ -428,6 +430,26 @@ a { text-decoration: none; color: inherit; }
     box-shadow: 0 0 10px var(--primary-glow);
 }
 
+.bank-btn-mock {
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #666;
+}
+
+.bank-input-mock {
+    padding: 6px 10px;
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    width: 60px;
+    font-size: 10px;
+    color: #999;
+}
+
 .monexa-sidebar-mockup {
     position: absolute;
     right: -20px;
@@ -476,6 +498,31 @@ a { text-decoration: none; color: inherit; }
 .mx-card-mockup.active {
     border-color: var(--primary);
     background: var(--primary-dim);
+}
+
+.mx-stat-card-mock {
+    flex: 1;
+    border-radius: 12px;
+    padding: 12px 5px;
+    text-align: center;
+    color: white;
+}
+
+.mx-btn-dashboard-mock {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .pulse-primary {
