@@ -1,0 +1,17 @@
+[
+    {
+        "name": "admin",
+        "role": "admin",
+        "enabled": true
+    },
+    {
+        "name": "Auditor_Demo",
+        "role": "user",
+        "enabled": true
+    },
+    {
+        "name": "Acceso_Bloqueado",
+        "role": "user",
+        "enabled": false
+    }
+]

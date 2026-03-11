@@ -1,0 +1,132 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head><meta charset="UTF-8">
+<style>
+body{font-family:'Segoe UI',Arial,sans-serif;margin:40px 60px;color:#1e293b;line-height:1.6}
+h1{color:#ec7000;font-size:28px;border-bottom:3px solid #ec7000;padding-bottom:10px}
+h2{color:#004b8b;font-size:20px;margin-top:30px;border-bottom:1px solid #e4e4e7;padding-bottom:5px}
+h3{color:#1e293b;font-size:16px}
+table{border-collapse:collapse;width:100%;margin:15px 0}
+th{background:#004b8b;color:white;padding:10px;text-align:left;font-size:13px}
+td{border:1px solid #e4e4e7;padding:8px 10px;font-size:13px}
+tr:nth-child(even){background:#f8fafc}
+img{max-width:100%;border:1px solid #e4e4e7;border-radius:8px;margin:15px 0}
+code{background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:12px}
+.trial{display:inline-block;background:#e11d48;color:white;padding:3px 8px;border-radius:4px;font-weight:700;font-size:11px}
+.sub{color:#64748b;font-size:14px}
+</style></head><body>
+<h1>Monexa Flow <span class="trial">TRIAL</span></h1>
+<p class="sub">Sistema de Auditoria Bancaria Profesional para Itau Uruguay</p><hr>
+
+<h2>1. Escaner Automatico de Movimientos</h2>
+<p>El corazon de Monexa. Se activa automaticamente al ingresar a la pagina del banco Itau y <b>escanea todas las filas</b> de la tabla de movimientos inyectando columnas de auditoria.</p>
+<ul>
+<li>Detecta automaticamente cada movimiento (fecha, concepto, debito, credito, saldo)</li>
+<li>Inyecta columnas extras: <b>Etiqueta</b>, <b>Nota</b> y <b>Estado</b> (semaforo visual)</li>
+<li>Resalta cada fila con color de fondo segun su estado de revision</li>
+<li>Detecta el numero de cuenta activa y lo muestra en un chip sobre el boton flotante</li>
+<li>Usa un <b>MutationObserver</b> para re-escanear cuando el banco carga nuevos datos</li>
+<li><b>Filtra cotizaciones de divisas</b> (U$S, Pizarra, Brou)</li>
+</ul>
+<p><img src="data:image/png;base64,IMG1_BASE64" alt="Escaner"></p>
+
+<h2>2. Sistema de Estados (Semaforo)</h2>
+<p>Cada movimiento puede ciclar entre <b>4 estados</b> haciendo click:</p>
+<table>
+<tr><th>Estado</th><th>Color</th><th>Icono</th><th>Significado</th></tr>
+<tr><td><b>Sin Revisar</b></td><td>Gris</td><td>○</td><td>No fue tocado aun</td></tr>
+<tr><td><b>Validado</b></td><td>Verde</td><td>✓</td><td>Aprobado por el auditor</td></tr>
+<tr><td><b>Observado</b></td><td>Ambar</td><td>!</td><td>Requiere atencion</td></tr>
+<tr><td><b>Rechazado</b></td><td>Rojo</td><td>×</td><td>Irregular</td></tr>
+</table>
+<p><b>Ciclo:</b> Sin Revisar → Validado → Observado → Rechazado → Sin Revisar</p>
+
+<h2>3. Motor de Reglas (Auto-Match)</h2>
+<p>Permite definir reglas de texto para que los movimientos <b>se clasifiquen automaticamente</b>.</p>
+<ul>
+<li><b>Patron + Etiqueta</b>: Si el concepto contiene el patron, se asigna la etiqueta y se marca Validado</li>
+<li><b>Limpieza inteligente</b>: Elimina caracteres invisibles y dobles espacios</li>
+<li><b>Aplicacion retroactiva</b>: Las reglas nuevas se aplican a registros pasados sin etiquetar</li>
+<li><b>Exportar / Importar</b>: Las reglas se exportan e importan entre instalaciones</li>
+</ul>
+<p><b>Ejemplo:</b> <code>COMPRA</code> → Gastos | <code>CRE. CAMBIOSOP</code> → Alquileres</p>
+
+<h2>4. Buscador en Tiempo Real</h2>
+<p>Motor de busqueda que filtra por <b>concepto</b>, <b>nota</b> o <b>etiqueta</b> en todas las transacciones. Resultados al instante.</p>
+
+<h2>5. Panel de Control Lateral</h2>
+<p>Se abre al hacer click en el boton flotante <b>MX</b> (naranja, esquina inferior derecha).</p>
+<ul>
+<li><b>Header</b>: MONEXA FLOW TRIAL con gradiente naranja</li>
+<li><b>Sesion</b>: Nombre del auditor + Cerrar Sesion</li>
+<li><b>Estadisticas</b>: 3 cuadros (Validados / Observados / Rechazados)</li>
+<li><b>Motor de Reglas</b>: Formulario para crear y gestionar reglas</li>
+<li><b>Buscador</b>: Campo de busqueda de transacciones</li>
+<li><b>Acciones</b>: Exportar Excel, Exportar Reglas, Importar, Dashboard</li>
+</ul>
+<p><img src="data:image/png;base64,IMG2_BASE64" alt="Panel lateral"></p>
+
+<h2>6. Dashboard Analitico</h2>
+<p>Dashboard premium en pantalla completa con diseno glassmorphism.</p>
+<h3>KPIs (5 tarjetas)</h3>
+<ul>
+<li><b>Total Movimientos</b> | <b>Validados</b> (verde) | <b>Observados</b> (ambar) | <b>Rechazados</b> (rojo) | <b>Sin Revisar</b> (gris)</li>
+</ul>
+<h3>Grafico de Dona</h3><p>Distribucion visual de estados.</p>
+<h3>Resumen por Etiqueta</h3>
+<ul>
+<li>Cantidad de movimientos por etiqueta</li>
+<li><b>Suma monetaria</b> (creditos - debitos) con formato <code>$ 1.500,50</code></li>
+<li>Color condicional: verde si positiva, rojo si negativa</li>
+</ul>
+<h3>Tabla de Movimientos</h3>
+<p>Tabla filtrable: Fecha, Concepto, Debito, Credito, Saldo, Etiqueta, Nota, Estado, Auditor, Timestamp. Header sticky y ordenamiento por click.</p>
+<h3>Filtros Avanzados</h3>
+<ul>
+<li>Por estado, por etiqueta, busqueda libre, ordenamiento por columna</li>
+</ul>
+<h3>Logs del Sistema</h3><p>Visor con filtrado por nivel (INFO / WARN / ERROR).</p>
+<h3>Exportar CSV</h3><p>Descarga los datos filtrados como CSV.</p>
+<p><img src="data:image/png;base64,IMG3_BASE64" alt="Dashboard"></p>
+
+<h2>7. Exportacion e Importacion</h2>
+<ul>
+<li><b>Exportar Auditoria</b>: Archivo <code>.xls</code> con formato profesional, colores por estado, hash de integridad</li>
+<li><b>Exportar Reglas</b>: Archivo <code>.csv</code> descargable</li>
+<li><b>Importar</b>: Archivos <code>.csv</code> para reglas o transacciones</li>
+</ul>
+
+<h2>8. Gestion de Sesion</h2>
+<ul>
+<li><b>Onboarding</b>: Pantalla de bienvenida para ingresar nombre del auditor</li>
+<li><b>Cerrar Sesion / Cambiar Usuario</b>: Borra credenciales y recarga</li>
+</ul>
+
+<h2>9. Slider ON/OFF</h2>
+<p>Boton flotante estilo iOS. Gris = OFF, click desliza a verde ON con animacion y recarga.</p>
+<p><img src="data:image/png;base64,IMG4_BASE64" alt="Slider"></p>
+
+<h2>10. Almacenamiento Hibrido</h2>
+<table>
+<tr><th>Dato</th><th>Almacenamiento</th><th>Ventaja</th></tr>
+<tr><td>Reglas / Config</td><td><code>chrome.storage.sync</code></td><td>Se sincronizan entre PCs</td></tr>
+<tr><td>Transacciones / Logs</td><td><code>chrome.storage.local</code></td><td>Sin limite de espacio</td></tr>
+</table>
+
+<h2>11. Arquitectura Modular</h2>
+<table>
+<tr><th>Modulo</th><th>Archivo</th><th>Funcion</th></tr>
+<tr><td>Config</td><td><code>00_config.js</code></td><td>Constantes, paleta, estados</td></tr>
+<tr><td>DB Engine</td><td><code>01_db.js</code></td><td>Motor de almacenamiento hibrido</td></tr>
+<tr><td>Logger</td><td><code>02_logger.js</code></td><td>Sistema de logs</td></tr>
+<tr><td>System Control</td><td><code>03_system.js</code></td><td>ON/OFF del sistema</td></tr>
+<tr><td>Data Core</td><td><code>04_data.js</code></td><td>Fingerprinting y sanitizacion</td></tr>
+<tr><td>File System</td><td><code>05_filesystem.js</code></td><td>Import/Export</td></tr>
+<tr><td>Scanner</td><td><code>06_scanner.js</code></td><td>Escaneo del DOM bancario</td></tr>
+<tr><td>Search</td><td><code>07_search.js</code></td><td>Motor de busqueda</td></tr>
+<tr><td>UI Factory</td><td><code>08_ui.js</code></td><td>Toda la interfaz visual</td></tr>
+<tr><td>Boot</td><td><code>09_boot.js</code></td><td>Arranque del sistema</td></tr>
+</table>
+
+<br><hr>
+<p style="text-align:center;color:#64748b;font-size:12px">Monexa Flow v65.0.6 — Sistema de Auditoria Bancaria Profesional<br>&copy; Monexa Systems 2025</p>
+</body></html>

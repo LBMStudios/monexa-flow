@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monexa Flow — Video Comercial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; overflow: hidden; width: 100vw; height: 100vh; margin: 0; padding: 0; }
+
+.slide {
+    position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    opacity: 0; transform: scale(0.95);
+    transition: opacity 1s ease, transform 1s ease;
+    padding: 40px 60px;
+}
+.slide.active { opacity: 1; transform: scale(1); }
+
+/* ===== SLIDE 1: INTRO ===== */
+.slide-intro { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #004b8b 100%); text-align: center; }
+.slide-intro .logo {
+    width: 90px; height: 90px; background: #ec7000; border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px; font-weight: 900; color: white; margin-bottom: 30px;
+    box-shadow: 0 20px 60px rgba(236,112,0,0.4);
+    animation: float 3s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.slide-intro h1 { font-size: 64px; font-weight: 900; letter-spacing: -2px; }
+.slide-intro h1 span { color: #ec7000; }
+.slide-intro .tagline { font-size: 22px; color: rgba(255,255,255,0.6); margin-top: 12px; font-weight: 300; }
+.slide-intro .badge { margin-top: 30px; background: rgba(236,112,0,0.15); border: 1px solid rgba(236,112,0,0.4); padding: 8px 24px; border-radius: 30px; font-size: 13px; font-weight: 700; color: #ec7000; letter-spacing: 3px; }
+.particle { position: absolute; width: 4px; height: 4px; background: rgba(236,112,0,0.3); border-radius: 50%; animation: drift 8s ease-in-out infinite; }
+@keyframes drift { 0%,100%{transform:translate(0,0);opacity:0} 50%{opacity:1} }
+
+/* ===== SLIDE 2: PROBLEM ===== */
+.slide-problem { background: linear-gradient(135deg, #1a0a0a 0%, #2d0a0a 50%, #0f172a 100%); text-align: center; }
+.slide-problem .icon-big { font-size: 70px; margin-bottom: 20px; }
+.slide-problem h2 { font-size: 42px; font-weight: 800; margin-bottom: 20px; }
+.slide-problem h2 span { color: #e11d48; }
+.slide-problem .problems { display: flex; gap: 20px; margin-top: 30px; }
+.problem-card { background: rgba(225,29,72,0.1); border: 1px solid rgba(225,29,72,0.3); padding: 25px 20px; border-radius: 16px; flex: 1; text-align: center; opacity:0; transform:translateY(30px); transition: all 0.6s ease; }
+.problem-card.show { opacity:1; transform:translateY(0); }
+.problem-card .p-icon { font-size: 32px; margin-bottom: 10px; }
+.problem-card h4 { font-size: 15px; color: #fca5a5; margin-bottom: 6px; }
+.problem-card p { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+/* ===== DEMO SLIDES ===== */
+.slide-demo { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 40px 60px; }
+.slide-demo .demo-header { width: 100%; text-align: left; margin-bottom: 20px; }
+.slide-demo .demo-header .label { font-size: 11px; font-weight: 700; color: #ec7000; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+.slide-demo .demo-header h2 { font-size: 32px; font-weight: 800; }
+.slide-demo .demo-header h2 span { color: #ec7000; }
+.slide-demo .demo-header p { font-size: 15px; color: rgba(255,255,255,0.5); margin-top: 6px; }
+.slide-demo .demo-img-container {
+    flex: 1; width: 100%; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transform: translateY(20px) scale(0.95);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-demo .demo-img-container.show { opacity: 1; transform: translateY(0) scale(1); }
+.slide-demo .demo-img-container img {
+    max-width: 100%; max-height: 440px; border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+}
+.slide-demo .demo-badges { display: flex; gap: 12px; margin-top: 15px; }
+.slide-demo .demo-badge {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 14px; border-radius: 8px; font-size: 11px; color: rgba(255,255,255,0.6); font-weight: 600;
+}
+
+/* ===== SLIDE SOLUTION ===== */
+.slide-solution { background: linear-gradient(135deg, #022c22 0%, #064e3b 50%, #0f172a 100%); text-align: center; }
+.slide-solution h2 { font-size: 42px; font-weight: 800; margin-bottom: 10px; }
+.slide-solution h2 span { color: #10b981; }
+.slide-solution .sub { font-size: 18px; color: rgba(255,255,255,0.5); margin-bottom: 35px; }
+.slide-solution .features { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; width: 100%; }
+.feat { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); padding: 22px 18px; border-radius: 14px; text-align: center; opacity:0; transform:translateY(20px); transition: all 0.5s ease; }
+.feat.show { opacity:1; transform:translateY(0); }
+.feat .f-icon { font-size: 28px; margin-bottom: 8px; }
+.feat h4 { font-size: 14px; font-weight: 700; color: #6ee7b7; margin-bottom: 4px; }
+.feat p { font-size: 11px; color: rgba(255,255,255,0.45); line-height: 1.4; }
+
+/* ===== SLIDE STATS ===== */
+.slide-stats { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); text-align: center; }
+.slide-stats h2 { font-size: 38px; font-weight: 800; margin-bottom: 40px; }
+.slide-stats h2 span { color: #ec7000; }
+.slide-stats .stats { display: flex; gap: 30px; }
+.stat { flex:1; padding:30px 20px; border-radius:20px; text-align:center; opacity:0; transform:scale(0.8); transition:all 0.6s ease; }
+.stat.show { opacity:1; transform:scale(1); }
+.stat .number { font-size: 52px; font-weight: 900; }
+.stat .unit { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 5px; }
+.stat:nth-child(1) { background: linear-gradient(135deg,rgba(16,185,129,0.15),rgba(16,185,129,0.05)); border:1px solid rgba(16,185,129,0.3); }
+.stat:nth-child(1) .number { color: #10b981; }
+.stat:nth-child(2) { background: linear-gradient(135deg,rgba(236,112,0,0.15),rgba(236,112,0,0.05)); border:1px solid rgba(236,112,0,0.3); }
+.stat:nth-child(2) .number { color: #ec7000; }
+.stat:nth-child(3) { background: linear-gradient(135deg,rgba(79,70,229,0.15),rgba(79,70,229,0.05)); border:1px solid rgba(79,70,229,0.3); }
+.stat:nth-child(3) .number { color: #818cf8; }
+
+/* ===== SLIDE CTA ===== */
+.slide-cta { background: linear-gradient(135deg, #ec7000 0%, #ff8b22 50%, #ec7000 100%); text-align: center; }
+.slide-cta .cta-logo { width:70px;height:70px;background:white;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#ec7000;margin-bottom:25px;box-shadow:0 15px 40px rgba(0,0,0,0.2); }
+.slide-cta h2 { font-size: 44px; font-weight: 900; margin-bottom: 12px; }
+.slide-cta .cta-sub { font-size: 20px; opacity: 0.85; margin-bottom: 35px; }
+.slide-cta .cta-btn { background:white;color:#ec7000;padding:16px 50px;border-radius:12px;font-size:16px;font-weight:800;display:inline-block;box-shadow:0 10px 30px rgba(0,0,0,0.15);animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+.slide-cta .cta-note { margin-top: 20px; font-size: 13px; opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: INTRO -->
+<div class="slide slide-intro active" id="s1">
+    <div class="particle" style="top:15%;left:20%"></div>
+    <div class="particle" style="top:70%;left:75%;animation-delay:2s"></div>
+    <div class="particle" style="top:30%;left:85%;animation-delay:4s"></div>
+    <div class="particle" style="top:80%;left:15%;animation-delay:1s"></div>
+    <div class="logo">MX</div>
+    <h1>MONEXA <span>FLOW</span></h1>
+    <p class="tagline">Auditoría inteligente <b>directo sobre tu estado bancario</b></p>
+    <div class="badge">✦ SE SUPERPONE SOBRE LA WEB DE TU BANCO ✦</div>
+</div>
+
+<!-- SLIDE 1B: KEY CONCEPT -->
+<div class="slide slide-demo" id="s1b" style="background: linear-gradient(135deg, #0f172a 0%, #004b8b 100%);">
+    <div class="demo-header" style="text-align: center; width: 100%;">
+        <div class="label" style="text-align:center;">Concepto Clave</div>
+        <h2 style="text-align:center;">Trabaja <span>sobre el estado bancario</span> real</h2>
+        <p style="text-align:center; max-width:800px; margin:8px auto 0;">Monexa no es una app separada — es una capa inteligente que se superpone directamente sobre la página web de tu banco, agregando columnas de auditoría en tiempo real mientras navegás tus movimientos.</p>
+    </div>
+    <div class="demo-img-container" id="di0"><img src="demo_bank_table.png" alt="Overlay sobre banco"></div>
+    <div class="demo-badges" style="justify-content:center;">
+        <div class="demo-badge" style="border-color:rgba(236,112,0,0.4);color:#ec7000;">📌 Sobre la web del banco</div>
+        <div class="demo-badge" style="border-color:rgba(236,112,0,0.4);color:#ec7000;">🔒 Sin extraer datos</div>
+        <div class="demo-badge" style="border-color:rgba(236,112,0,0.4);color:#ec7000;">⚡ En tiempo real</div>
+    </div>
+</div>
+
+<!-- SLIDE 2: PROBLEM -->
+<div class="slide slide-problem" id="s2">
+    <div class="icon-big">⚠️</div>
+    <h2>¿Seguís revisando <span>fila por fila</span>?</h2>
+    <p style="color:rgba(255,255,255,0.5);font-size:16px;">Cada mes, miles de horas se pierden en revisiones manuales</p>
+    <div class="problems">
+        <div class="problem-card" id="p1"><div class="p-icon">⏱️</div><h4>Horas perdidas</h4><p>4-8 horas mensuales por cuenta</p></div>
+        <div class="problem-card" id="p2"><div class="p-icon">❌</div><h4>Errores humanos</h4><p>Clasificación manual = errores</p></div>
+        <div class="problem-card" id="p3"><div class="p-icon">🔍</div><h4>Sin trazabilidad</h4><p>¿Quién revisó qué? Nadie sabe</p></div>
+        <div class="problem-card" id="p4"><div class="p-icon">📄</div><h4>Reportes manuales</h4><p>Sin formato profesional</p></div>
+    </div>
+</div>
+
+<!-- SLIDE 3: DEMO - BANK TABLE -->
+<div class="slide slide-demo" id="s3">
+    <div class="demo-header">
+        <div class="label">Función 1</div>
+        <h2>Escaneo <span>Automático</span> de Movimientos</h2>
+        <p>Sin salir de la web del banco: Monexa agrega etiquetas, notas y estados sobre cada fila</p>
+    </div>
+    <div class="demo-img-container" id="di1"><img src="demo_bank_table.png" alt="Tabla bancaria"></div>
+    <div class="demo-badges">
+        <div class="demo-badge">🔍 Detección automática</div>
+        <div class="demo-badge">🏷️ Etiquetas integradas</div>
+        <div class="demo-badge">🚦 Semáforo de estado</div>
+        <div class="demo-badge">🔄 Tiempo real</div>
+    </div>
+</div>
+
+<!-- SLIDE 4: DEMO - NOTES + STATUS -->
+<div class="slide slide-demo" id="s4">
+    <div class="demo-header">
+        <div class="label">Función 2</div>
+        <h2>Notas y <span>Semáforo</span> de Auditoría</h2>
+        <p>Cada movimiento tiene estado visual, etiqueta y notas editables por el auditor</p>
+    </div>
+    <div class="demo-img-container" id="di2"><img src="demo_notes_status.png" alt="Notas y estados"></div>
+    <div class="demo-badges">
+        <div class="demo-badge">✓ Validado</div>
+        <div class="demo-badge">! Observado</div>
+        <div class="demo-badge">× Rechazado</div>
+        <div class="demo-badge">📝 Notas editables</div>
+    </div>
+</div>
+
+<!-- SLIDE 5: DEMO - AUTO RULES -->
+<div class="slide slide-demo" id="s5">
+    <div class="demo-header">
+        <div class="label">Función 3</div>
+        <h2>Motor de <span>Auto-Match</span> Inteligente</h2>
+        <p>Definí reglas una vez y Monexa clasifica todos tus movimientos automáticamente</p>
+    </div>
+    <div class="demo-img-container" id="di3"><img src="demo_auto_rules.png" alt="Motor de reglas"></div>
+    <div class="demo-badges">
+        <div class="demo-badge">🧠 Reglas personalizables</div>
+        <div class="demo-badge">⚡ Aplicación retroactiva</div>
+        <div class="demo-badge">📤 Exportar / Importar</div>
+    </div>
+</div>
+
+<!-- SLIDE 6: DEMO - DASHBOARD -->
+<div class="slide slide-demo" id="s6">
+    <div class="demo-header">
+        <div class="label">Función 4</div>
+        <h2>Dashboard <span>Analytics</span> Premium</h2>
+        <p>KPIs, gráficos, resumen por etiqueta y tabla completa — todo en tiempo real</p>
+    </div>
+    <div class="demo-img-container" id="di4"><img src="demo_dashboard_full.png" alt="Dashboard"></div>
+    <div class="demo-badges">
+        <div class="demo-badge">📊 5 KPIs en vivo</div>
+        <div class="demo-badge">🍩 Gráfico de dona</div>
+        <div class="demo-badge">💰 Sumas por etiqueta</div>
+        <div class="demo-badge">📋 Exportar CSV</div>
+    </div>
+</div>
+
+<!-- SLIDE 7: FEATURES GRID -->
+<div class="slide slide-solution" id="s7">
+    <h2>Todo lo que <span>necesitás</span></h2>
+    <p class="sub">Se integra directo en tu banco Itaú. Sin instalar nada más.</p>
+    <div class="features">
+        <div class="feat" id="f1"><div class="f-icon">🔍</div><h4>Escaneo Automático</h4><p>Detecta cada movimiento al instante</p></div>
+        <div class="feat" id="f2"><div class="f-icon">🚦</div><h4>Semáforo de Estado</h4><p>Validado, Observado, Rechazado</p></div>
+        <div class="feat" id="f3"><div class="f-icon">🧠</div><h4>Auto-Match</h4><p>Reglas inteligentes + retroactivas</p></div>
+        <div class="feat" id="f4"><div class="f-icon">📊</div><h4>Dashboard Premium</h4><p>KPIs, gráficos y tablas</p></div>
+        <div class="feat" id="f5"><div class="f-icon">📤</div><h4>Exportación Excel</h4><p>Reportes profesionales</p></div>
+        <div class="feat" id="f6"><div class="f-icon">☁️</div><h4>Sincronización</h4><p>Reglas entre dispositivos</p></div>
+    </div>
+</div>
+
+<!-- SLIDE 8: STATS -->
+<div class="slide slide-stats" id="s8">
+    <h2>Resultados <span>medibles</span></h2>
+    <div class="stats">
+        <div class="stat" id="st1"><div class="number" id="c1">0</div><div class="unit">minutos en vez de horas</div></div>
+        <div class="stat" id="st2"><div class="number" id="c2">0%</div><div class="unit">menos errores de clasificación</div></div>
+        <div class="stat" id="st3"><div class="number" id="c3">0%</div><div class="unit">trazabilidad completa</div></div>
+    </div>
+</div>
+
+<!-- SLIDE 9: CTA -->
+<div class="slide slide-cta" id="s9">
+    <div class="cta-logo">MX</div>
+    <h2>¿Listo para automatizar?</h2>
+    <p class="cta-sub">Probá Monexa Flow gratis y transformá tu auditoría bancaria</p>
+    <div class="cta-btn">SOLICITAR DEMO GRATUITA</div>
+    <p class="cta-note">Sin tarjeta de crédito · Instalación en 2 minutos · Soporte personalizado</p>
+</div>
+
+<!-- BACKGROUND MUSIC -->
+<audio id="bgMusic" loop preload="auto">
+    <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- RECORD BUTTON -->
+<div id="recBtn" onclick="startRecording()" style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#ec7000;color:white;border:none;padding:14px 24px;border-radius:14px;font-family:Inter,sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(236,112,0,0.4);display:flex;align-items:center;gap:10px;animation:pulse 2s ease-in-out infinite;">
+    🎬 GRABAR VIDEO
+</div>
+<div id="recStatus" style="position:fixed;bottom:20px;right:20px;z-index:9999;background:#e11d48;color:white;padding:14px 24px;border-radius:14px;font-family:Inter,sans-serif;font-size:14px;font-weight:700;display:none;align-items:center;gap:8px;">
+    🔴 Grabando... (<span id="recTimer">0</span>s)
+</div>
+
+<script>
+async function startRecording() {
+    const recBtn = document.getElementById('recBtn');
+    const recStatus = document.getElementById('recStatus');
+    const timerEl = document.getElementById('recTimer');
+
+    // Hide ALL UI controls so they don't appear in the video
+    recBtn.style.display = 'none';
+    recStatus.style.display = 'none';
+
+    try {
+        // Capture current tab with audio
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { displaySurface: 'browser', width: 1280, height: 720 },
+            audio: true,
+            preferCurrentTab: true
+        });
+
+        // Start music
+        const audio = document.getElementById('bgMusic');
+        audio.volume = 0.5;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+
+        // Record
+        const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Monexa_Flow_Comercial.webm';
+            a.click();
+            URL.revokeObjectURL(url);
+            stream.getTracks().forEach(t => t.stop());
+            // Show download complete
+            recBtn.textContent = '✅ ¡Video descargado!';
+            recBtn.style.display = 'flex';
+            recBtn.style.background = '#10b981';
+            recBtn.style.cursor = 'default';
+            recBtn.onclick = null;
+        };
+
+        recorder.start();
+
+        // Stop the slideshow auto-timer if running
+        if (window._slideTimer) clearTimeout(window._slideTimer);
+
+        // Reset and restart slideshow from slide 1
+        current = 0;
+        document.querySelectorAll('.show').forEach(el => el.classList.remove('show'));
+        slides.forEach(s => s.classList.remove('active'));
+        slides[0].classList.add('active');
+
+        // Start advancing after delay
+        setTimeout(advance, timings[0]);
+
+        // Stop after 60 seconds (full presentation)
+        setTimeout(() => {
+            if (recorder.state === 'recording') recorder.stop();
+            audio.pause();
+        }, 60000);
+
+        // Also stop if user stops sharing
+        stream.getVideoTracks()[0].onended = () => {
+            if (recorder.state === 'recording') recorder.stop();
+            audio.pause();
+        };
+
+    } catch (err) {
+        console.error('Recording error:', err);
+        recBtn.style.display = 'flex';
+        alert('No se pudo grabar. Asegurate de seleccionar la pestaña actual y activar "Compartir audio de la pestaña".');
+    }
+}
+</script>
+
+<script>
+// ============================================================
+// SLIDESHOW ENGINE
+// ============================================================
+const slides = document.querySelectorAll('.slide');
+let current = 0;
+
+function counter(el, target, suffix='') {
+    let v=0; const s=target/30;
+    const i=setInterval(()=>{v+=s;if(v>=target){v=target;clearInterval(i);}el.textContent=Math.round(v)+suffix;},40);
+}
+
+function show(idx) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[idx].classList.add('active');
+
+
+    // Slide 1b: key concept image
+    if(idx===1) setTimeout(()=>document.getElementById('di0').classList.add('show'),400);
+
+    // Slide 3: problem cards
+    if(idx===2) ['p1','p2','p3','p4'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('show'),400+i*300));
+
+    // Slides 4-7: demo images
+    if(idx>=3 && idx<=6) setTimeout(()=>document.getElementById('di'+(idx-2)).classList.add('show'),300);
+
+    // Slide 8: features
+    if(idx===7) ['f1','f2','f3','f4','f5','f6'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('show'),300+i*200));
+
+    // Slide 9: counters
+    if(idx===8) {
+        ['st1','st2','st3'].forEach((id,i)=>setTimeout(()=>document.getElementById(id).classList.add('show'),300+i*300));
+        setTimeout(()=>counter(document.getElementById('c1'),15),500);
+        setTimeout(()=>counter(document.getElementById('c2'),95,'%'),800);
+        setTimeout(()=>counter(document.getElementById('c3'),100,'%'),1100);
+    }
+}
+
+
+// Timings per slide (ms)
+const timings = [4000, 5500, 5000, 5000, 5000, 5000, 5000, 5000, 4500, 5000];
+function advance() {
+    if(current < slides.length - 1) {
+        current++;
+        show(current);
+        window._slideTimer = setTimeout(advance, timings[current]||4000);
+    }
+}
+// Don't auto-start — wait for user to click GRABAR VIDEO
+</script>
+</body>
+</html>

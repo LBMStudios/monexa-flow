@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidad - Monexa Flow V1</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2563eb;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #1e40af;
+            margin-top: 30px;
+        }
+
+        .date {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        code {
+            background: #e5e7eb;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Política de Privacidad - Monexa Flow V1</h1>
+        <p class="date">Última actualización: 10 de marzo de 2026</p>
+
+        <p>En <strong>LBM Studios</strong>, valoramos la privacidad de nuestros usuarios por encima de todo. Esta
+            Política de Privacidad describe cómo <strong>Monexa Flow</strong> maneja la información al auditar y
+            clasificar movimientos bancarios.</p>
+
+        <h2>1. Recolección de Datos</h2>
+        <p><strong>Monexa Flow no recolecta, transmite, ni almacena ningún dato personal o bancario en servidores
+                externos.</strong></p>
+        <ul>
+            <li>La extensión lee la tabla de movimientos bancarios del sitio web del Banco Itaú Uruguay <em>únicamente
+                    en memoria y de forma transitoria</em> para facilitar la visualización de su estado de auditoría.
+            </li>
+            <li>Los únicos datos creados son: etiquetas (tags), notas de texto y estados de validación que el usuario
+                escribe voluntariamente.</li>
+        </ul>
+
+        <h2>2. Almacenamiento Local (Privacy By Design)</h2>
+        <p>Toda la información generada por el usuario (notas, etiquetas, y reglas de auto-match) se almacena
+            <strong>exclusivamente de forma local</strong> utilizando la API <code>chrome.storage.local</code> del
+            navegador del usuario.</p>
+        <ul>
+            <li><strong>LBM Studios</strong> no tiene acceso a sus datos ni bases de datos bajo ningún concepto.</li>
+            <li>Sus credenciales bancarias nunca son tocadas, leídas al teclear, ni almacenadas por esta extensión.</li>
+        </ul>
+
+        <h2>3. Uso de Permisos Requeridos</h2>
+        <ul>
+            <li><code>storage / unlimitedStorage</code>: Requerido para guardar sus notas y etiquetas en su propio disco
+                duro de forma persistente y rápida.</li>
+            <li><code>tabs</code>: Utilizado únicamente para permitir la apertura de su Dashboard de Auditoría en una
+                nueva pestaña segura.</li>
+            <li><code>Permisos de Host (*itau.com.uy)</code>: Necesario para que la extensión de Chrome pueda inyectar
+                su capa visual (colores verde, rojo, botones) de auditoría por encima de la página del banco para que
+                usted pueda trabajar.</li>
+            <li><code>Conexiones Externas (Fetch)</code>: La extensión solo se conecta de forma externa a una URL de
+                JSON definida por el administrador del sistema para validar remotamente la "licencia Activa/Inactiva"
+                del usuario actual. Ningún dato bancario viaja en esta validación.</li>
+        </ul>
+
+        <h2>4. Compartición con Terceros</h2>
+        <p><strong>Cero absoluto.</strong> No compartimos, vendemos, alquilamos ni transferimos ninguna información a
+            terceros o motores de búsqueda. No hay telemetría ni rastreadores de publicidad integrados en Monexa Flow.
+        </p>
+
+        <h2>5. Información de Contacto</h2>
+        <p>Extensión desarrollada con orgullo por <strong>LBM Studios</strong>.</p>
+        <p>Para consultas sobre esta política de máxima privacidad, puede contactar al correo de soporte oficial en la
+            tienda web: <strong>lucasbeathyate@gmail.com</strong>.</p>
+    </div>
+</body>
+
+</html>
