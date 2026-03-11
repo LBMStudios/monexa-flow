@@ -3,6 +3,7 @@
 tmp/
 *.log
 *.zip
+!landing/archive.zip
 *.ps1
 
 # OS files
