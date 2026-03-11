@@ -128,27 +128,38 @@ const Scanner = {
                 const fecha = extractAndClean(cells[0]);
                 const concepto = extractAndClean(cells[1]);
 
-                // NUEVO: Extraer información visual directa de links/hipervínculos
+                // NUEVO: Extraer información visual directa de links/hipervínculos Y DATA TÉCNICA
                 let extra = "";
                 
                 // Itaú suele pintar de azul y poner como hipervínculo la info valiosa en la segunda celda.
                 // Buscamos cualquier elemento dentro de la celda que destaque (enlace, botón, o span con clase)
-                const clickableElement = cells[1].querySelector('a, button, span.link, span[onclick]');
+                const clickable = cells[1].querySelector('a, button, span.link, [onclick], [data-id], [data-nro]');
                 
-                if (clickableElement) {
-                    // Tomamos el texto visible exacto que el humano lee en el renglón.
-                    const visibleText = extractAndClean(clickableElement);
-                    
-                    // Solo lo guardamos si aporta algo más que el concepto base (a veces el concepto es "TRANSFERENCIA" 
-                    // y el link dice lo mismo, o a veces el link dice "Juan Perez").
+                if (clickable) {
+                    const visibleText = extractAndClean(clickable);
+                    const onclickText = clickable.getAttribute('onclick') || "";
+                    const titleText   = clickable.getAttribute('title') || "";
+                    const dataId      = clickable.getAttribute('data-id') || clickable.getAttribute('data-nro') || "";
+
+                    // 1. Prioridad: Texto que el humano realmente leyó
                     if (visibleText && visibleText.toLowerCase() !== concepto.toLowerCase()) {
                         extra = visibleText;
-                    } else {
-                        // Si el texto es idéntico, a lo mejor hay algo útil en el atributo title
-                        const titleAttr = clickableElement.getAttribute('title') || "";
-                        if (titleAttr && titleAttr.toLowerCase() !== concepto.toLowerCase()) {
-                            extra = titleAttr;
-                        }
+                    } 
+                    
+                    // 2. Enriquecimiento técnico: Capturar IDs de operaciones (clave para auditoría forense)
+                    const technicalMatch = onclickText.match(/['"](\d{6,})['"]/) || onclickText.match(/(\d{10,})/);
+                    if (technicalMatch) {
+                        const techId = technicalMatch[1];
+                        extra += (extra ? " | ID:" : "ID:") + techId;
+                    }
+
+                    // 3. Atributos de ayuda
+                    if (titleText && !extra.includes(titleText) && titleText.toLowerCase() !== concepto.toLowerCase()) {
+                        extra += (extra ? " | " : "") + titleText;
+                    }
+
+                    if (dataId && !extra.includes(dataId)) {
+                        extra += (extra ? " | REF:" : "REF:") + dataId;
                     }
                 }
 
@@ -175,17 +186,21 @@ const Scanner = {
                     debito = extractAndClean(cells[nCols - 1]);
                 }
 
-                // Fingerprint basado en fecha + concepto + débito + crédito
+                // Contabilidad Avanzada: Detección de Moneda y Contexto
+                const moneda = DataCore.normalizeCurrency(row.innerText + (this.currentAccount || ""));
+                const direction = DataCore.detectDirection(debito, credito);
+                const amount = DataCore.normalizeAmount(debito || credito);
+
+                // Fingerprint basado en cuenta + moneda + fecha + concepto + débito + crédito + saldo
                 const importeKey = debito || credito || '';
-                const hash = DataCore.createFingerprint(concepto, importeKey, fecha);
+                const hash = DataCore.createFingerprint(concepto, importeKey, fecha, saldo, moneda, this.currentAccount || "GLOBAL");
                 let record = db.items[hash];
 
                 // Rastrear click para vincular el modal que se abrirá (Detección en toda la fila)
+                // Rastrear click para vincular el modal que se abrirá (Detección en toda la fila)
                 row.addEventListener('click', () => {
                     window._mxLastClickedHash = hash;
-                    // Persistir por si hay navegación o recarga AJX
                     chrome.storage.local.set({ "_mxLastClickedHash": hash });
-                    console.log("[Monexa] Rastreado click en row (completa):", hash);
                 }, true); // Use capture to catch it before potential redirection
 
 
@@ -220,6 +235,7 @@ const Scanner = {
                 if (!record) {
                     record = {
                         fecha, concepto, extra, debito, credito, saldo,
+                        moneda, direction, amount,
                         tag: matchRule ? matchRule.label : "",
                         note: matchRule ? "Auto-Match" : "",
                         status: matchRule ? "VERDE" : "NONE",
@@ -234,7 +250,6 @@ const Scanner = {
                     if (extra && record.extra !== extra) {
                         record.extra = extra;
                         dbUpdated = true;
-                        console.log(`[Monexa] Info Extra actualizada para registro existente: ${concepto}`);
                     }
 
                     if (matchRule && (!record.tag || record.tag.trim().toLowerCase() === 'etiqueta') && (record.status === "NONE" || record.status === "PENDING")) {
@@ -259,15 +274,32 @@ const Scanner = {
             }
 
             // Commit solo una vez al final si agregamos registros nuevos
+            // Usamos requestIdleCallback para no bloquear la UI del banco en el guardado
             if (dbUpdated) {
-                await DB_Engine.commit(KEYS.TRANSACTIONS, db);
-            }
+                const finalizeCommit = async () => {
+                    UI.setSyncing(true);
+                    await DB_Engine.commit(KEYS.TRANSACTIONS, db);
+                    setTimeout(() => UI.setSyncing(false), 800);
+                    await UI.refreshDashboard();
+                };
 
+                if (window.requestIdleCallback) {
+                    window.requestIdleCallback(() => finalizeCommit());
+                } else {
+                    finalizeCommit();
+                }
+            }
             // Detectar número de cuenta y actualizar chip del launcher
             const accountInfo = this.detectAccountInfo();
             if (accountInfo !== this.currentAccount) {
                 this.currentAccount = accountInfo;
                 if (typeof UI !== 'undefined') UI.updateLauncherAccount(accountInfo);
+            }
+
+            // Detectar saldo oficial para Gap Detection
+            const officialBalance = this.detectOfficialBalance();
+            if (officialBalance !== null && typeof UI !== 'undefined' && UI.updateOfficialBalance) {
+                UI.updateOfficialBalance(officialBalance);
             }
 
         } catch (err) {
@@ -335,23 +367,52 @@ const Scanner = {
     },
 
     /**
+     * Intenta extraer el saldo oficial de la cuenta del DOM.
+     * @returns {number|null} Saldo oficial detectado.
+     */
+    detectOfficialBalance() {
+        const selectors = [
+            '.saldo-disponible', '.available-balance', '#saldoTotal', '.total-balance',
+            '.monto-saldo', '.valor-saldo', '.saldo-cuenta', '.amount-balance',
+            'span[title*="Saldo"]', 'div[title*="Saldo"]'
+        ];
+
+        for (const sel of selectors) {
+            const el = document.querySelector(sel);
+            if (el) {
+                const val = DataCore.normalizeAmount(el.innerText);
+                if (val !== 0) return val;
+            }
+        }
+        return null;
+    },
+
+    /**
      * Inyecta una celda de auditoría al final de cada fila de transacción.
      * Incluye inputs de tag/nota, botón de ciclo de estado y botón de borrado.
      */
     renderRowUI(row, data, hash, user) {
-        const existingCell = row.querySelector(".mx-cell-injected");
+        const existingCell = row.querySelector(".it-data-node");
         if (existingCell) return;
 
         // Colores sutiles de fondo para no romper la estética de la tabla del banco
         const rowColors = {
-            'VERDE': 'rgba(16, 185, 129, 0.06)',
-            'AMARILLO': 'rgba(245, 158, 11, 0.06)',
-            'ROJO': 'rgba(225, 29, 72, 0.06)',
+            'VERDE': 'rgba(16, 185, 129, 0.08)',
+            'AMARILLO': 'rgba(245, 158, 11, 0.08)',
+            'ROJO': 'rgba(225, 29, 72, 0.08)',
             'NONE': 'transparent'
         };
 
+        const statusBorder = {
+            'VERDE': '4px solid #10b981',
+            'AMARILLO': '4px solid #f59e0b',
+            'ROJO': '4px solid #ef4444',
+            'NONE': '0px solid transparent'
+        };
+
         row.style.backgroundColor = rowColors[data.status] || 'transparent';
-        row.style.transition = "background 0.3s ease";
+        row.style.transition = "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
+        row.style.borderLeft = statusBorder[data.status];
 
         // Marcar visualmente si fue detectado por el motor de reglas (V1 Premium)
         if (data.note && data.note.includes("Auto-Match")) {
@@ -359,7 +420,7 @@ const Scanner = {
         }
 
         const td = document.createElement("td");
-        td.className = "mx-cell-injected";
+        td.className = "it-data-node";
         td.style.cssText = `
             border-left: 2px solid #e5e7eb;
             padding: 0 8px;
@@ -372,17 +433,17 @@ const Scanner = {
             Object.keys(STATUS_MAP).find(k => STATUS_MAP[k].id === data.status)
             ] || STATUS_MAP.PENDING;
 
-        // Estilos inline integrados al diseño Itaú
+        // Estilos inline integrados al diseño Itaú pero con toque premium
         const inputStyle = `
-            font-family: inherit;
-            font-size: 12px;
-            color: #374151;
-            background: transparent;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            padding: 3px 6px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 11px;
+            color: #1f2937;
+            background: rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 8px;
+            padding: 5px 10px;
             outline: none;
-            transition: border-color 0.2s, background 0.2s;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         `;
 
         // Tooltip con info de quién editó y cuándo
@@ -394,7 +455,7 @@ const Scanner = {
             <div style="display: flex; align-items: center; gap: 6px; height: 100%;">
                 <input
                     type="text"
-                    class="mx-input-tag"
+                    class="it-field-tag"
                     placeholder="Etiqueta"
                     aria-label="Etiqueta"
                     value="${DataCore.sanitizeText(data.tag || '')}"
@@ -403,7 +464,7 @@ const Scanner = {
                 >
                 <input
                     type="text"
-                    class="mx-input-note"
+                    class="it-field-note"
                     placeholder="Nota..."
                     aria-label="Nota"
                     value="${DataCore.sanitizeText(data.note || '')}"
@@ -411,27 +472,27 @@ const Scanner = {
                     style="${inputStyle} width: 120px; font-style: ${data.note ? 'normal' : 'italic'}; color: ${data.note ? '#374151' : '#9ca3af'};"
                 >
                 <button
-                    class="mx-btn-cycle"
+                    class="it-btn-cycle"
                     title="${statusInfo.label}"
                     style="
                         background: ${statusInfo.color};
                         color: white;
                         border: none;
-                        border-radius: 50%;
-                        width: 22px; height: 22px;
-                        min-width: 22px;
+                        border-radius: 10px;
+                        width: 26px; height: 26px;
+                        min-width: 26px;
                         cursor: pointer;
                         display: flex; align-items: center; justify-content: center;
-                        font-size: 11px;
-                        font-weight: 700;
-                        transition: transform 0.15s, box-shadow 0.15s;
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+                        font-size: 12px;
+                        font-weight: 800;
+                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        box-shadow: 0 4px 10px ${statusInfo.color}44;
                         line-height: 1;
                         padding: 0;
                     "
                 >${statusInfo.icon}</button>
                 <button
-                    class="mx-btn-del"
+                    class="it-btn-del"
                     title="Borrar registro"
                     style="
                         background: none;
@@ -452,18 +513,18 @@ const Scanner = {
 
         // --- Hover en fila: mostrar botón borrar ---
         row.addEventListener('mouseenter', () => {
-            const del = row.querySelector('.mx-btn-del');
+            const del = row.querySelector('.it-btn-del');
             if (del) del.style.opacity = '1';
         });
         row.addEventListener('mouseleave', () => {
-            const del = row.querySelector('.mx-btn-del');
+            const del = row.querySelector('.it-btn-del');
             if (del) del.style.opacity = '0';
         });
 
-        const btnCycle = td.querySelector(".mx-btn-cycle");
-        const btnDel = td.querySelector(".mx-btn-del");
-        const inTag = td.querySelector(".mx-input-tag");
-        const inNote = td.querySelector(".mx-input-note");
+        const btnCycle = td.querySelector(".it-btn-cycle");
+        const btnDel = td.querySelector(".it-btn-del");
+        const inTag = td.querySelector(".it-field-tag");
+        const inNote = td.querySelector(".it-field-note");
 
         // --- Input focus styling (borde naranja Itaú sutil) ---
         [inTag, inNote].forEach(input => {
@@ -537,7 +598,9 @@ const Scanner = {
                     ts: new Date().toLocaleString()
                 };
 
+                UI.setSyncing(true);
                 await DB_Engine.commit(KEYS.TRANSACTIONS, currentDB);
+                setTimeout(() => UI.setSyncing(false), 500);
 
                 row.style.backgroundColor = rowColors[newStatus];
                 const nextStatusObj = STATUS_MAP[
@@ -606,25 +669,19 @@ const Scanner = {
      */
     initModalWatcher() {
         if (this._modalWatcher) return;
-        console.log("[Monexa] Iniciando observador de modales profundos...");
 
         this._modalWatcher = new MutationObserver((mutations) => {
-            // Buscamos el título o el modal según el HTML de Javier
             const titleElement = document.querySelector('.content-comprobante, #mySmallModalLabel');
             if (titleElement && titleElement.offsetParent !== null) {
-                // Si encontramos el título, el "contenedor real" es el modal que lo envuelve
                 const modalContainer = titleElement.closest('.modal-content, .modal-dialog, #commonModal, #detallesModal') || titleElement.parentElement;
-
-                // Intentamos buscar el body específico dentro de ese modal
                 const body = modalContainer?.querySelector('.modal-body, .content-comprobante-body, #imprimir-comprobante, #detalle-comprobante') || modalContainer;
 
-                if (body && !body.hasAttribute('data-mx-scanned')) {
+                if (body && !body.hasAttribute('data-it-node')) {
                     this.scrapeModalContent(body);
-                    body.setAttribute('data-mx-scanned', 'true');
+                    body.setAttribute('data-it-node', 'true');
                 }
             } else {
-                // Limpiar marcas cuando NO hay modal visible
-                document.querySelectorAll('[data-mx-scanned]').forEach(el => el.removeAttribute('data-mx-scanned'));
+                document.querySelectorAll('[data-it-node]').forEach(el => el.removeAttribute('data-it-node'));
             }
         });
 
@@ -640,85 +697,76 @@ const Scanner = {
             const data = await chrome.storage.local.get("_mxLastClickedHash");
             hash = data._mxLastClickedHash;
         }
-        if (!hash) {
-            console.warn("[Monexa] No hay rastro de clic previo para este modal.");
-            return;
-        }
-
-        console.log("[Monexa] Iniciando captura profunda con reintentos...");
+        if (!hash) return;
 
         let text = "";
         let foundData = null;
-        const maxRetries = 10;
-        const retryDelay = 600;
+        const maxRetries = 12;
+        const retryDelay = 500;
 
         for (let i = 0; i < maxRetries; i++) {
             await new Promise(r => setTimeout(r, retryDelay));
             text = (container.innerText || "").trim();
 
-            if (text.length < 20) continue; // Demasiado corto, esperar más
+            if (text.length < 25 || text.toLowerCase().includes("cargando")) continue;
 
             const mapping = {
-                "Tipo": /^(Transferencia\s+[^\n]+|Dep[óo]sito\s+[^\n]+|Pago\s+[^\n]+)/i,
-                "Beneficiario": /Beneficiario[:\s]+([^\s][^\n]+)/i,
-                "Ordenante": /Ordenante[:\s]+([^\s][^\n]+)/i,
-                "Operación": /(N[úu]mero\s+de\s+operaci[óo]n|N[úu]mero\s+de\s+orden\s+de\s+pago)[:\s]+([^\n]+)/i,
-                "Referencia": /Referencia\s+Bevsa[:\s]+([^\n]+)/i,
-                "Importe": /(Importe\s+recibido|Total\s+acreditado)[:\s]+([^\s][^\n]+)/i,
-                "Banco": /(Banco\s+ordenante|Nombre\s+del\s+banco)[:\s]+([^\s][^\n]+)/i,
-                "Fecha": /Fecha[:\s]+([\dd-][^\t\n]+)/i,
+                "Tipo": /^(Transferencia\s+[^\n]+|Dep[óo]sito\s+[^\n]+|Pago\s+[^\n]+|Cobro\s+[^\n]+|Debito\s+[^\n]+|Cr[eé]dito\s+[^\n]+)/i,
+                "Detalle": /(?:Beneficiario|Destino|Nombre del receptor|Comercio|Convenio|Servicio)[:\s]+([^\s][^\n]+)/i,
+                "Origen": /(?:Ordenante|Origen|De la cuenta|Cuenta de cargo)[:\s]+([^\s][^\n]+)/i,
+                "Operación": /(?:N[úu]mero\s+de\s+operaci[óo]n|Operaci[óo]n\s+N[\u00BA°]|N[úu]mero\s+de\s+orden\s+de\s+pago|Folio|ID|Transacción)[:\s]+([^\n]+)/i,
+                "Referencia": /(?:Referencia|Concepto de la operaci[óo]n|Motivo|Referencia\s+del\s+cliente)[:\s]+([^\n]+)/i,
+                "Importe": /(?:Importe\s+recibido|Total\s+acreditado|Importe|Monto|Total\s+a\s+pagar)[:\s]+([^\d]*)([\d.,\s]+)/i,
+                "Moneda": /Moneda[:\s]+([A-Z$]{1,3})/i,
+                "Banco": /(?:Banco\s+ordenante|Nombre\s+del\s+banco|Entidad|Banco\s+destino)[:\s]+([^\s][^\n]+)/i,
+                "Fecha": /(?:Fecha|Realizado el|Fecha\s+de\s+pago)[:\s]+([\dd-][^\t\n]+)/i,
                 "Hora": /Hora[:\s]+([\dd:][^\n]+)/i,
-                "Estado": /Estado[:\s]+([A-Z\s]{3,})/i
+                "Estado": /(?:Estado|Resultado)[:\s]+([A-Z\s]{3,})/i
             };
 
             const fields = [];
-            for (const [key, regex] of Object.entries(mapping)) {
-                const match = text.match(regex);
-                if (match) {
-                    let val = match[match.length - 1].trim();
-                    val = val.split(/(Beneficiario|Ordenante|Importe|N[úu]mero|Referencia|Banco|Moneda|Fecha|Subtitulo|T[íi]tulo)/i)[0].trim();
-                    fields.push(`${key}: ${val}`);
+            const processRegex = () => {
+                for (const [key, regex] of Object.entries(mapping)) {
+                    const match = text.match(regex);
+                    if (match) {
+                        let val = "";
+                        if (key === "Importe" && match.length >= 3) {
+                            val = (match[1] + match[2]).trim();
+                        } else {
+                            val = match[match.length - 1].trim();
+                        }
+                        val = val.split(/(Beneficiario|Ordenante|Importe|N[úu]mero|Referencia|Banco|Moneda|Fecha|Hora|Estado|Monto|Convenio|Tipo)/i)[0].trim();
+                        fields.push(`${key}: ${val}`);
+                    }
                 }
-            }
+            };
 
-            if (fields.length >= 2) { // Si encontramos al menos 2 campos relevantes, es un éxito
+            processRegex();
+
+            if (fields.length >= 2) { 
                 foundData = fields.join(" | ");
                 break;
             }
 
-            // Si tiene palabras clave aunque no mapeemos campos, también vale como fallback
-            if (text.toLowerCase().includes("operación") || text.toLowerCase().includes("beneficiario")) {
-                foundData = "COMPROBANTE: " + text.replace(/[\n\t]+/g, " ").substring(0, 600).trim();
+            const fullKeywords = ["comprobante", "ticket", "vencimiento", "confirmación", "operación exitosa"];
+            if (fullKeywords.some(k => text.toLowerCase().includes(k))) {
+                foundData = "[INFO] " + text.replace(/[\n\r\t]+/g, " ").replace(/\s+/g, " ").substring(0, 700).trim();
                 break;
             }
-
-            console.log(`[Monexa] Reintento ${i + 1}/${maxRetries}... esperando texto del banco.`);
         }
 
         if (foundData) {
-            console.log("[Monexa] ¡ÉXITO! Data real capturada:", foundData.substring(0, 50) + "...");
             const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
             if (db.items[hash]) {
                 const record = db.items[hash];
                 const currentExtra = record.extra || "";
 
-                // SOBREESCRITURA AGRESIVA: 
-                // Si la info actual tiene "[ID]:" o "[URL]:" o es muy corta, sobreescribir SIEMPRE.
-                const isTechnical = currentExtra.includes('[ID]:') || currentExtra.includes('[URL]:') || currentExtra.length < 15 || !currentExtra.includes(':');
-
-                if (isTechnical || currentExtra.length < foundData.length) {
+                if (foundData.length > currentExtra.length || (currentExtra.includes("ID:") && foundData.includes("Beneficiario:"))) {
                     record.extra = foundData;
                     await DB_Engine.commit(KEYS.TRANSACTIONS, db);
-                    console.log("[Monexa] Registro actualizado en DB con datos reales.");
-
-                    if (typeof UI !== 'undefined' && UI.refreshDashboard) {
-                        UI.refreshDashboard();
-                    }
-                    window.dispatchEvent(new CustomEvent('mx-db-updated'));
+                    if (typeof UI !== 'undefined' && UI.refreshDashboard) UI.refreshDashboard();
                 }
             }
-        } else {
-            console.warn("[Monexa] No se pudo extraer información real del comprobante tras 5 segundos.");
         }
     }
 };

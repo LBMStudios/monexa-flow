@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const footerInfo = document.getElementById('footer-info');
     if (footerInfo) {
         footerInfo.innerHTML =
-            `<b>Versión 1.0 (V1)</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
+            `<b>Versión 1.2 (V1.2)</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
     }
 
     // Cargar datos
@@ -1010,16 +1010,6 @@ function renderTable(records) {
                 <td class="td-concepto" title="${esc(r.concepto || '')}">
                     ${esc((r.concepto || '').substring(0, 45))}${(r.concepto || '').length > 45 ? '…' : ''}
                 </td>
-                <td class="td-extra" 
-                    style="cursor:pointer;"
-                    data-extra="${esc(r.extra || '')}">
-                    ${r.extra ? `
-                        <div class="extra-badge-container" title="Click para ver comprobante completo">
-                            <span class="extra-icon">&#128142;</span>
-                            <span class="extra-text">VER DETALLE</span>
-                        </div>
-                    ` : '<span style="opacity:0.2">—</span>'}
-                </td>
                 <td class="td-importe" style="color:${debe ? '#DC2626' : '#ccc'}">${esc(debe || '—')}</td>
                 <td class="td-importe" style="color:${haber ? '#059669' : '#ccc'}">${esc(haber || '—')}</td>
                 <td class="td-importe" style="font-weight:600">${esc(saldo || '—')}</td>
@@ -1132,7 +1122,6 @@ ${filterNote}
   <td style="${cb} background:#EC7000; color:#FFF; font-weight:700; text-align:center; width:40px;">N&#176;</td>
   <td style="${cb} background:#EC7000; color:#FFF; font-weight:700; width:90px;">FECHA</td>
   <td style="${cb} background:#EC7000; color:#FFF; font-weight:700; width:220px;">CONCEPTO</td>
-  <td style="${cb} background:#EC7000; color:#FFF; font-weight:700; width:150px;">INFO_EXTRA</td>
   <td style="${cb} background:#EC7000; color:#FFF; font-weight:700; text-align:right; width:90px;">DEBE</td>
   <td style="${cb} background:#EC7000; color:#FFF; font-weight:700; text-align:right; width:90px;">HABER</td>
   <td style="${cb} background:#EC7000; color:#FFF; font-weight:700; text-align:right; width:100px;">SALDO</td>
@@ -1154,7 +1143,6 @@ ${filterNote}
   <td style="${cb} background:${z}; text-align:center; color:#9CA3AF;">${i + 1}</td>
   <td style="${cb} background:${z};">${e(r.fecha || '')}</td>
   <td style="${cb} background:${z};">${e(r.concepto || '')}</td>
-  <td style="${cb} background:${z}; color:#B45309; font-size:9pt;">${e(r.extra || '')}</td>
   <td style="${cb} background:${z}; text-align:right; font-family:Consolas,monospace; color:${deb ? '#DC2626' : '#D1D5DB'};">${e(deb || '\u2014')}</td>
   <td style="${cb} background:${z}; text-align:right; font-family:Consolas,monospace; color:${hab ? '#059669' : '#D1D5DB'};">${e(hab || '\u2014')}</td>
   <td style="${cb} background:${z}; text-align:right; font-family:Consolas,monospace; font-weight:600;">${e(sal || '\u2014')}</td>
@@ -1245,7 +1233,7 @@ async function exportRawCSV() {
 
     // Cabeceras (UTF-8 con BOM para Excel)
     const headers = [
-        "Fecha", "Concepto", "Info Extra (Bruta)", "Debito", "Credito", 
+        "Fecha", "Concepto", "Debito", "Credito", 
         "Saldo", "Etiqueta", "Nota", "Estado", "Auditor", "Timestamp"
     ];
 
@@ -1253,7 +1241,6 @@ async function exportRawCSV() {
         return [
             r.fecha || '',
             r.concepto || '',
-            r.extra || '',
             r.debito || '',
             r.credito || '',
             r.saldo || r.importe || '',

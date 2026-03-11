@@ -48,9 +48,12 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, sans-serif;
+    font-family: 'Outfit', -apple-system, sans-serif;
     background: #000;
-    background-image: radial-gradient(circle at 50% 10%, rgba(236, 112, 0, 0.1) 0%, #000 80%);
+    background-image: 
+        radial-gradient(circle at 10% 0%, rgba(236, 112, 0, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 100%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+        #0a0c12;
     color: var(--slate);
     font-size: 14px;
     min-height: 100vh;
@@ -159,10 +162,10 @@ body {
 }
 
 .dash-title {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 800;
     color: white;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.5px;
 }
 
 .dash-subtitle {
@@ -190,7 +193,7 @@ body {
     background: rgba(15, 17, 21, 0.5);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 12px 32px;
+    padding: 10px 32px;
 }
 
 .filters-row {
@@ -203,8 +206,8 @@ body {
 }
 
 .filters-date-row {
-    margin-top: 12px;
-    padding-top: 12px;
+    margin-top: 8px;
+    padding-top: 8px;
     border-top: 1px solid var(--border);
     align-items: center;
 }
@@ -226,17 +229,16 @@ body {
 .filter-input,
 .filter-select {
     color-scheme: dark;
-    /* Fuerza a que el dropdown nativo sea oscuro si el navegador lo soporta */
     padding: 8px 12px;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
+    border-radius: 10px;
+    font-size: 12px;
+    font-family: 'Outfit', sans-serif;
     color: var(--slate);
     background: rgba(255, 255, 255, 0.03);
     outline: none;
-    transition: all 0.2s;
-    min-width: 200px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    min-width: 160px;
 }
 
 .filter-select {
@@ -258,9 +260,8 @@ body {
 
 .filter-select option {
     background-color: #1a1c23;
-    /* Coherente con el tema oscuro */
     color: #fff;
-    padding: 10px;
+    padding: 8px;
 }
 
 .filter-input:focus,
@@ -271,7 +272,7 @@ body {
 }
 
 .filter-date {
-    min-width: 150px;
+    min-width: 130px;
     cursor: pointer;
 }
 
@@ -283,10 +284,10 @@ body {
 }
 
 .date-preset {
-    padding: 6px 14px;
+    padding: 4px 12px;
     border: 1px solid var(--border);
-    border-radius: 20px;
-    font-size: 12px;
+    border-radius: 18px;
+    font-size: 11px;
     font-weight: 600;
     font-family: 'Inter', sans-serif;
     color: var(--muted);
@@ -324,17 +325,17 @@ body {
 
 /* ===== Botón Aplicar ===== */
 .btn-apply {
-    padding: 10px 24px;
+    padding: 8px 18px;
     border: none;
-    border-radius: 10px;
-    font-size: 13px;
+    border-radius: 8px;
+    font-size: 12px;
     font-weight: 700;
     font-family: 'Inter', sans-serif;
     color: white;
     background: linear-gradient(135deg, var(--itau-orange), var(--itau-orange-hover));
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 4px 12px hsla(var(--itau-orange-h), 100%, 46%, 0.25);
+    box-shadow: 0 4px 10px hsla(var(--itau-orange-h), 100%, 46%, 0.2);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -374,7 +375,7 @@ body {
     gap: 8px;
     position: relative;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .kpi-card::before {
@@ -429,9 +430,9 @@ body {
 }
 
 .kpi-value {
-    font-size: 34px;
+    font-size: 38px;
     font-weight: 800;
-    letter-spacing: -1px;
+    letter-spacing: -1.5px;
     line-height: 1;
 }
 
@@ -1227,6 +1228,25 @@ tbody td {
 
 .btn-orb-primary:hover {
     opacity: 0.9;
+}
+
+.btn-orb-secondary {
+    padding: 8px 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-orb-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
 }
 
 /* HERO SECTION */

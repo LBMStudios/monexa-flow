@@ -34,7 +34,7 @@ const DB_Engine = {
         });
     },
 
-    async commit(key, data) {
+    async commit(key, data, doCloudSync = true) {
         return new Promise((resolve) => {
             try {
                 if (!chrome.runtime?.id) { resolve(false); return; }
@@ -45,6 +45,14 @@ const DB_Engine = {
                         resolve(false);
                         return;
                     }
+                    
+                    // Sincronización Transparente con Firebase (SOLO USUARIOS)
+                    if (doCloudSync && typeof CloudConnector !== 'undefined') {
+                        if (key === KEYS.USERS) {
+                            CloudConnector.pushRemoteUsers(data);
+                        }
+                    }
+
                     resolve(true);
                 });
             } catch (e) {

@@ -85,16 +85,16 @@ const UIStyles = {
             #mx-control-panel {
                 position: fixed;
                 top: 0;
-                right: -420px;
-                width: 400px;
+                right: -400px;
+                width: 380px;
                 height: 100vh;
-                background: rgba(15, 20, 35, 0.92);
-                backdrop-filter: blur(24px) saturate(1.5);
-                -webkit-backdrop-filter: blur(24px) saturate(1.5);
+                background: rgba(10, 15, 25, 0.94);
+                backdrop-filter: blur(32px) saturate(1.8);
+                -webkit-backdrop-filter: blur(32px) saturate(1.8);
                 z-index: 100000;
-                box-shadow: -20px 0 60px rgba(0,0,0,0.5);
-                border-left: 1px solid rgba(255,255,255,0.06);
-                transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: -20px 0 80px rgba(0,0,0,0.6);
+                border-left: 1px solid rgba(255,255,255,0.08);
+                transition: right 0.6s cubic-bezier(0.16, 1, 0.3, 1);
                 display: flex;
                 flex-direction: column;
                 font-family: 'Inter', sans-serif;

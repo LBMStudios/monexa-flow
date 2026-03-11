@@ -1,67 +1,31 @@
 /**
  * users.js - MONEXA FLOW
- * Lógica para el panel de administración de auditores.
+ * Lógica para el panel de administración de auditores con Sincronización Firebase.
  */
 
 'use strict';
 
-const KEYS = {
-    SETTINGS: "mx_db_settings_v65",
-    USERS: "mx_db_users_v65"
-};
-
 let allUsers = [];
 
-function storageGet(key, fallback) {
-    return new Promise(resolve => {
-        try {
-            const storage = chrome.storage.local;
-            storage.get([key], res => {
-                if (chrome.runtime.lastError) { resolve(fallback); return; }
-                resolve(res[key] ?? fallback);
-            });
-        } catch (_) { resolve(fallback); }
-    });
-}
-
-function storageSet(key, data) {
-    return new Promise(resolve => {
-        try {
-            const storage = chrome.storage.local;
-            storage.set({ [key]: data }, () => {
-                if (chrome.runtime.lastError) { resolve(false); return; }
-                resolve(true);
-            });
-        } catch (_) { resolve(false); }
-    });
-}
-
+/**
+ * Guarda los usuarios localmente y los empuja a la nube (Firebase).
+ */
 async function saveUsersToDB(usersArray) {
-    await storageSet(KEYS.USERS, usersArray);
+    // 1. Guardar localmente
+    await DB_Engine.commit(KEYS.USERS, usersArray);
 
-    // Sincronización transparente Bidireccional con Firebase RTDB
-    const config = await storageGet(KEYS.SETTINGS, {});
-    let masterUrl = config.remote_admin_url;
-
-    if (masterUrl && masterUrl.includes('firebaseio.com')) {
-        if (!masterUrl.endsWith('/')) masterUrl += '/';
-        const fetchUrl = masterUrl + 'users.json';
-
-        try {
-            await fetch(fetchUrl, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(usersArray)
-            });
-        } catch (e) {
-            console.warn("No se pudo conectar con Firebase en el guardado bidireccional:", e);
+    // 2. Empujar a la nube si está configurado
+    if (typeof CloudConnector !== 'undefined') {
+        const success = await CloudConnector.pushRemoteUsers(usersArray);
+        if (!success) {
+            console.warn("No se pudo sincronizar con Firebase. Los cambios son locales.");
         }
     }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Validar que sea admin el que accede
-    const config = await storageGet(KEYS.SETTINGS, {});
+    const config = await DB_Engine.fetch(KEYS.SETTINGS, {});
     const role = config.role || 'user';
     const me = config.user || 'Desconocido';
 
@@ -72,18 +36,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const now = new Date();
-    document.getElementById('dash-meta').innerHTML =
-        `Auditor: <b style="color:white">${me.toUpperCase()}</b> (ADMIN)<br>` +
-        now.toLocaleDateString('es-UY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const metaDiv = document.getElementById('dash-meta');
+    if (metaDiv) {
+        metaDiv.innerHTML =
+            `Auditor: <b style="color:white">${me.toUpperCase()}</b> (ADMIN)<br>` +
+            now.toLocaleDateString('es-UY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    // --- Sincronización Inicial con la Nube ---
+    // Intentamos traer lo más nuevo de Firebase antes de mostrar la lista
+    if (typeof CloudConnector !== 'undefined') {
+        await CloudConnector.syncRemoteUsers();
+    }
 
     await loadUsers();
 
     // Evento del botón agregar
-    document.getElementById('btn-add-user').addEventListener('click', addUser);
+    const btnAdd = document.getElementById('btn-add-user');
+    if (btnAdd) btnAdd.addEventListener('click', addUser);
 });
 
 async function loadUsers() {
-    allUsers = await storageGet(KEYS.USERS, []);
+    allUsers = await DB_Engine.fetch(KEYS.USERS, []);
     renderUsers();
 }
 
@@ -94,23 +68,26 @@ function esc(str) {
 }
 
 function renderUsers() {
-    document.getElementById('users-count').textContent = `${allUsers.length} usuarios`;
+    const countSpan = document.getElementById('users-count');
+    if (countSpan) countSpan.textContent = `${allUsers.length} usuarios`;
+    
     const tbody = document.getElementById('users-tbody');
+    if (!tbody) return;
 
     if (allUsers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;">No hay usuarios registrados</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;">No hay usuarios registrados</td></tr>';
         return;
     }
 
     tbody.innerHTML = allUsers.map((u, i) => {
-        const isEnabled = u.enabled !== false; // por defecto true
+        const isEnabled = u.enabled !== false;
 
         const roleClass = u.role === 'admin' ? 'role-admin' : 'role-user';
         const roleText = u.role === 'admin' ? 'Administrador' : 'Usuario';
 
         const statusHtml = isEnabled
             ? `<span style="color:#10b981;font-weight:600;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;background:#10b981;border-radius:50%;"></span> Activo</span>`
-            : `<span style="color:#ef4444;font-weight:600;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;background:#ef4444;border-radius:50%;"></span> Deshabilitado</span>`;
+            : `<span style="color:#ef4444;font-weight:600;display:flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;background:#ef4444;border-radius:50%;"></span> Inactivo</span>`;
 
         const actionBtn = isEnabled
             ? `<button class="user-action-btn btn-danger toggle-btn" data-index="${i}" data-status="false">Inhabilitar</button>`
@@ -118,17 +95,27 @@ function renderUsers() {
 
         const deleteBtn = `<button class="user-action-btn delete-btn" data-index="${i}" style="margin-left:8px; border-color: rgba(255,255,255,0.1);">&times;</button>`;
 
+        const lastActiveText = u.lastActive 
+            ? new Date(u.lastActive).toLocaleString('es-UY', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+            : '---';
+
         return `
             <tr>
                 <td style="font-weight:600;">${esc(u.name)}</td>
                 <td><span class="role-badge ${roleClass}">${roleText}</span></td>
+                <td style="text-align: center;">
+                    <span style="background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 11px;">
+                        ${u.loginCount || 0}
+                    </span>
+                </td>
+                <td style="font-size: 11px; opacity: 0.8; font-variant-numeric: tabular-nums;">${lastActiveText}</td>
                 <td>${statusHtml}</td>
                 <td style="text-align: center;">${actionBtn}${deleteBtn}</td>
             </tr>
         `;
     }).join('');
 
-    // Attach event listeners dynamically to respect CSP
+    // Attach event listeners
     document.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.index, 10);
@@ -155,7 +142,6 @@ async function addUser() {
         return;
     }
 
-    // Chequear duplicados
     const exists = allUsers.find(u => u.name.toLowerCase() === name.toLowerCase());
     if (exists) {
         alert("Ya existe un usuario con ese nombre.");
@@ -165,19 +151,18 @@ async function addUser() {
     allUsers.push({
         name: name,
         role: roleSelect.value || 'user',
-        enabled: true
+        enabled: true,
+        loginCount: 0,
+        lastActive: null
     });
 
     await saveUsersToDB(allUsers);
-
     nameInput.value = '';
-
     renderUsers();
 }
 
 async function toggleUser(index, enableStatus) {
     if (index >= 0 && index < allUsers.length) {
-        // Validación: No permitir deshabilitar al último admin
         if (!enableStatus && allUsers[index].role === 'admin') {
             const activeAdmins = allUsers.filter(u => u.role === 'admin' && (u.enabled !== false)).length;
             if (activeAdmins <= 1) {
@@ -190,12 +175,11 @@ async function toggleUser(index, enableStatus) {
         await saveUsersToDB(allUsers);
         renderUsers();
     }
-};
+}
+
 async function deleteUser(index) {
     if (index >= 0 && index < allUsers.length) {
         const userToDelete = allUsers[index];
-
-        // Validación: No permitir borrar al último admin activo
         if (userToDelete.role === 'admin') {
             const admins = allUsers.filter(u => u.role === 'admin' && (u.enabled !== false));
             if (admins.length <= 1 && userToDelete.enabled !== false) {

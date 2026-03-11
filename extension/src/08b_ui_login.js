@@ -15,85 +15,96 @@ const UILogin = {
         overlay.id = 'mx-welcome-overlay';
         overlay.style.cssText = `
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 10%, rgba(236, 112, 0, 0.25) 0%, rgba(15, 20, 35, 0.98) 60%);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            background: radial-gradient(circle at 50% 0%, rgba(236, 112, 0, 0.15) 0%, rgba(10, 12, 18, 0.98) 70%);
+            backdrop-filter: blur(30px) saturate(160%); -webkit-backdrop-filter: blur(30px) saturate(160%);
             z-index: 200000; display: flex; align-items: center; justify-content: center;
-            font-family: 'Inter', sans-serif;
-            animation: mx-fade-in 0.8s cubic-bezier(0.1, 0, 0.1, 1);
+            font-family: 'Outfit', sans-serif;
+            animation: mx-fade-in 1.2s cubic-bezier(0.16, 1, 0.3, 1);
         `;
 
         overlay.innerHTML = `
             <style>
-                @keyframes mx-fade-in { from { opacity: 0; backdrop-filter: blur(0px); } to { opacity: 1; backdrop-filter: blur(20px); }}
-                @keyframes mx-slide-up { from { opacity: 0; transform: translateY(40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); }}
-                @keyframes mx-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); }}
+                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+                @keyframes mx-fade-in { from { opacity: 0; } to { opacity: 1; }}
+                @keyframes mx-slide-up { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: translateY(0); }}
+                @keyframes mx-orb-pulse { 0%, 100% { transform: scale(1); opacity: 0.2; } 50% { transform: scale(1.1); opacity: 0.3; }}
             </style>
             <div style="
-                background: rgba(20, 25, 45, 0.7);
+                background: rgba(255, 255, 255, 0.03);
                 border: 1px solid rgba(255,255,255,0.08);
-                padding: 50px;
-                border-radius: 24px;
-                width: 440px;
+                padding: 60px 40px;
+                border-radius: 32px;
+                width: 460px;
                 text-align: center;
-                box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-                animation: mx-slide-up 1s cubic-bezier(0.1, 0, 0.1, 1) forwards;
+                box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.1);
+                animation: mx-slide-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                 position: relative;
                 overflow: hidden;
             ">
-                <div style="position: absolute; top: -100px; left: -100px; width: 250px; height: 250px; background: radial-gradient(circle, rgba(236,112,0,0.15) 0%, transparent 70%); border-radius: 50%;"></div>
+                <!-- Orb decorativo -->
+                <div style="
+                    position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+                    width: 200px; height: 200px;
+                    background: radial-gradient(circle, rgba(236,112,0,0.4) 0%, transparent 70%);
+                    z-index: -1; animation: mx-orb-pulse 4s infinite ease-in-out;
+                "></div>
                 
-                <div style="animation: mx-float 6s ease-in-out infinite;">
-                    <h1 style="color: white; font-size: 56px; margin: 0 0 10px 0; font-weight: 900; letter-spacing: -2px; line-height: 1;">MX</h1>
-                    <h2 style="color: ${PALETTE.itau_orange}; font-size: 20px; font-weight: 700; margin: 0 0 40px 0; text-transform: uppercase; letter-spacing: 4px;">Auditoría Flow</h2>
+                <div style="margin-bottom: 40px;">
+                    <h1 style="color: white; font-size: 64px; margin: 0; font-weight: 800; letter-spacing: -3px; line-height: 1;">MX</h1>
+                    <div style="
+                        display: inline-block; padding: 4px 12px; background: rgba(236,112,0,0.1);
+                        border-radius: 8px; margin-top: 10px; color: ${PALETTE.itau_orange};
+                        font-size: 11px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+                    ">Control de Auditoría</div>
                 </div>
                 
-                <p style="color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 35px; line-height: 1.6; max-width: 320px; margin-left: auto; margin-right: auto;">
-                    Ingresa tu <b>Identificador de Auditor</b> para asignar tus cambios a los movimientos bancarios.
+                <p style="color: rgba(255,255,255,0.6); font-size: 16px; margin-bottom: 40px; line-height: 1.6; font-family: 'Outfit', sans-serif;">
+                    Bienvenido a <b>Monexa Flow</b>.<br>Ingresa tu Identificador para comenzar el seguimiento.
                 </p>
 
-                <input type="text" id="mx-init-user" placeholder="Ej: JPEREZ..." autocomplete="off" style="
-                    width: 100%;
-                    padding: 16px 20px;
-                    border-radius: 12px;
-                    border: 1px solid rgba(255,255,255,0.15);
-                    background: rgba(0,0,0,0.2);
-                    color: white;
-                    font-size: 16px;
-                    margin-bottom: 25px;
-                    box-sizing: border-box;
-                    text-align: center;
-                    font-weight: 600;
-                    letter-spacing: 1px;
-                    transition: all 0.3s;
-                    box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
-                " onfocus="this.style.borderColor='${PALETTE.itau_orange}'; this.style.background='rgba(0,0,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.15)'; this.style.background='rgba(0,0,0,0.2)'">
+                <div style="position: relative; margin-bottom: 25px;">
+                    <input type="text" id="mx-init-user" placeholder="USUARIO..." autocomplete="off" style="
+                        width: 100%;
+                        padding: 20px;
+                        border-radius: 16px;
+                        border: 1px solid rgba(255,255,255,0.1);
+                        background: rgba(0,0,0,0.3);
+                        color: white;
+                        font-family: 'Outfit', sans-serif;
+                        font-size: 18px;
+                        box-sizing: border-box;
+                        text-align: center;
+                        font-weight: 700;
+                        letter-spacing: 2px;
+                        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                        box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);
+                    " onfocus="this.style.borderColor='${PALETTE.itau_orange}'; this.style.background='rgba(0,0,0,0.5)'; this.style.boxShadow='0 0 0 4px rgba(236,112,0,0.1), inset 0 4px 20px rgba(0,0,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(0,0,0,0.3)'; this.style.boxShadow='inset 0 4px 20px rgba(0,0,0,0.4)'">
+                </div>
                 
                 <button id="mx-init-btn" style="
                     width: 100%;
-                    padding: 16px;
-                    border-radius: 12px;
+                    padding: 20px;
+                    border-radius: 16px;
                     border: none;
-                    background: linear-gradient(135deg, ${PALETTE.itau_orange} 0%, #cc5f00 100%);
+                    background: ${PALETTE.itau_orange};
                     color: white;
-                    font-weight: 700;
-                    font-size: 16px;
+                    font-weight: 800;
+                    font-size: 18px;
                     cursor: pointer;
                     margin-bottom: 30px;
-                    transition: all 0.3s;
-                    box-shadow: 0 10px 20px rgba(236,112,0,0.3);
-                    font-family: 'Inter', sans-serif;
-                    letter-spacing: 0.5px;
-                    position: relative;
-                    overflow: hidden;
-                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 25px rgba(236,112,0,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px rgba(236,112,0,0.3)'">
-                    Entrar al Sistema →
+                    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                    box-shadow: 0 10px 30px rgba(236,112,0,0.3);
+                    font-family: 'Outfit', sans-serif;
+                    letter-spacing: 1px;
+                " onmouseover="this.style.transform='translateY(-4px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(236,112,0,0.4)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(236,112,0,0.3)'">
+                    ACCEDER AL FLUJO
                 </button>
 
-                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.4); font-size: 11px;">
-                    <span style="font-size: 13px;">🔒</span>
-                    <p style="margin: 0; line-height: 1.4; text-align: left; max-width: 280px;">
-                        <b>Seguro y de solo lectura.</b> Monexa no requiere contraseñas, no tiene acceso a tus fondos, ni puede realizar transacciones o mover dinero.
-                    </p>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; color: rgba(255,255,255,0.4); font-size: 12px; text-align: left;">
+                    <div style="font-size: 24px;">🛡️</div>
+                    <div style="line-height: 1.4;">
+                        <b>Entorno Seguro LBM.</b> Esta extensión opera localmente. Sus datos bancarios nunca salen de su navegador.
+                    </div>
                 </div>
             </div>
         `;
@@ -112,8 +123,20 @@ const UILogin = {
                 // Primer ingreso global, creación del dueño (admin)
                 if (user.toLowerCase() === 'admin') {
                     role = 'admin';
-                    users.push({ name: 'admin', role: role, enabled: true });
+                    users.push({ 
+                        name: 'admin', 
+                        role: role, 
+                        enabled: true,
+                        loginCount: 1,
+                        lastActive: new Date().toISOString()
+                    });
                     await DB_Engine.commit(KEYS.USERS, users);
+                    
+                    // Sincronizar con Firebase de inmediato si está configurado
+                    if (typeof CloudConnector !== 'undefined') {
+                        await CloudConnector.pushRemoteUsers(users);
+                    }
+
                     await Logger.info(`Primer acceso: cuenta master (admin) creada.`);
                     alert(`¡Bienvenido! Has sido registrado como Administrador del sistema.`);
                 } else {
@@ -127,15 +150,26 @@ const UILogin = {
                 const showErrorScreen = (icon, title, message) => {
                     const overlay = document.getElementById('mx-welcome-overlay');
                     if (overlay) {
-                        overlay.style.backgroundImage = 'radial-gradient(circle at 50% 10%, rgba(239, 68, 68, 0.6) 0%, #200 60%)';
+                        overlay.style.background = 'radial-gradient(circle at 50% 10%, rgba(225, 29, 72, 0.2) 0%, #0a0c12 70%)';
                         overlay.style.animation = 'none';
                         overlay.children[0].innerHTML = `
-                            <div style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 50%;">
+                            <div style="
+                                width: 80px; height: 80px; margin: 0 auto 30px; 
+                                display: flex; align-items: center; justify-content: center; 
+                                background: rgba(225, 29, 72, 0.1); border: 1px solid rgba(225, 29, 72, 0.2); 
+                                border-radius: 24px; box-shadow: 0 10px 30px rgba(225, 29, 72, 0.1);
+                            ">
                                 <span style="font-size: 32px;">${icon}</span>
                             </div>
-                            <h2 style="font-size: 28px; font-weight: 800; margin: 0 0 16px 0; color: #fca5a5; letter-spacing: -0.5px;">${title}</h2>
-                            <p style="font-size: 15px; color: rgba(255,255,255,0.7); margin: 0 auto 40px auto; line-height: 1.5; max-width: 320px;">${message}</p>
-                            <button id="mx-btn-error-back" style="padding: 14px 32px; background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 99px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">Volver a intentar</button>
+                            <h2 style="font-size: 28px; font-weight: 800; margin: 0 0 16px 0; color: white; letter-spacing: -1px; font-family: 'Outfit', sans-serif;">${title}</h2>
+                            <p style="font-size: 15px; color: rgba(255,255,255,0.5); margin: 0 auto 40px auto; line-height: 1.6; max-width: 320px; font-family: 'Outfit', sans-serif;">${message}</p>
+                            <button id="mx-btn-error-back" style="
+                                width: 100%; padding: 18px; 
+                                background: rgba(255,255,255,0.05); color: white; 
+                                border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; 
+                                font-weight: 700; font-family: 'Outfit', sans-serif;
+                                cursor: pointer; transition: all 0.3s;
+                            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">VOLVER A INTENTAR</button>
                         `;
                         document.getElementById('mx-btn-error-back').onclick = () => window.location.reload();
                     }
@@ -150,6 +184,16 @@ const UILogin = {
                     return;
                 }
                 role = foundUser.role || 'user';
+
+                // Actualizar estadísticas de acceso
+                foundUser.loginCount = (foundUser.loginCount || 0) + 1;
+                foundUser.lastActive = new Date().toISOString();
+                await DB_Engine.commit(KEYS.USERS, users);
+
+                // Sincronizar con Firebase de inmediato si está configurado
+                if (typeof CloudConnector !== 'undefined') {
+                    await CloudConnector.pushRemoteUsers(users);
+                }
             }
 
             // Iniciar sesión y guardar contexto
