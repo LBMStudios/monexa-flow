@@ -1,8 +1,8 @@
 {
-  "version": "1.1.0",
-  "name": "Monexa Flow 1.1.0",
+  "version": "1.2.0",
+  "name": "Monexa Flow 1.2.0",
   "url": "https://monexa-flow.vercel.app/archive.zip",
-  "changelog": "Mejoras en el dashboard y sistema de notificaciones de actualización."
+  "changelog": "Nuevo Panel Maestro Administrativo, notas personalizadas en reglas y autocompletado inteligente de movimientos."
 }
 
 
