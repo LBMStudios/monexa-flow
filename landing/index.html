@@ -59,7 +59,7 @@
             <div class="hero-content">
                 <div class="badge-new">
                     <span class="badge-pulse"></span>
-                    v1.2.4 ahora disponible
+                    v1.2.5 ahora disponible
                 </div>
                 <h1 class="hero-title">Tu flujo bancario, finalmente bajo control.</h1>
                 <p class="hero-subtitle">
@@ -82,13 +82,46 @@
                 </div>
             </div>
             <div class="hero-visual">
-                <div class="glass-mockup-container">
-                    <img src="https://monexa-flow.vercel.app/assets/img/hero-preview.png" alt="Monexa Flow Preview" class="hero-screenshot">
-                    <div class="scan-overlay">
-                        <div class="scan-line"></div>
-                        <div class="scan-status">
-                            <span class="status-dot"></span>
-                            ESCANEANDO MOVIMIENTOS...
+                <!-- Mockup del Banco (Itaú Style) -->
+                <div class="bank-mockup-bg">
+                    <div style="height: 60px; background: #fff; border-bottom: 2px solid #EC7000; margin-bottom: 20px; display: flex; align-items: center; padding: 0 20px;">
+                        <div style="width: 100px; height: 30px; background: #eee; border-radius: 4px;"></div>
+                    </div>
+                    <div class="bank-row"><span>08 MAR 2026</span><span>TRANSFERENCIA RECIBIDA</span><span style="color:#10b981;">+ $45.000,00</span></div>
+                    <div class="bank-row highlight"><span>09 MAR 2026</span><span>PAGO DE SERVICIOS</span><span style="color:#ef4444;">- $12.300,00</span></div>
+                    <div class="bank-row"><span>10 MAR 2026</span><span>COMPRA EN COMERCIO</span><span style="color:#ef4444;">- $2.500,00</span></div>
+                    <div class="bank-row"><span>11 MAR 2026</span><span>ABONO DE HABERES</span><span style="color:#10b981;">+ $150.000,00</span></div>
+                </div>
+
+                <!-- Mockup de Monexa Sidebar (Fiel a la App) -->
+                <div class="monexa-sidebar-mockup">
+                    <div class="sidebar-header-mockup">
+                        <div style="width: 50px; height: 50px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-family: 'Outfit'; font-size: 20px;">MX</div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 700; font-family: 'Outfit';">Control Center</div>
+                            <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Audit Active</div>
+                        </div>
+                    </div>
+                    <div class="sidebar-body-mockup">
+                        <div class="mx-card-mockup">
+                            <h4 style="font-size: 10px; color: var(--text-dim); margin-bottom: 10px;">ESTADÍSTICAS</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 700;">84</div>
+                                    <div style="font-size: 8px; color: var(--primary);">MOVIMIENTOS</div>
+                                </div>
+                                <div style="flex: 1; text-align: center;">
+                                    <div style="font-size: 18px; font-weight: 700;">12</div>
+                                    <div style="font-size: 8px; color: var(--green);">ALERTAS</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mx-card-mockup active" style="display:flex; align-items:center; gap:15px;">
+                            <div class="pulse-primary"></div>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 700;">Capturando Datos...</div>
+                                <div style="font-size: 9px; color: var(--text-dim);">Detectando transacciones en tiempo real</div>
+                            </div>
                         </div>
                     </div>
                 </div>
