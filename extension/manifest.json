@@ -1,0 +1,62 @@
+{
+  "manifest_version": 3,
+  "name": "Monexa Flow V1 — Auditoría Bancaria",
+  "version": "1.0.0",
+  "icons": {
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "*://*.itau.com.uy/*",
+    "*://*.itaulink.com.uy/*"
+  ],
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://personas.itau.com.uy/*",
+        "https://www.itaulink.com.uy/*"
+      ],
+      "css": [
+        "style.css"
+      ],
+      "js": [
+        "src/00_config.js",
+        "src/01_db.js",
+        "src/02_logger.js",
+        "src/03_system.js",
+        "src/04_data.js",
+        "src/05_filesystem.js",
+        "src/06_scanner.js",
+        "src/07_search.js",
+        "src/08a_ui_styles.js",
+        "src/08b_ui_login.js",
+        "src/08_ui.js",
+        "src/09_cloud.js",
+        "src/09_boot.js"
+      ],
+      "all_frames": true
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "analytics/dashboard.html",
+        "analytics/dashboard.js",
+        "analytics/dashboard.css",
+        "docs/*"
+      ],
+      "matches": [
+        "https://personas.itau.com.uy/*",
+        "https://www.itaulink.com.uy/*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,315 @@
+/* MONEXA FINANCIAL OS - ENTERPRISE DESIGN SYSTEM */
+
+:root {
+    --mx-bg-dark: #0a0a0a;
+    --mx-bg-panel: rgba(10, 11, 14, 0.85);
+    --mx-accent: #10b981;
+    /* Verde Monexa */
+    --mx-warning: #f59e0b;
+    --mx-shadow-deep: 0 24px 48px -12px rgba(0, 0, 0, 0.7);
+    --mx-border: rgba(255, 255, 255, 0.1);
+    --mx-glass-deep: blur(25px) saturate(180%);
+}
+
+/* 1. CONTENEDOR RAÍZ Y BOTÓN FLOTANTE */
+#mx-root {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--mx-text-main);
+}
+
+.mx-floating-controls {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 999999;
+}
+
+#mx-main-avatar {
+    width: 50px;
+    height: 50px;
+    background: var(--mx-accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--mx-shadow);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid var(--mx-border);
+}
+
+#mx-main-avatar:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* 2. PANEL PRINCIPAL (GLASSMORPHISM) */
+#mx-menu-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 320px;
+    max-height: 85vh;
+    background: var(--mx-bg-panel);
+    backdrop-filter: var(--mx-glass-deep);
+    -webkit-backdrop-filter: var(--mx-glass-deep);
+    border: 1px solid var(--mx-border);
+    border-radius: 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--mx-shadow-deep);
+    z-index: 999998;
+    overflow: hidden;
+    animation: mx-slide-in 0.4s ease-out;
+}
+
+@keyframes mx-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mx-header {
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--mx-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 900;
+}
+
+/* 3. DASHBOARD & KPIs */
+.mx-kpi-card {
+    padding: 25px 20px;
+    text-align: center;
+}
+
+.mx-kpi-card small {
+    color: var(--mx-text-dim);
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.mx-neto {
+    font-size: 32px;
+    font-weight: 800;
+    margin-top: 5px;
+}
+
+.mx-neto.pos {
+    color: #4caf50;
+}
+
+.mx-neto.neg {
+    color: #ff5252;
+}
+
+/* 4. LISTADO DE CATEGORÍAS */
+.mx-category-list {
+    padding: 10px 20px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.mx-cat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 12px;
+}
+
+.mx-cat-name {
+    color: var(--mx-text-dim);
+}
+
+.mx-cat-val {
+    font-weight: 600;
+}
+
+.mx-cat-val.pos {
+    color: #4caf50;
+}
+
+/* 5. INYECCIÓN EN TABLAS DEL BANCO */
+.col-audit {
+    width: 250px !important;
+    padding: 5px !important;
+    vertical-align: middle !important;
+}
+
+.mx-audit-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.mx-audit-wrapper:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--mx-border);
+}
+
+.mx-btn-status {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.mx-btn-status[data-state="none"] {
+    background: #eee;
+    color: #333;
+}
+
+.mx-btn-status[data-state="verde"] {
+    background: var(--mx-accent);
+    color: white;
+}
+
+.mx-btn-status[data-state="amarillo"] {
+    background: var(--mx-warning);
+    color: white;
+}
+
+.mx-input-note {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 11px;
+    width: 100%;
+    outline: none;
+}
+
+/* 6. MODO NEGOCIO (RE-ESTRUCTURACIÓN) */
+.mx-business-group {
+    background: #e3f2fd !important;
+    /* Azul suave para destacar */
+    transition: all 0.3s;
+}
+
+.mx-business-group td {
+    border-bottom: 2px solid #1976d2 !important;
+}
+
+.mx-group-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+}
+
+.mx-group-title {
+    font-weight: 800;
+    color: #0d47a1;
+    font-size: 14px;
+}
+
+.mx-group-stats {
+    text-align: right;
+}
+
+.mx-group-stats strong {
+    display: block;
+    font-size: 18px;
+    color: #1a237e;
+}
+
+/* 7. ESTADOS VISUALES DE FILA */
+.mx-row-warning {
+    background: rgba(255, 152, 0, 0.08) !important;
+}
+
+/* 9. AUTO-MATCH GLOW */
+.mx-row-automatched {
+    position: relative;
+    background: rgba(245, 158, 11, 0.04) !important;
+}
+
+.mx-row-automatched::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--mx-warning);
+    box-shadow: 0 0 10px var(--mx-warning);
+}
+
+.mx-row-automatched .mx-audit-wrapper {
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* 8. BOTONES DE ACCIÓN */
+.mx-actions-grid {
+    padding: 20px;
+    display: grid;
+    gap: 10px;
+}
+
+.btn-ui,
+.mx-btn-primary,
+.mx-btn-secondary {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.mx-btn-primary {
+    background: var(--mx-accent);
+    color: white;
+}
+
+.mx-btn-secondary {
+    background: #333;
+    color: white;
+}
+
+.mx-btn-primary:hover {
+    filter: brightness(1.2);
+}
+
+.mx-btn-secondary:hover {
+    background: #444;
+}
+
+/* Scrollbar Personalizado */
+.mx-category-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mx-category-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mx-category-list::-webkit-scrollbar-thumb {
+    background: var(--mx-border);
+    border-radius: 10px;
+}

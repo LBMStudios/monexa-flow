@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monexa Flow — Control de Usuarios</title>
+    <link rel="stylesheet" href="dashboard.css?v=3.0.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .users-table-card {
+            margin-top: 24px;
+        }
+
+        .user-action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .user-action-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .user-action-btn.btn-danger {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .user-action-btn.btn-danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .user-action-btn.btn-success {
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .user-action-btn.btn-success:hover {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .add-user-form {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            overflow: visible;
+        }
+
+        .role-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .role-admin {
+            background: rgba(236, 112, 0, 0.15);
+            color: #ec7000;
+            border: 1px solid rgba(236, 112, 0, 0.3);
+        }
+
+        .role-user {
+            background: rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="orb-layout">
+        <!-- SIDEBAR -->
+        <aside class="orb-sidebar">
+            <div class="sidebar-brand">
+                <div class="dash-logo" style="width:24px;height:24px;font-size:12px;border-radius:6px;">MX</div>
+                <span class="brand-text">Monexa Flow</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item"><span class="icon">⊞</span> Dashboard</a>
+                <a href="#" class="nav-item active"><span class="icon">👥</span> Usuarios</a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="orb-main-content">
+            <!-- HEADER -->
+            <header class="orb-header">
+                <div class="header-greeting">
+                    Panel de Administración <span style="opacity:0.5;font-weight:400;margin-left:8px;font-size:12px;">|
+                        Gestión de Auditores</span>
+                </div>
+                <div class="header-actions">
+                    <div id="dash-meta" style="font-size: 12px; text-align: right; color: rgba(255,255,255,0.6);"></div>
+                </div>
+            </header>
+
+            <main class="dash-main">
+                <section class="orb-hero" style="min-height: auto; padding-bottom: 0;">
+                    <div class="hero-left" style="max-width: 100%;">
+                        <div class="spark-icon" style="color: #6366f1;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                        <h2 class="hero-title">Control de Acceso</h2>
+                        <p style="color: rgba(255,255,255,0.6); max-width: 600px; margin-top: 12px; line-height: 1.5;">
+                            Administra qué auditores tienen permiso para iniciar sesión y utilizar la extensión Monexa
+                            Flow.
+                            Solo los administradores pueden acceder a este panel.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="card table-card users-table-card">
+                    <div class="card-header">
+                        <h3>Auditores Registrados</h3>
+                        <span id="users-count" class="card-badge">0 usuarios</span>
+                    </div>
+
+                    <div style="padding: 0 24px;">
+                        <div class="add-user-form">
+                            <div class="filter-group" style="flex:1;">
+                                <label for="new-user-name">Nombre de Auditor</label>
+                                <input type="text" id="new-user-name" placeholder="Ej: Juan Perez" class="filter-input">
+                            </div>
+                            <div class="filter-group" style="width: 150px;">
+                                <label for="new-user-role">Rol</label>
+                                <select id="new-user-role" class="filter-select">
+                                    <option value="user">Usuario normal</option>
+                                    <option value="admin">Administrador</option>
+                                </select>
+                            </div>
+                            <button id="btn-add-user" class="btn-orb-primary"
+                                style="padding: 12px 24px; height: 42px;">Agregar Auditor</button>
+                        </div>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table id="users-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Rol</th>
+                                    <th>Estado</th>
+                                    <th style="width: 160px; text-align: center;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-tbody">
+                                <!-- Users rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <footer class="dash-footer">
+                    <span>Monexa Flow — Módulo de Administración</span>
+                </footer>
+            </main>
+        </div>
+    </div>
+    <script src="users.js?v=1.0.0"></script>
+</body>
+
+</html>

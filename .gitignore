@@ -1,0 +1,10 @@
+# Temporary files
+.gemini/
+tmp/
+*.log
+*.zip
+*.ps1
+
+# OS files
+.DS_Store
+Thumbs.db
