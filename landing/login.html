@@ -71,8 +71,8 @@
             }
         });
 
-        // Redirect if already authenticated
-        if (localStorage.getItem('mx_authenticated') === 'true') {
+        // Redirect if already authenticated with all required data
+        if (localStorage.getItem('mx_authenticated') === 'true' && localStorage.getItem('mx_user')) {
             window.location.href = 'index.html';
         }
     </script>
