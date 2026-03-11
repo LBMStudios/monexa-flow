@@ -237,7 +237,7 @@ const Scanner = {
                         fecha, concepto, extra, debito, credito, saldo,
                         moneda, direction, amount,
                         tag: matchRule ? matchRule.label : "",
-                        note: matchRule ? "Auto-Match" : "",
+                        note: matchRule ? (matchRule.note || "Auto-Match") : "",
                         status: matchRule ? "VERDE" : "NONE",
                         ruleColor: matchRule ? (matchRule.color || 'verde') : "",
                         user: config.user,
@@ -255,7 +255,7 @@ const Scanner = {
                     if (matchRule && (!record.tag || record.tag.trim().toLowerCase() === 'etiqueta') && (record.status === "NONE" || record.status === "PENDING")) {
                         // Acción retroactiva: Si ya existía sin etiquetar, le aplica la nueva regla
                         record.tag = matchRule.label;
-                        record.note = "Auto-Match (Retroactivo)";
+                        record.note = matchRule.note || "Auto-Match (Retroactivo)";
                         record.status = "VERDE";
                         record.ruleColor = matchRule.color || 'verde';
                         record.ts = new Date().toLocaleString();

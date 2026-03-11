@@ -674,6 +674,7 @@ const UI = {
                         <input type="text" id="mx-rule-pat" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Si el concepto contiene...">
                         <input type="text" id="mx-rule-amt" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Importe (Ej: 1540.00)">
                         <input type="text" id="mx-rule-lab" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Asignar etiqueta...">
+                        <input type="text" id="mx-rule-not" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Nota adicional (Ej: MUÑOZ)">
                         
                         <div style="margin: 10px 0;">
                             <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Color del Marcador:</div>
@@ -833,17 +834,20 @@ const UI = {
             const pat = document.getElementById('mx-rule-pat').value.trim();
             const amt = document.getElementById('mx-rule-amt').value.trim();
             const lab = document.getElementById('mx-rule-lab').value.trim();
+            const not = document.getElementById('mx-rule-not').value.trim();
             if (!pat || !lab) return;
 
             const rules = await DB_Engine.fetch(KEYS.RULES, []);
             const newRule = { pattern: pat, label: lab, color: _selectedRuleColor };
             if (amt) newRule.importe = amt;
+            if (not) newRule.note = not;
             rules.push(newRule);
             await DB_Engine.commit(KEYS.RULES, rules);
 
             document.getElementById('mx-rule-pat').value = "";
             document.getElementById('mx-rule-amt').value = "";
             document.getElementById('mx-rule-lab').value = "";
+            document.getElementById('mx-rule-not').value = "";
             // Reset color picker to verde
             _selectedRuleColor = 'verde';
             colorDots.forEach(d => {
@@ -1067,10 +1071,11 @@ const UI = {
             const ruleColorKey = r.color || 'verde';
             const ruleColor = RULE_COLORS[ruleColorKey] || RULE_COLORS.verde;
             const amtText = r.importe ? ` + $${escapeStr(r.importe)}` : '';
+            const noteText = r.note ? ` <i style="opacity:0.6;">(${escapeStr(r.note)})</i>` : '';
             return `
                     <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px; margin-bottom:6px;">
-                        <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(255,255,255,0.7); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeStr(r.pattern)}${r.importe ? ' + ' + escapeStr(r.importe) : ''} → ${escapeStr(r.label)} (${ruleColor.label})">
-                            <b style="color:rgba(255,255,255,0.9);">${escapeStr(r.pattern)}</b>${amtText} → <span style="background:${ruleColor.hex}; color:white; padding:2px 6px; border-radius:99px; font-weight:700; font-size:9px; vertical-align:middle; margin-left:4px;">${escapeStr(r.label)}</span>
+                        <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(255,255,255,0.7); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeStr(r.pattern)}${r.importe ? ' + ' + escapeStr(r.importe) : ''} → ${escapeStr(r.label)}${r.note ? ' [' + escapeStr(r.note) + ']' : ''} (${ruleColor.label})">
+                            <b style="color:rgba(255,255,255,0.9);">${escapeStr(r.pattern)}</b>${amtText} → <span style="background:${ruleColor.hex}; color:white; padding:2px 6px; border-radius:99px; font-weight:700; font-size:9px; vertical-align:middle; margin-left:4px;">${escapeStr(r.label)}</span>${noteText}
                         </div>
                         <button class="mx-btn-delete-rule" data-index="${i}" style="background:none; border:none; color:#f87171; font-size:16px; cursor:pointer; padding:0 4px; line-height:1; transition:color 0.2s; opacity:0.7;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.7'" title="Eliminar regla">&times;</button>
                     </div>`;

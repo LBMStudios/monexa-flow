@@ -261,14 +261,15 @@ xmlns="http://www.w3.org/TR/REC-html40">
         }
 
         let csv = "\uFEFF";
-        csv += "PATTERN;LABEL;COLOR;IMPORTE\n";
+        csv += "PATTERN;LABEL;COLOR;IMPORTE;NOTE\n";
 
         rules.forEach(r => {
             const pattern = (r.pattern || "").toString().replace(/"/g, '""');
             const label   = (r.label   || "").toString().replace(/"/g, '""');
             const color   = (r.color   || 'verde').toString().replace(/"/g, '""');
             const importe = (r.importe || "").toString().replace(/"/g, '""');
-            csv += `"${pattern}";"${label}";"${color}";"${importe}"\n`;
+            const note    = (r.note    || "").toString().replace(/"/g, '""');
+            csv += `"${pattern}";"${label}";"${color}";"${importe}";"${note}"\n`;
         });
 
         this.triggerDownload(csv, `Monexa_Rules_${Date.now()}.csv`);
@@ -317,6 +318,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
                     } else if (type === "RULES" && cols.length >= 2) {
                         const rule = { pattern: cols[0], label: cols[1], color: cols[2] || 'verde' };
                         if (cols[3]) rule.importe = cols[3];
+                        if (cols[4]) rule.note = cols[4];
                         db.push(rule);
                         count++;
                     }
