@@ -267,6 +267,11 @@
                     <div style="width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
                 </div>
 
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px;">
+                    <h3 style="font-size: 13px; margin: 0; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">Lista de Auditores</h3>
+                    <button id="add-user-btn" class="btn-primary" style="font-size: 10px; padding: 6px 14px; margin: 0;">+ AÑADIR AUDITOR</button>
+                </div>
+
                 <div id="user-list-container" style="display: flex; flex-direction: column; gap: 12px;">
                     <!-- Los usuarios se cargarán aquí -->
                 </div>
@@ -442,9 +447,54 @@
         async function initAdminPanel() {
             const refreshBtn = document.getElementById('refresh-users');
             if (refreshBtn) refreshBtn.onclick = () => fetchUsers();
+            
+            const addBtn = document.getElementById('add-user-btn');
+            if (addBtn) addBtn.onclick = () => addUser();
+
             fetchUsers();
         }
 
+        let _remoteUsersCache = [];
+
+        async function addUser() {
+            const name = prompt("Nombre del nuevo auditor:");
+            if (!name) return;
+            const pass = prompt("Contraseña (mínimo 6 caracteres):");
+            if (!pass || pass.length < 6) { alert("Contraseña inválida"); return; }
+            
+            const newUser = {
+                name: name,
+                pass: pass,
+                role: "user",
+                enabled: true,
+                lastActive: 0,
+                loginCount: 0
+            };
+
+            _remoteUsersCache.push(newUser);
+            await saveUsers(_remoteUsersCache);
+        }
+
+        async function saveUsers(users) {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(users)
+                });
+                if (res.ok) fetchUsers();
+                else alert("Error al guardar en la nube");
+            } catch (e) {
+                alert("Error de conexión");
+            }
+        }
+
+        async function deleteUser(index) {
+            if (!confirm(`¿Estás seguro de ELIMINAR a ${_remoteUsersCache[index].name}? No podrá volver a entrar.`)) return;
+            
+            _remoteUsersCache.splice(index, 1);
+            await saveUsers(_remoteUsersCache);
+        }
         async function fetchUsers() {
             const loader = document.getElementById('admin-loader');
             const container = document.getElementById('user-list-container');
@@ -460,18 +510,19 @@
                 if (data) {
                     users = Array.isArray(data) ? data.filter(u => u !== null) : Object.values(data);
                 }
+                _remoteUsersCache = users;
 
                 document.getElementById('total-users').innerText = users.length;
                 document.getElementById('active-users').innerText = users.filter(u => u.enabled).length;
 
                 container.innerHTML = users.map((user, idx) => {
-                    const lastActiveTime = user.lastActive || 0;
+                    const lastActiveTime = user.lastActive ? new Date(user.lastActive).getTime() : 0;
                     const diffMins = Math.floor((Date.now() - lastActiveTime) / 1000 / 60);
-                    const isOnline = diffMins < 5; // Activo en los últimos 5 minutos
+                    const isOnline = diffMins >= 0 && diffMins < 5; 
                     
                     const statusText = isOnline ? 'ONLINE' : 'OFFLINE';
                     const statusColor = isOnline ? 'var(--green)' : 'var(--text-dim)';
-                    const lastDateStr = user.lastActive ? new Date(user.lastActive).toLocaleString('es-UY', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : 'Sin actividad';
+                    const lastDateStr = user.lastActive && user.lastActive !== 0 ? new Date(user.lastActive).toLocaleString('es-UY', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : 'Sin actividad';
 
                     return `
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden;">
@@ -492,16 +543,21 @@
                                 <div style="font-size: 10px; color: var(--primary); opacity: 0.8; margin-top: 2px; font-weight: 600;">Role: ${user.role === 'admin' ? 'MAESTRO' : 'AUDITOR'}</div>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 20px;">
                             <div style="text-align: right;">
-                                <div style="font-size: 9px; font-weight: 800; color: ${user.enabled ? 'var(--green)' : 'var(--rose)'}; margin-bottom: 4px;">${user.enabled ? 'ACCESO OK' : 'BLOQUEADO'}</div>
+                                <div style="font-size: 9px; font-weight: 800; color: ${user.enabled ? 'var(--green)' : 'var(--rose)'}; margin-bottom: 4px;">${user.enabled ? 'ACCESO' : 'BLOQUEADO'}</div>
                                 <label class="mx-switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
-                                    <input type="checkbox" ${user.enabled ? 'checked' : ''} onchange="toggleUser(${idx}, this.checked, ${JSON.stringify(users).replace(/"/g, '&quot;')})" style="opacity: 0; width: 0; height: 0;">
+                                    <input type="checkbox" ${user.enabled ? 'checked' : ''} onchange="toggleUser(${idx}, this.checked)" style="opacity: 0; width: 0; height: 0;">
                                     <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: ${user.enabled ? 'var(--green)' : 'rgba(255,255,255,0.1)'}; transition: .3s; border-radius: 20px;">
                                         <span style="position: absolute; content: ''; height: 18px; width: 18px; left: ${user.enabled ? '23px' : '3px'}; bottom: 3px; background: white; transition: .3s; border-radius: 50%;"></span>
                                     </span>
                                 </label>
                             </div>
+                            ${user.role !== 'admin' ? `
+                            <button onclick="deleteUser(${idx})" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--rose); padding: 8px; border-radius: 10px; cursor: pointer; transition: 0.3s;" onmouseenter="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseleave="this.style.background='rgba(239, 68, 68, 0.1)'">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                            ` : ''}
                         </div>
                     </div>
                 `;}).join('');
@@ -514,19 +570,9 @@
             }
         }
 
-        window.toggleUser = async (index, enabled, allUsers) => {
-            allUsers[index].enabled = enabled;
-            try {
-                await fetch(API_URL, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(allUsers)
-                });
-                fetchUsers();
-            } catch (e) {
-                alert("Error al actualizar usuario");
-                fetchUsers();
-            }
+        window.toggleUser = async (index, enabled) => {
+            _remoteUsersCache[index].enabled = enabled;
+            await saveUsers(_remoteUsersCache);
         };
 
         // Animación de contador para el mockup del héroe

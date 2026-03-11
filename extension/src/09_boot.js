@@ -64,12 +64,12 @@
             ""
         );
 
-        // V2 — Monitor de Salud de la Extensión
-        const healthCheck = setInterval(() => {
+        // V2 — Monitor de Salud y Heartbeat de Actividad
+        const healthCheck = setInterval(async () => {
+            // 1. Validar contexto
             if (!chrome.runtime?.id) {
                 console.warn("Monexa: Contexto invalidado. Deteniendo monitores.");
                 clearInterval(healthCheck);
-                // Notificar visualmente si es el top window
                 if (window === window.top) {
                     const panel = document.getElementById('mx-control-panel');
                     if (panel) {
@@ -78,8 +78,27 @@
                         panel.style.borderLeft = '4px solid #ef4444';
                     }
                 }
+                return;
             }
-        }, 5000);
+
+            // 2. Heartbeat de Actividad (Cada 3 minutos para el panel maestro)
+            const config = await DB_Engine.fetch(KEYS.SETTINGS, { user: "" });
+            if (config.user) {
+                let users = await DB_Engine.fetch(KEYS.USERS, []);
+                let currentUser = users.find(u => u.name.toLowerCase() === config.user.toLowerCase());
+                if (currentUser) {
+                    const now = Date.now();
+                    const last = currentUser.lastActive ? new Date(currentUser.lastActive).getTime() : 0;
+                    
+                    // Solo empujamos si pasaron más de 3 minutos para no saturar Firebase
+                    if (now - last > 3 * 60 * 1000) {
+                        currentUser.lastActive = new Date().toISOString();
+                        await DB_Engine.commit(KEYS.USERS, users);
+                        console.log("Monexa: Heartbeat enviado.");
+                    }
+                }
+            }
+        }, 10000); // Check cada 10s, pero pulsa cada 3m
     } catch (e) {
         console.error("Critical Failure in Monexa Initialization:", e);
         // Solo logear si el contexto sigue vivo
