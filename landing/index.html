@@ -464,26 +464,47 @@
                 document.getElementById('total-users').innerText = users.length;
                 document.getElementById('active-users').innerText = users.filter(u => u.enabled).length;
 
-                container.innerHTML = users.map((user, idx) => `
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between;">
+                container.innerHTML = users.map((user, idx) => {
+                    const lastActiveTime = user.lastActive || 0;
+                    const diffMins = Math.floor((Date.now() - lastActiveTime) / 1000 / 60);
+                    const isOnline = diffMins < 5; // Activo en los últimos 5 minutos
+                    
+                    const statusText = isOnline ? 'ONLINE' : 'OFFLINE';
+                    const statusColor = isOnline ? 'var(--green)' : 'var(--text-dim)';
+                    const lastDateStr = user.lastActive ? new Date(user.lastActive).toLocaleString('es-UY', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : 'Sin actividad';
+
+                    return `
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden;">
+                        ${isOnline ? '<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--green); box-shadow: 0 0 10px var(--green);"></div>' : ''}
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <div style="width: 40px; height: 40px; background: var(--primary-dim); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary);">${user.name.charAt(0).toUpperCase()}</div>
+                            <div style="position: relative;">
+                                <div style="width: 44px; height: 44px; background: var(--primary-dim); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary); border: 1px solid var(--border);">${user.name.charAt(0).toUpperCase()}</div>
+                                <div style="position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px; background: ${isOnline ? 'var(--green)' : '#333'}; border: 2px solid #0a0c10; border-radius: 50%; ${isOnline ? 'box-shadow: 0 0 5px var(--green);' : ''}"></div>
+                            </div>
                             <div>
-                                <div style="font-weight: 700;">${user.name}</div>
-                                <div style="font-size: 11px; color: var(--text-dim);">${user.role === 'admin' ? 'Administrador' : 'Auditor'} • ${user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Sin actividad'}</div>
+                                <div style="font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                    ${user.name} 
+                                    <span style="font-size: 9px; padding: 2px 6px; background: ${statusColor}1a; color: ${statusColor}; border-radius: 4px; border: 1px solid ${statusColor}33;">${statusText}</span>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">
+                                    <b>Last Seen:</b> ${lastDateStr} ${isOnline ? '(Ahora)' : ''}
+                                </div>
+                                <div style="font-size: 10px; color: var(--primary); opacity: 0.8; margin-top: 2px; font-weight: 600;">Role: ${user.role === 'admin' ? 'MAESTRO' : 'AUDITOR'}</div>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="font-size: 10px; font-weight: 800; color: ${user.enabled ? 'var(--green)' : 'var(--rose)'};">${user.enabled ? 'ACTIVO' : 'BLOQUEADO'}</div>
-                            <label class="mx-switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
-                                <input type="checkbox" ${user.enabled ? 'checked' : ''} onchange="toggleUser(${idx}, this.checked, ${JSON.stringify(users).replace(/"/g, '&quot;')})" style="opacity: 0; width: 0; height: 0;">
-                                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: ${user.enabled ? 'var(--green)' : 'rgba(255,255,255,0.1)'}; transition: .3s; border-radius: 20px;">
-                                    <span style="position: absolute; content: ''; height: 18px; width: 18px; left: ${user.enabled ? '23px' : '3px'}; bottom: 3px; background: white; transition: .3s; border-radius: 50%;"></span>
-                                </span>
-                            </label>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="text-align: right;">
+                                <div style="font-size: 9px; font-weight: 800; color: ${user.enabled ? 'var(--green)' : 'var(--rose)'}; margin-bottom: 4px;">${user.enabled ? 'ACCESO OK' : 'BLOQUEADO'}</div>
+                                <label class="mx-switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                                    <input type="checkbox" ${user.enabled ? 'checked' : ''} onchange="toggleUser(${idx}, this.checked, ${JSON.stringify(users).replace(/"/g, '&quot;')})" style="opacity: 0; width: 0; height: 0;">
+                                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: ${user.enabled ? 'var(--green)' : 'rgba(255,255,255,0.1)'}; transition: .3s; border-radius: 20px;">
+                                        <span style="position: absolute; content: ''; height: 18px; width: 18px; left: ${user.enabled ? '23px' : '3px'}; bottom: 3px; background: white; transition: .3s; border-radius: 50%;"></span>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                `).join('');
+                `;}).join('');
                 
             } catch (e) {
                 console.error(e);
