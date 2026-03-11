@@ -1,6 +1,7 @@
 {
-  "version": "1.2.2",,,,,
-  "name": "Monexa Flow V1.2.2",,,,,
-  "url": "https://github.com/lbmstudios/monexa-flow/archive/refs/heads/main.zip",
+  "version": "1.2.3",
+  "name": "Monexa Flow 1.2.3",
+  "url": "https://monexa-flow.vercel.app/archive.zip",
   "changelog": "Mejoras en el dashboard y sistema de notificaciones de actualización."
 }
+

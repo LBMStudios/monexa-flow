@@ -28,6 +28,8 @@ const UILogin = {
                 @keyframes mx-fade-in { from { opacity: 0; } to { opacity: 1; }}
                 @keyframes mx-slide-up { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: translateY(0); }}
                 @keyframes mx-orb-pulse { 0%, 100% { transform: scale(1); opacity: 0.2; } 50% { transform: scale(1.1); opacity: 0.3; }}
+                @keyframes mx-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); }}
+                @keyframes mx-shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); }}
             </style>
             <div style="
                 background: rgba(255, 255, 255, 0.03);
@@ -96,8 +98,9 @@ const UILogin = {
                     box-shadow: 0 10px 30px rgba(236,112,0,0.3);
                     font-family: 'Outfit', sans-serif;
                     letter-spacing: 1px;
+                    display: flex; align-items: center; justify-content: center; gap: 10px;
                 " onmouseover="this.style.transform='translateY(-4px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(236,112,0,0.4)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(236,112,0,0.3)'">
-                    ACCEDER AL FLUJO
+                    <span>ACCEDER AL FLUJO</span>
                 </button>
 
                 <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; color: rgba(255,255,255,0.4); font-size: 12px; text-align: left;">
@@ -111,9 +114,27 @@ const UILogin = {
 
         document.body.appendChild(overlay);
 
-        document.getElementById('mx-init-btn').onclick = async () => {
-            const user = document.getElementById('mx-init-user').value.trim();
-            if (!user) return;
+        const loginBtn = document.getElementById('mx-init-btn');
+        const userInput = document.getElementById('mx-init-user');
+
+        loginBtn.onclick = async () => {
+            const user = userInput.value.trim();
+            if (!user) {
+                userInput.style.borderColor = '#ef4444';
+                userInput.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
+                return;
+            }
+
+            // Estado de carga
+            loginBtn.disabled = true;
+            loginBtn.style.opacity = '0.7';
+            loginBtn.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" style="animation: mx-spin 1s linear infinite;">
+                    <circle cx="12" cy="12" r="10" stroke="white" stroke-width="4" fill="none" style="opacity:0.2;"></circle>
+                    <path d="M12 2 a10 10 0 0 1 10 10" stroke="white" stroke-width="4" stroke-linecap="round" fill="none"></path>
+                </svg>
+                <span>VALIDANDO...</span>
+            `;
 
             // Lógica de validación de usuarios apoyada en DB_Engine
             let users = await DB_Engine.fetch(KEYS.USERS, []);
@@ -140,6 +161,10 @@ const UILogin = {
                     await Logger.info(`Primer acceso: cuenta master (admin) creada.`);
                     alert(`¡Bienvenido! Has sido registrado como Administrador del sistema.`);
                 } else {
+                    // Resetear botón si no es admin en sistema vacío
+                    loginBtn.disabled = false;
+                    loginBtn.style.opacity = '1';
+                    loginBtn.innerHTML = '<span>ACCEDER AL FLUJO</span>';
                     alert(`El sistema no está inicializado. Inicia sesión con la cuenta maestra ('admin') primero.`);
                     return;
                 }
@@ -150,27 +175,38 @@ const UILogin = {
                 const showErrorScreen = (icon, title, message) => {
                     const overlay = document.getElementById('mx-welcome-overlay');
                     if (overlay) {
-                        overlay.style.background = 'radial-gradient(circle at 50% 10%, rgba(225, 29, 72, 0.2) 0%, #0a0c12 70%)';
-                        overlay.style.animation = 'none';
-                        overlay.children[0].innerHTML = `
+                        // Limpiar todo el contenido del overlay y poner la tarjeta de error
+                        overlay.innerHTML = `
                             <div style="
-                                width: 80px; height: 80px; margin: 0 auto 30px; 
-                                display: flex; align-items: center; justify-content: center; 
-                                background: rgba(225, 29, 72, 0.1); border: 1px solid rgba(225, 29, 72, 0.2); 
-                                border-radius: 24px; box-shadow: 0 10px 30px rgba(225, 29, 72, 0.1);
+                                background: rgba(255, 255, 255, 0.03);
+                                border: 1px solid rgba(225, 29, 72, 0.3);
+                                padding: 60px 40px;
+                                border-radius: 32px;
+                                width: 460px;
+                                text-align: center;
+                                box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+                                animation: mx-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
                             ">
-                                <span style="font-size: 32px;">${icon}</span>
+                                <div style="
+                                    width: 80px; height: 80px; margin: 0 auto 30px; 
+                                    display: flex; align-items: center; justify-content: center; 
+                                    background: rgba(225, 29, 72, 0.1); border: 1px solid rgba(225, 29, 72, 0.2); 
+                                    border-radius: 24px;
+                                ">
+                                    <span style="font-size: 32px;">${icon}</span>
+                                </div>
+                                <h2 style="font-size: 28px; font-weight: 800; margin: 0 0 16px 0; color: white; letter-spacing: -1px; font-family: 'Outfit', sans-serif;">${title}</h2>
+                                <p style="font-size: 15px; color: rgba(255,255,255,0.7); margin: 0 auto 40px auto; line-height: 1.6; max-width: 320px; font-family: 'Outfit', sans-serif;">${message}</p>
+                                <button id="mx-btn-error-back" style="
+                                    width: 100%; padding: 18px; 
+                                    background: rgba(255,255,255,0.05); color: white; 
+                                    border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; 
+                                    font-weight: 700; font-family: 'Outfit', sans-serif;
+                                    cursor: pointer; transition: all 0.3s;
+                                " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">VOLVER A INTENTAR</button>
                             </div>
-                            <h2 style="font-size: 28px; font-weight: 800; margin: 0 0 16px 0; color: white; letter-spacing: -1px; font-family: 'Outfit', sans-serif;">${title}</h2>
-                            <p style="font-size: 15px; color: rgba(255,255,255,0.5); margin: 0 auto 40px auto; line-height: 1.6; max-width: 320px; font-family: 'Outfit', sans-serif;">${message}</p>
-                            <button id="mx-btn-error-back" style="
-                                width: 100%; padding: 18px; 
-                                background: rgba(255,255,255,0.05); color: white; 
-                                border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; 
-                                font-weight: 700; font-family: 'Outfit', sans-serif;
-                                cursor: pointer; transition: all 0.3s;
-                            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">VOLVER A INTENTAR</button>
                         `;
+                        overlay.style.background = 'radial-gradient(circle at 50% 10%, rgba(225, 29, 72, 0.2) 0%, #0a0c12 70%)';
                         document.getElementById('mx-btn-error-back').onclick = () => window.location.reload();
                     }
                 };

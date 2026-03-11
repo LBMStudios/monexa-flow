@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const footerInfo = document.getElementById('footer-info');
     if (footerInfo) {
         footerInfo.innerHTML =
-            `<b>Versión 1.2.2 (V1.2.2)</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
+            `<b>Versión 1.2.3</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
     }
 
     // Cargar datos
@@ -1510,3 +1510,4 @@ function showExtraDetails(rawExtra, hash) {
     html += '</div>';
     body.innerHTML = html;
 }
+
