@@ -237,6 +237,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btnExport = document.getElementById('btn-export-csv');
     if (btnExport) btnExport.addEventListener('click', exportCSV);
 
+    const btnExportRaw = document.getElementById('btn-export-raw-csv');
+    if (btnExportRaw) btnExportRaw.addEventListener('click', exportRawCSV);
+
     // Modal de Detalles Extra
     const modalExtra = document.getElementById('modal-extra');
     const btnClose1 = document.getElementById('btn-close-modal-extra');
@@ -1219,6 +1222,62 @@ function exportJSON() {
     const data = JSON.stringify(records, null, 2);
 
     const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// Exportar CSV Datos Crudos (Fiel a la data interna)
+// ============================================================
+async function exportRawCSV() {
+    const records = filteredRecs.length > 0 ? filteredRecs : allRecords;
+
+    if (!records.length) {
+        alert('No hay registros para exportar.');
+        return;
+    }
+
+    // Cabeceras (UTF-8 con BOM para Excel)
+    const headers = [
+        "Fecha", "Concepto", "Info Extra (Bruta)", "Debito", "Credito", 
+        "Saldo", "Etiqueta", "Nota", "Estado", "Auditor", "Timestamp"
+    ];
+
+    const csvContent = records.map(r => {
+        return [
+            r.fecha || '',
+            r.concepto || '',
+            r.extra || '',
+            r.debito || '',
+            r.credito || '',
+            r.saldo || r.importe || '',
+            r.tag || '',
+            r.note || '',
+            r.status || 'NONE',
+            r.user || '',
+            r.ts || ''
+        ].map(val => {
+            // Escapar comillas dobles y envolver en comillas
+            const str = String(val).replace(/"/g, '""');
+            return `"${str}"`;
+        }).join(';');
+    });
+
+    const csvBody = [headers.join(';'), ...csvContent].join('\n');
+    const bom = '\uFEFF'; // Para que Excel detecte UTF-8
+    const blob = new Blob([bom + csvBody], { type: 'text/csv;charset=utf-8;' });
+    
+    const now = new Date();
+    const config = await storageGet(KEYS.SETTINGS, {});
+    const auditor = (config.user || 'N/D').replace(/\s+/g, '_');
+    const filename = `Monexa_Datos_Crudos_${auditor}_${now.toISOString().slice(0, 10)}.csv`;
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
