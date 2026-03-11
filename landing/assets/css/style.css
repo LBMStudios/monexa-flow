@@ -618,7 +618,7 @@ footer {
     }
 }
 
-/* Modal de Instalación */
+/* Base Modal System */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -626,9 +626,9 @@ footer {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
     z-index: 1000;
-    display: none; /* Se activa por JS */
+    display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
@@ -640,97 +640,197 @@ footer {
 }
 
 .modal-content {
-    max-width: 600px;
-    width: 100%;
     position: relative;
-    padding: 3rem;
-    animation: slideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 900px;
+    width: 100%;
+    animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-close {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 25px;
+    right: 25px;
     background: none;
     border: none;
-    color: var(--text-secondary);
-    font-size: 2rem;
+    color: var(--text-dim);
+    font-size: 2.5rem;
     cursor: pointer;
     line-height: 1;
+    z-index: 10;
+    transition: color 0.2s ease;
 }
 
 .modal-close:hover {
-    color: var(--text-primary);
-}
-
-.modal-header h2 {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
-}
-
-.modal-header p {
-    color: var(--text-secondary);
-    margin-bottom: 2rem;
-}
-
-.install-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.step {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-}
-
-.step-num {
-    width: 32px;
-    height: 32px;
-    background: var(--grad-amber);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.step-text h4 {
-    margin-bottom: 4px;
-    color: var(--text-primary);
-}
-
-.step-text p {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-}
-
-.link-amber {
-    color: var(--brand-amber);
-    text-decoration: underline;
-    font-weight: 600;
-}
-
-.modal-footer {
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--glass-border);
-    text-align: center;
-    color: var(--brand-green);
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.cta-btns {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
+    color: var(--text-main);
 }
 
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+/* Installation Hub Premium Styles */
+.hub-content {
+    max-width: 900px !important;
+    padding: 3.5rem !important;
+}
+
+.hub-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 100px;
+    color: var(--green);
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.hub-header h2 {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+}
+
+.hub-header p {
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hub-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.hub-step-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: all 0.3s ease;
+}
+
+.hub-step-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--primary-dim);
+    transform: translateY(-5px);
+}
+
+.step-visual {
+    width: 100%;
+    aspect-ratio: 1;
+    background: rgba(0,0,0,0.2);
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.step-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.step-tag {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.hub-step-card h4 {
+    font-size: 1.15rem;
+    margin: 5px 0;
+}
+
+.hub-step-card p {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+}
+
+.code-amber {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-weight: 600;
+}
+
+.btn-hub-action {
+    display: block;
+    text-align: center;
+    background: var(--primary);
+    color: #000;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-top: auto;
+}
+
+.btn-hub-secondary {
+    display: block;
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: auto;
+}
+
+.hub-footer {
+    display: flex;
+    justify-content: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.footer-msg {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dot-green {
+    width: 10px;
+    height: 10px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--green);
+}
+
+.footer-msg p {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--green);
+}
+
+@media (max-width: 850px) {
+    .hub-steps-grid {
+        grid-template-columns: 1fr;
+    }
+    .hub-content {
+        padding: 2rem !important;
+    }
 }

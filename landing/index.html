@@ -172,51 +172,65 @@
         </div>
     </footer>
 
-    <!-- Modal de Instalación Manual -->
+    <!-- Modal de Instalación Hub -->
     <div id="install-modal" class="modal-overlay">
-        <div class="modal-content glass-card">
+        <div class="modal-content hub-content glass-card">
             <button class="modal-close">&times;</button>
-            <div class="modal-header">
-                <h2>Guía de Instalación Manual</h2>
-                <p>Elige el método que prefieras para empezar.</p>
+            
+            <div class="hub-header">
+                <div class="trust-badge">
+                    <span class="icon">🛡️</span>
+                    <span>Instalación Segura: Sin Ejecutables</span>
+                </div>
+                <h2>Configura Monexa en 60 segundos</h2>
+                <p>Para garantizar tu seguridad, Monexa se instala manualmente. Es rápido, fácil y tus datos nunca salen de tu PC.</p>
             </div>
 
-            <div class="installer-option" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 20px; border-radius: 16px; margin-bottom: 30px;">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                    <span style="font-size: 24px;">🚀</span>
-                    <h4 style="margin: 0; color: #f59e0b;">Asistente de Instalación (EXE)</h4>
+            <div class="hub-steps-grid">
+                <!-- Step 1 -->
+                <div class="hub-step-card">
+                    <div class="step-visual">
+                        <img src="assets/img/step1.png" alt="Descarga">
+                    </div>
+                    <div class="step-info">
+                        <span class="step-tag">Paso 1</span>
+                        <h4>Descarga el ZIP</h4>
+                        <p>Baja el paquete de la extensión y extráelo en una carpeta cómoda (ej: Escritorio).</p>
+                        <a href="https://github.com/lbmstudios/monexa-flow/archive/refs/heads/main.zip" class="btn-hub-action">Descargar (.zip)</a>
+                    </div>
                 </div>
-                <p style="font-size: 14px; opacity: 0.8; margin-bottom: 15px;">Descarga nuestro instalador con barra de progreso que prepara todo automáticamente.</p>
-                <a href="Instalar_Monexa.exe" download class="btn-primary" style="display: inline-block; padding: 10px 20px; font-size: 13px;">Descargar Instalador (.exe)</a>
-                <p style="font-size: 11px; opacity: 0.5; margin-top: 10px;">* Versión oficial con barra de progreso.</p>
+
+                <!-- Step 2 -->
+                <div class="hub-step-card">
+                    <div class="step-visual">
+                        <img src="assets/img/step2.png" alt="Chrome">
+                    </div>
+                    <div class="step-info">
+                        <span class="step-tag">Paso 2</span>
+                        <h4>Modo Desarrollador</h4>
+                        <p>Escribe <code class="code-amber">chrome://extensions</code> en tu barra y activa el interruptor arriba a la derecha.</p>
+                        <button onclick="window.open('chrome://extensions')" class="btn-hub-secondary">Ir a Extensiones</button>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="hub-step-card">
+                    <div class="step-visual">
+                        <img src="assets/img/step3.png" alt="Cargar">
+                    </div>
+                    <div class="step-info">
+                        <span class="step-tag">Paso 3</span>
+                        <h4>Carga Monexa</h4>
+                        <p>Haz clic en "Cargar descomprimida" y selecciona la carpeta <code class="code-amber">/extension</code> dentro de lo que descargaste.</p>
+                    </div>
+                </div>
             </div>
 
-            <p style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.4; text-align: center; margin-bottom: 20px;">— O hazlo manualmente en 3 pasos —</p>
-            <div class="install-steps">
-                <div class="step">
-                    <div class="step-num">1</div>
-                    <div class="step-text">
-                        <h4>Descarga y Descomprime</h4>
-                        <p>Descarga el archivo <a href="https://github.com/lbmstudios/monexa-flow/archive/refs/heads/main.zip" class="link-amber">MonexaFlow.zip</a> y descomprímelo en una carpeta de tu preferencia.</p>
-                    </div>
+            <div class="hub-footer">
+                <div class="footer-msg">
+                    <span class="dot-green"></span>
+                    <p>¡Listo! Recarga Itaú y tu panel aparecerá automáticamente.</p>
                 </div>
-                <div class="step">
-                    <div class="step-num">2</div>
-                    <div class="step-text">
-                        <h4>Activa Modo Desarrollador</h4>
-                        <p>Escribe <strong>chrome://extensions</strong> en tu barra de direcciones y activa el interruptor de "Modo de desarrollador" arriba a la derecha.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-num">3</div>
-                    <div class="step-text">
-                        <h4>Carga la Carpeta</h4>
-                        <p>Haz clic en el botón <strong>"Cargar extensión sin empaquetar"</strong> y selecciona la carpeta que acabas de descomprimir.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <p>¡Listo! Recarga tu pestaña de Itaú y verás el panel de Monexa aparecer.</p>
             </div>
         </div>
     </div>
