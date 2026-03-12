@@ -777,8 +777,8 @@
             const formData = new FormData(supportForm);
             
             try {
-                // Usamos el endpoint basado en email de Formspree para máxima compatibilidad
-                const response = await fetch('https://formspree.io/f/monexabank@gmail.com', {
+                // Usamos el endpoint directo de Formspree para máxima compatibilidad
+                const response = await fetch('https://formspree.io/monexabank@gmail.com', {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -788,7 +788,7 @@
 
                 if (response.ok) {
                     feedback.style.color = 'var(--green)';
-                    feedback.innerHTML = '🛡️ ¡Solicitud enviada! <br><small style="color:var(--text-dim)">Si es tu primer envío, revisa "monexabank@gmail.com" para confirmar el formulario.</small>';
+                    feedback.innerHTML = '🛡️ ¡Solicitud enviada! <br><small style="color:var(--text-dim)">Lucas, revisá tu casilla (y spam) para confirmar el mail de Formspree.</small>';
                     supportForm.reset();
                     fileNameDisplay.style.display = 'none';
                 } else {
@@ -802,7 +802,7 @@
                 }
             } catch (error) {
                 feedback.style.color = 'var(--rose)';
-                feedback.innerText = 'Falla de conexión. Escríbenos directamente a: monexabank@gmail.com';
+                feedback.innerText = 'Falla de conexión o activación. Escríbenos a: monexabank@gmail.com';
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = '1';
