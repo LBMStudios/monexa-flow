@@ -610,6 +610,26 @@ a { text-decoration: none; color: inherit; }
     pointer-events: none;
 }
 
+/* Soporte Form Styles */
+.mx-form-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: white;
+    font-family: var(--font-body);
+    font-size: 13px;
+    transition: all 0.3s;
+}
+
+.mx-form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(236, 112, 0, 0.05);
+    box-shadow: 0 0 15px var(--primary-dim);
+}
+
 /* Bottom CTA */
 .bottom-cta {
     padding: 5rem 5%;
