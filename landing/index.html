@@ -275,7 +275,7 @@
                 <div class="badge-new" style="background: rgba(236,112,0,0.1); border-color: var(--primary-dim); color: var(--primary);">Escritorio de Ayuda</div>
                 <h2>Centro de Soporte Monexa</h2>
                 <p>¿Tuviste algún problema o necesitás una función especial? Estamos para ayudarte.</p>
-                <div style="margin-top: 15px; color: var(--primary); font-weight: 800; font-size: 1.2rem;">monexabanking@gmail.com</div>
+                <div style="margin-top: 15px; color: var(--primary); font-weight: 800; font-size: 1.2rem;">monexabank@gmail.com</div>
             </div>
 
             <form id="support-form" class="glass-card" style="padding: 3rem; margin-top: 40px;">
@@ -776,7 +776,7 @@
             // Como Formspree está dando 404 (ID no configurado), usamos mailto directo que es infalible
             const subject = `Soporte Monexa: ${reason} - ${name}`;
             const body = `Nombre: ${name}\nEmail: ${email}\nMotivo: ${reason}\n\nDetalle:\n${detail}`;
-            const mailtoUrl = `mailto:monexabanking@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            const mailtoUrl = `mailto:monexabank@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             
             window.location.href = mailtoUrl;
 
