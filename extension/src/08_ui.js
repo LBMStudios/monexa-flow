@@ -439,6 +439,9 @@ const UI = {
      */
     async renderControlCenter() {
         const config = await DB_Engine.fetch(KEYS.SETTINGS, {});
+        const installID = await LicenseSystem.getInstallationID();
+        const isActivated = await LicenseSystem.isActivated();
+
         const existing = document.getElementById("mx-control-panel");
         if (existing) existing.remove();
 
@@ -561,36 +564,77 @@ const UI = {
 
             <div class="mx-content">
                 ${updateHtml}
-                <!-- Control del sistema -->
-                <div class="mx-card" style="padding: 18px 20px;">
-                    <h4 style="margin-bottom: 12px;">Control del Sistema</h4>
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <div id="mx-toggle-label" style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9);">Sistema ACTIVO</div>
-                            <div id="mx-toggle-sub" style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px;">La extensión está escaneando</div>
-                        </div>
-                        <!-- Toggle slider -->
-                        <div id="mx-toggle-track" style="
-                            width: 48px; height: 26px;
-                            background: #10b981;
-                            border-radius: 99px;
-                            position: relative;
-                            cursor: pointer;
-                            transition: background 0.3s ease;
-                            flex-shrink: 0;
-                        ">
-                            <div id="mx-toggle-thumb" style="
-                                position: absolute;
-                                top: 3px; left: 24px;
-                                width: 20px; height: 20px;
-                                background: white;
-                                border-radius: 50%;
-                                box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-                                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                            "></div>
+                <!-- Sección de Licencia y Activación -->
+                <div class="mx-card" style="border-left: 4px solid ${isActivated ? '#10b981' : '#f59e0b'};">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <h4 style="margin: 0;">Licencia / Configuración</h4>
+                        <div style="font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${isActivated ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)'}; color: ${isActivated ? '#10b981' : '#f59e0b'};">
+                            ${isActivated ? 'ACTIVADO' : 'REQUIERE CÓDIGO'}
                         </div>
                     </div>
+                    
+                    <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; margin-bottom: 4px; letter-spacing: 0.5px;">ID de Instalación Único:</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <code style="font-size: 14px; color: white; font-weight: 700; letter-spacing: 1px;">${installID}</code>
+                            <button id="mx-btn-copy-id" style="background: rgba(255,255,255,0.05); border: none; color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: 700;">COPIAR</button>
+                        </div>
+                    </div>
+
+                    ${!isActivated ? `
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="text" id="mx-input-activation" placeholder="Ingresar Código de Activación..." style="
+                                width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-family: 'Outfit', sans-serif; font-size: 12px; text-align: center;
+                            ">
+                            <button id="mx-btn-activate" class="mx-btn-action" style="margin: 0; background: var(--mx-primary);">ACTIVAR AHORA</button>
+                        </div>
+                    ` : `
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; line-height: 1.4;">
+                            Suscripción válida para el mes en curso. Todo el procesamiento es 100% local y privado.
+                        </div>
+                    `}
                 </div>
+
+                ${isActivated ? `
+                    <!-- Control del sistema -->
+                    <div class="mx-card" style="padding: 18px 20px;">
+                        <h4 style="margin-bottom: 12px;">Control del Sistema</h4>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <div id="mx-toggle-label" style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9);">Sistema ACTIVO</div>
+                                <div id="mx-toggle-sub" style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px;">La extensión está escaneando</div>
+                            </div>
+                            <!-- Toggle slider -->
+                            <div id="mx-toggle-track" style="
+                                width: 48px; height: 26px;
+                                background: #10b981;
+                                border-radius: 99px;
+                                position: relative;
+                                cursor: pointer;
+                                transition: background 0.3s ease;
+                                flex-shrink: 0;
+                            ">
+                                <div id="mx-toggle-thumb" style="
+                                    position: absolute;
+                                    top: 3px; left: 24px;
+                                    width: 20px; height: 20px;
+                                    background: white;
+                                    border-radius: 50%;
+                                    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+                                    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                                "></div>
+                            </div>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="mx-card" style="padding: 30px 20px; text-align: center; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1);">
+                        <div style="font-size: 32px; margin-bottom: 15px;">🔒</div>
+                        <h4 style="margin-bottom: 8px;">Funciones Bloqueadas</h4>
+                        <p style="font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.4;">
+                            Active su licencia para habilitar el motor de reglas, el dashboard de estadísticas y el etiquetado de movimientos.
+                        </p>
+                    </div>
+                `}
 
                 <!-- Integridad Contable (Gap Detection) -->
                 <div class="mx-card" id="mx-integrity-card" style="border-left: 4px solid #64748b; transition: all 0.3s;">
@@ -933,6 +977,26 @@ const UI = {
                 alert(`Firma Generada Exitosamente:\n\n${sig}\n\nLos datos han sido sellados digitalmente para el reporte final.`);
             }
         };
+
+        if (document.getElementById('mx-btn-copy-id')) {
+            document.getElementById('mx-btn-copy-id').onclick = () => {
+                navigator.clipboard.writeText(installID);
+                alert("ID de Instalación copiado al portapapeles.");
+            };
+        }
+
+        if (document.getElementById('mx-btn-activate')) {
+            document.getElementById('mx-btn-activate').onclick = async () => {
+                const key = document.getElementById('mx-input-activation').value.trim();
+                const res = await LicenseSystem.activate(key);
+                if (res.success) {
+                    alert("¡Sistema activado exitosamente!");
+                    location.reload();
+                } else {
+                    alert("Llave de acceso inválida. Verifique el código o consulte a su asesor.");
+                }
+            };
+        }
 
         await this.refreshSystemToggleButton();
         await this.refreshDashboard();

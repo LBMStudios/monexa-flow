@@ -9,6 +9,9 @@
 
 const SystemControl = {
     async isEnabled() {
+        const activated = await LicenseSystem.isActivated();
+        if (!activated) return false;
+
         const state = await DB_Engine.fetch(KEYS.SYSTEM_STATE, { enabled: true });
         return state.enabled !== false;
     },

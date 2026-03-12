@@ -1,16 +1,6 @@
 {
-  "version": "1.2.0",
-  "name": "Monexa Flow 1.2.0",
+  "version": "1.2.5",
+  "name": "Monexa Flow 1.2.5",
   "url": "https://monexa-flow.vercel.app/archive.zip",
-  "changelog": "Nuevo Panel Maestro Administrativo, notas personalizadas en reglas y autocompletado inteligente de movimientos."
+  "changelog": "Sistema de Activación Segura Offline (ID + Token), Privacidad Total corporativa y Autocompletado inteligente."
 }
-
-
-
-
-
-
-
-
-
-

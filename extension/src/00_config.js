@@ -5,7 +5,7 @@
 
 'use strict';
 
-const VERSION = "1.2.0";
+const VERSION = "1.2.5";
 const AUTHOR = "Monexa Systems";
 
 // Claves de almacenamiento en chrome.storage.local
@@ -18,7 +18,8 @@ const KEYS = {
     SYSTEM_STATE: "mx_system_state_v65",
     UPDATE_STATUS: "mx_db_updates_v65",
     REMOTE_VERSION: "mx_remote_ver_v65",
-    USERS: "mx_db_users_v65"
+    USERS: "mx_db_users_v65",
+    LICENSE: "mx_db_license_v65"
 };
 
 // Paleta de colores del sistema
