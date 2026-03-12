@@ -452,86 +452,92 @@ const UI = {
         panel.id = "mx-control-panel";
         panel.innerHTML = `
             <div class="mx-header" id="mx-panel-header" style="
-                background: linear-gradient(135deg, var(--mx-primary) 0%, #ff8c00 100%);
+                background: linear-gradient(165deg, ${PALETTE.itau_orange} 0%, ${PALETTE.itau_blue_dark} 100%);
                 padding: 0;
                 position: relative;
                 overflow: hidden;
                 cursor: pointer;
                 user-select: none;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
             ">
-                <!-- Aura decorativa -->
-                <div style="
-                    position: absolute; top: -40px; right: -40px;
-                    width: 160px; height: 160px;
-                    background: rgba(255,255,255,0.08);
-                    filter: blur(40px);
-                    border-radius: 50%;
-                    pointer-events: none;
-                "></div>
+                <!-- Capas decorativas de vidrio/aura -->
+                <div style="position: absolute; top: -50px; left: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); filter: blur(40px); border-radius: 50%;"></div>
+                <div style="position: absolute; bottom: -30px; right: -20px; width: 120px; height: 120px; background: rgba(0,0,0,0.2); filter: blur(30px); border-radius: 50%;"></div>
                 
-                <!-- Contenido del header -->
-                <div style="padding: 24px 20px 20px; position: relative; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <svg width="28" height="28" viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="6">
-                            <ellipse cx="50" cy="50" rx="45" ry="18" transform="rotate(-30 50 50)" opacity="0.3" />
-                            <ellipse cx="50" cy="50" rx="30" ry="12" transform="rotate(-30 50 50)" opacity="0.6" />
-                            <circle cx="50" cy="50" r="10" fill="white" />
+                <!-- Contenido superior (Logo + Sync + Close) -->
+                <div style="padding: 20px 20px 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="8">
+                            <ellipse cx="50" cy="50" rx="45" ry="18" transform="rotate(-30 50 50)" opacity="0.4" />
+                            <circle cx="50" cy="50" r="12" fill="white" />
                         </svg>
-                        <span style="
-                            font-size: 10px; font-weight: 800;
-                            color: white;
-                            text-transform: uppercase; letter-spacing: 2px;
-                            opacity: 0.8;
-                        ">Monexa Flow</span>
+                        <span style="font-size: 9px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.9;">Monexa Flow</span>
                     </div>
 
-                    <div class="mx-sync-badge">
-                        <div id="mx-sync-dot" class="mx-sync-dot"></div>
-                        <span>Sync</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="mx-sync-badge" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 8px;">
+                            <div id="mx-sync-dot" class="mx-sync-dot" style="width: 6px; height: 6px;"></div>
+                            <span style="font-size: 9px; font-weight: 800; color: white; opacity: 0.8;">Sync</span>
+                        </div>
+                        <button id="mx-panel-close" style="
+                            background: rgba(0,0,0,0.2);
+                            border: 1px solid rgba(255,255,255,0.15);
+                            color: white;
+                            width: 28px; height: 28px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            display: flex; align-items: center; justify-content: center;
+                            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                        " onmouseenter="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='rgba(239, 68, 68, 0.4)';"
+                           onmouseleave="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.15)';"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Botón cerrar -->
-                <button id="mx-panel-close" style="
-                    position: absolute;
-                    top: 15px;
-                    right: 15px;
-                    background: rgba(255,255,255,0.1);
-                    border: 1px solid rgba(255,255,255,0.1);
-                    color: white;
-                    width: 32px; height: 32px;
-                    border-radius: 10px;
-                    cursor: pointer;
-                    display: flex; align-items: center; justify-content: center;
-                    transition: all 0.3s;
-                    z-index: 100;
-                " onmouseenter="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1.1)';"
-                   onmouseleave="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='';"
-                >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-
-                <!-- Auditor Info -->
-                <div style="display: flex; align-items: center; gap: 16px; padding: 0 20px 30px;">
+                <!-- Perfil del Auditor (Glassmorphism) -->
+                <div style="padding: 15px 20px 25px; position: relative; display: flex; align-items: center; gap: 18px;">
                     <div style="
-                        width: 56px; height: 56px;
-                        background: rgba(0,0,0,0.3);
-                        border: 1px solid rgba(255,255,255,0.2);
-                        border-radius: 18px;
+                        width: 64px; height: 64px;
+                        background: rgba(255, 255, 255, 0.1);
+                        backdrop-filter: blur(12px);
+                        -webkit-backdrop-filter: blur(12px);
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        border-radius: 22px;
                         display: flex; align-items: center; justify-content: center;
-                        font-size: 24px; font-weight: 800; color: white;
+                        font-size: 28px; font-weight: 900; color: white;
+                        text-shadow: 0 4px 10px rgba(0,0,0,0.3);
                         flex-shrink: 0;
-                        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+                        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                        transform: perspective(100px) rotateY(-5deg);
                     ">${(config.user || "?")[0].toUpperCase()}</div>
 
-                    <div style="flex: 1;">
-                        <div style="font-size: 20px; font-weight: 800; color: white; letter-spacing: -0.5px; line-height: 1.1;">
-                            ${(config.user || "Auditor").toUpperCase()}
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Auditoría Activa</div>
+                        <div style="font-size: 22px; font-weight: 900; color: white; letter-spacing: -0.5px; line-height: 1; word-break: break-all;">
+                            ${(config.user || "Invitado").toUpperCase()}
                         </div>
-                        <div style="font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 6px; display: flex; align-items: center; gap: 8px;">
-                            <a id="mx-panel-logout" href="#" style="color: white; text-decoration: none; font-weight: 700; opacity: 0.7; transition: 0.3s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.7'">Cerrar Sesión</a>
+                        <div style="margin-top: 8px;">
+                            <a id="mx-panel-logout" href="#" style="
+                                display: inline-flex; align-items: center; gap: 6px;
+                                background: rgba(0,0,0,0.2);
+                                padding: 4px 10px;
+                                border-radius: 6px;
+                                font-size: 10px; font-weight: 800; color: white;
+                                text-decoration: none;
+                                border: 1px solid rgba(255,255,255,0.05);
+                                transition: all 0.3s;
+                            " onmouseenter="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)';"
+                               onmouseleave="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.05)';"
+                            >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                Cerrar Sesión
+                            </a>
                         </div>
                     </div>
                 </div>
