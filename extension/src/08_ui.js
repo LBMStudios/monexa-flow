@@ -623,7 +623,12 @@ const UI = {
                 <!-- Integridad Contable (Gap Detection) -->
                 <div class="mx-card" id="mx-integrity-card" style="border-left: 4px solid #64748b; transition: all 0.3s;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                        <h4 style="margin: 0;">Integridad Contable</h4>
+                        <h4 style="margin: 0;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            Integridad Contable
+                        </h4>
                         <div id="mx-integrity-status" style="font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6);">PENDIENTE</div>
                     </div>
                     
@@ -667,7 +672,12 @@ const UI = {
 
                 <!-- Resumen de auditoría -->
                 <div class="mx-card">
-                    <h4>Resumen del Control</h4>
+                    <h4>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+                            <line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                        Resumen del Control
+                    </h4>
                     <div id="mx-dash-stats" class="mx-stat-grid">
                         <div class="mx-stat-item" style="background: ${PALETTE.success}">0<br><small>Validados</small></div>
                         <div class="mx-stat-item" style="background: ${PALETTE.amber}">0<br><small>Alertas</small></div>
@@ -685,7 +695,12 @@ const UI = {
 
                 <!-- Buscador de notas -->
                 <div class="mx-card">
-                    <h4>Buscador de Notas</h4>
+                    <h4>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+                            <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        Buscador de Notas
+                    </h4>
                     <input
                         type="text"
                         id="mx-search-input"
@@ -696,8 +711,13 @@ const UI = {
                 </div>
 
                             <!-- Motor de reglas -->
-                <div class="mx-card">
-                    <h4>Motor de Reglas Inteligentes</h4>
+                <div class="mx-card" style="border-top: 2px solid rgba(236,112,0,0.15);">
+                    <h4>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7; color: var(--mx-primary);">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                        </svg>
+                        Motor de Reglas Inteligentes
+                    </h4>
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <input type="text" id="mx-rule-pat" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Si el concepto contiene...">
                         <input type="text" id="mx-rule-amt" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Importe (Ej: 1540.00)">

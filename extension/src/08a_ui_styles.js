@@ -125,22 +125,32 @@ const UIStyles = {
             }
 
             .mx-card {
-                background: rgba(255,255,255,0.04);
-                border-radius: 14px;
-                padding: 20px;
-                margin-bottom: 16px;
-                border: 1px solid rgba(255,255,255,0.08);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
+                background: rgba(255,255,255,0.03);
+                border-radius: 16px;
+                padding: 22px;
+                margin-bottom: 24px;
+                border: 1px solid rgba(255,255,255,0.1);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+                transition: all 0.3s ease;
+            }
+
+            .mx-card:hover {
+                border-color: rgba(255,255,255,0.2);
+                background: rgba(255,255,255,0.05);
             }
 
             .mx-card h4 {
-                margin: 0 0 15px 0;
-                font-size: 12px;
+                margin: 0 0 18px 0;
+                font-size: 11px;
                 text-transform: uppercase;
-                color: rgba(255,255,255,0.45);
-                letter-spacing: 0.08em;
-                font-weight: 700;
+                color: rgba(255,255,255,0.9);
+                letter-spacing: 0.12em;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
             .mx-btn-action {
@@ -202,16 +212,20 @@ const UIStyles = {
 
             .mx-search-box {
                 width: 100%;
-                padding: 12px;
-                border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 10px;
-                margin-bottom: 10px;
-                font-size: 14px;
+                padding: 12px 14px;
+                border: 1px solid rgba(255,255,255,0.12);
+                border-radius: 12px;
+                margin-bottom: 12px;
+                font-size: 13px;
                 box-sizing: border-box;
-                background: rgba(255,255,255,0.05);
+                background: rgba(0,0,0,0.2);
                 color: white;
                 font-family: 'Inter', sans-serif;
-                transition: border-color 0.2s;
+                transition: all 0.2s;
+            }
+
+            .mx-search-box::placeholder {
+                color: rgba(255,255,255,0.3);
             }
 
             .mx-search-box:focus {
