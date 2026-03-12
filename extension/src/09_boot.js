@@ -15,7 +15,7 @@
             return;
         }
 
-        const enabled = await SystemControl.isEnabled();
+        const enabled = await SystemControl.isUserEnabled();
 
         if (!enabled) {
             await Logger.info(`MONEXA FLOW v${VERSION} está desactivado.`);

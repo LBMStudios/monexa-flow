@@ -90,7 +90,7 @@
             <div class="hero-content">
                 <div class="badge-new">
                     <span class="badge-pulse"></span>
-                    v1.2.0 ahora disponible
+                    v1.2.5 disponible ahora (Offline Ready)
                 </div>
                 <h1 class="hero-title">Tu flujo bancario, finalmente bajo control.</h1>
                 <p class="hero-subtitle">
@@ -272,12 +272,40 @@
                     <button id="add-user-btn" class="btn-primary" style="font-size: 10px; padding: 6px 14px; margin: 0;">+ AÑADIR AUDITOR</button>
                 </div>
 
-                <div id="user-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+                <div id="user-list-container" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
                     <!-- Los usuarios se cargarán aquí -->
                 </div>
                 
-                <div style="margin-top: 30px; text-align: center;">
-                    <button id="refresh-users" class="btn-secondary" style="font-size: 11px; padding: 8px 20px;">🔄 ACTUALIZAR LISTA</button>
+                <div style="margin-top: 40px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 30px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <span style="font-size: 18px;">🔑</span>
+                        <h3 style="font-size: 14px; margin: 0; color: white; text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">Generador de Llaves de Acceso (Offline)</h3>
+                    </div>
+                    
+                    <div style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 20px; padding: 25px;">
+                        <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5;">
+                            Ingresa el ID de Instalación del cliente para generar la <b>Llave Maestra</b> válida para el mes actual.
+                        </p>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="gen-install-id" placeholder="Ej: ABC-123-XYZ" style="
+                                flex: 1; padding: 12px 20px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; color: white; font-weight: 700; font-family: 'Inter', sans-serif;
+                            ">
+                            <button id="btn-generate-key" class="btn-primary" style="margin: 0; padding: 0 25px;">GENERAR TOKEN</button>
+                        </div>
+                        
+                        <div id="key-result-container" style="display: none; margin-top: 20px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 15px; text-align: center;">
+                            <div style="font-size: 10px; color: var(--green); text-transform: uppercase; font-weight: 800; margin-bottom: 5px; letter-spacing: 1px;">Llave del Mes Generada:</div>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                                <code id="result-key-code" style="font-size: 24px; color: white; font-weight: 800; letter-spacing: 2px; font-family: 'Outfit', sans-serif;">---</code>
+                                <button id="btn-copy-key" style="background: white; color: black; border: none; padding: 5px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer;">COPIAR</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; text-align: center;">
+                    <button id="refresh-users" class="btn-secondary" style="font-size: 11px; padding: 8px 20px;">🔄 RECARGAR SISTEMA</button>
                 </div>
             </div>
         </div>
@@ -450,6 +478,39 @@
             
             const addBtn = document.getElementById('add-user-btn');
             if (addBtn) addBtn.onclick = () => addUser();
+
+            // Lógica del Generador de Llaves
+            const genBtn = document.getElementById('btn-generate-key');
+            if (genBtn) {
+                genBtn.onclick = async () => {
+                    const id = document.getElementById('gen-install-id').value.trim();
+                    if (!id) { alert("Ingresa un ID de instalación"); return; }
+                    
+                    const salt = "MX-FORCE-2026-LBM";
+                    const now = new Date();
+                    const monthYear = (now.getMonth() + 1).toString().padStart(2, '0') + now.getFullYear();
+                    
+                    const raw = id + salt + monthYear;
+                    const msgUint8 = new TextEncoder().encode(raw);
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+                    
+                    const finalKey = hashHex.substring(7, 17);
+                    
+                    document.getElementById('result-key-code').innerText = finalKey;
+                    document.getElementById('key-result-container').style.display = 'block';
+                };
+            }
+
+            const copyKeyBtn = document.getElementById('btn-copy-key');
+            if (copyKeyBtn) {
+                copyKeyBtn.onclick = () => {
+                    const key = document.getElementById('result-key-code').innerText;
+                    navigator.clipboard.writeText(key);
+                    alert("Llave corporativa copiada.");
+                };
+            }
 
             fetchUsers();
         }
