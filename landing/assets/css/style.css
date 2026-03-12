@@ -397,21 +397,21 @@ a { text-decoration: none; color: inherit; }
     position: absolute;
     width: 110%;
     height: 90%;
-    background: #fff;
+    background: #080808;
     border-radius: 20px;
     padding: 40px;
-    box-shadow: 0 50px 100px rgba(0,0,0,0.6);
+    box-shadow: 0 50px 100px rgba(0,0,0,0.8);
     transform: perspective(1200px) rotateY(-15deg) rotateX(5deg);
     opacity: 0.98;
     overflow: hidden;
-    color: #333;
-    filter: brightness(0.95);
-    border: 1px solid rgba(255,255,255,0.8);
+    color: #fff;
+    filter: brightness(1.1);
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
 /* Skeletons para anonimizar datos bancarios */
 .bank-skeleton {
-    background: #f0f0f0;
+    background: rgba(255,255,255,0.05);
     border-radius: 4px;
     height: 12px;
 }
@@ -421,7 +421,7 @@ a { text-decoration: none; color: inherit; }
     align-items: center;
     gap: 20px;
     padding: 18px 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 
 .bank-row.highlight {
@@ -439,22 +439,22 @@ a { text-decoration: none; color: inherit; }
 
 .bank-btn-mock {
     padding: 6px 12px;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
     border-radius: 6px;
     font-size: 10px;
     font-weight: 700;
-    color: #666;
+    color: rgba(255,255,255,0.4);
 }
 
 .bank-input-mock {
     padding: 6px 10px;
-    background: #f8f9fa;
-    border: 1px solid #eee;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.03);
     border-radius: 6px;
     width: 60px;
     font-size: 10px;
-    color: #999;
+    color: rgba(255,255,255,0.2);
 }
 
 .monexa-sidebar-mockup {
