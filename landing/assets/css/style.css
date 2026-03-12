@@ -1,26 +1,19 @@
 :root {
-    /* Nueva Paleta Estilo SaaS Premium / Cubo Academy */
-    --bg-deep: #020617; /* Slate 950 - Profundidad moderna */
-    --bg-surface: #ffffff;
-    --bg-card: rgba(15, 23, 42, 0.6);
-    --primary: #EC7000;
-    --primary-hover: #f97316;
-    --primary-glow: rgba(236, 112, 0, 0.25);
-    --primary-dim: rgba(236, 112, 0, 0.08);
-    
-    --navy: #0f172a;
-    --slate: #94a3b8;
-    
+    /* Paleta Monexa Premium — Sincronizada con la App */
+    --bg-deep: #050505;
+    --bg-card: rgba(10, 12, 18, 0.95);
+    --primary: #EC7000; /* Itaú Orange Oficial */
+    --primary-hover: #ff851a;
+    --primary-glow: rgba(236, 112, 0, 0.3);
+    --primary-dim: rgba(236, 112, 0, 0.1);
     --green: #10b981;
+    --green-glow: rgba(16, 185, 129, 0.2);
     --amber: #f59e0b;
     --rose: #ef4444;
-    
     --text-main: #f8fafc;
-    --text-dark: #0f172a;
-    --text-dim: #94a3b8;
-    
-    --border: rgba(255, 255, 255, 0.06);
-    --border-dark: rgba(15, 23, 42, 0.1);
+    --text-dim: rgba(248, 250, 252, 0.6);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-bright: rgba(255, 255, 255, 0.15);
     
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
@@ -132,9 +125,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .nav-container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 1.5rem 5%;
+    padding: 1.2rem 5%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -173,24 +166,23 @@ a { text-decoration: none; color: inherit; }
 }
 
 .hero-title {
-    font-size: 5.5rem;
-    line-height: 0.95;
-    margin-bottom: 2.5rem;
+    font-size: 4.8rem;
+    line-height: 1;
+    margin-bottom: 2rem;
     font-weight: 800;
-    letter-spacing: -4px;
-    background: linear-gradient(to bottom, #fff 40%, rgba(255,255,255,0.7) 100%);
+    letter-spacing: -2px;
+    background: linear-gradient(180deg, #fff 30%, rgba(255,255,255,0.5) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .hero-subtitle {
-    font-size: 1.4rem;
-    color: var(--slate);
-    margin-bottom: 3.5rem;
-    max-width: 650px;
-    line-height: 1.5;
-    font-weight: 400;
+    font-size: 1.25rem;
+    color: var(--text-dim);
+    margin-bottom: 3rem;
+    max-width: 600px;
+    line-height: 1.6;
 }
 
 .hero-subtitle strong {
@@ -254,9 +246,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .btn-primary:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 20px 40px -10px var(--primary-glow);
-    filter: brightness(1.2);
+    transform: translateY(-3px);
+    box-shadow: 0 20px 35px -10px var(--primary-glow);
+    filter: brightness(1.15);
 }
 
 .btn-large {
@@ -265,16 +257,14 @@ a { text-decoration: none; color: inherit; }
 }
 
 .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+    display: inline-block;
     padding: 0.9rem 2.22rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
     color: var(--text-main);
     border-radius: 14px;
     font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
 }
 
 .btn-secondary:hover {
@@ -370,8 +360,8 @@ a { text-decoration: none; color: inherit; }
 }
 
 .glass-card:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--border-bright);
     border-color: var(--primary-dim);
 }
 
@@ -552,15 +542,9 @@ a { text-decoration: none; color: inherit; }
 
 /* Features Section */
 .features {
-    padding: 10rem 0;
+    padding: 8rem 0;
     position: relative;
-    background: var(--bg-surface);
-    color: var(--text-dark);
 }
-.features .feature-card p { color: #475569; }
-.features .section-header p { color: #64748b; }
-.features .feature-card h3 { font-weight: 800; }
-.features .section-header h2 { font-weight: 800; letter-spacing: -1.5px; font-size: 3.2rem; }
 
 .section-header {
     text-align: center;
@@ -595,9 +579,9 @@ a { text-decoration: none; color: inherit; }
     border: 1px solid var(--border);
 }
 
-.icon-amber { box-shadow: 0 8px 32px var(--primary-dim); color: var(--primary); background: rgba(236,112,0,0.05); }
-.icon-green { box-shadow: 0 8px 32px rgba(16, 185, 129, 0.1); color: var(--green); background: rgba(16,185,129,0.05); }
-.icon-blue { box-shadow: 0 8px 32px rgba(59, 130, 246, 0.1); color: #3b82f6; background: rgba(59,130,246,0.05); }
+.icon-amber { box-shadow: 0 8px 16px var(--primary-dim); color: var(--primary); }
+.icon-green { box-shadow: 0 8px 16px var(--green-glow); color: var(--green); }
+.icon-blue { box-shadow: 0 8px 16px rgba(59, 130, 246, 0.1); color: #3b82f6; }
 
 .feature-card h3 {
     font-size: 1.25rem;
@@ -609,17 +593,21 @@ a { text-decoration: none; color: inherit; }
     font-size: 0.95rem;
 }
 
-.feature-card.glass-card {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(15,23,42,0.08);
+.border-glow {
+    position: relative;
 }
-.features .feature-card.glass-card {
-    background: #f8fafc;
-    border-color: #e2e8f0;
-}
-.features .feature-card.glass-card:hover {
-    background: #ffffff;
-    border-color: var(--primary-dim);
+.border-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 25px;
+    padding: 1px;
+    background: linear-gradient(135deg, transparent, rgba(59, 130, 246, 0.5), transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
 
 /* Bottom CTA */
