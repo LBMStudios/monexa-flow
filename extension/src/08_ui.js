@@ -319,7 +319,7 @@ const UI = {
         chip.textContent = "";
         const btn = document.createElement('div');
         btn.id = "mx-master-launcher";
-        btn.innerHTML = "MX";
+        btn.innerHTML = "MXA";
         btn.title = "Abrir panel Monexa";
         // El botón va dentro del wrapper pero necesita su propio positioning relativo
         btn.style.cssText = `
