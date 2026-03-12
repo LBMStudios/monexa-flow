@@ -15,9 +15,7 @@ const UIStyles = {
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
             #mx-master-launcher {
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
+                position: relative;
                 width: 64px;
                 height: 64px;
                 background: ${PALETTE.itau_orange};
@@ -50,31 +48,35 @@ const UIStyles = {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 6px;
-                z-index: 99999;
+                gap: 15px;
+                z-index: 100000;
             }
 
             #mx-account-chip {
-                background: rgba(236,112,0,0.85);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
+                background: rgba(10, 15, 25, 0.8);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
                 color: white;
                 font-family: 'Inter', sans-serif;
-                font-size: 10px;
-                font-weight: 700;
-                padding: 3px 8px;
-                border-radius: 20px;
+                font-size: 9px;
+                font-weight: 800;
+                padding: 4px 14px;
+                border-radius: 12px;
                 white-space: nowrap;
-                max-width: 140px;
+                max-width: 160px;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                border: 1px solid rgba(255,255,255,0.15);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+                border: 1px solid rgba(255,255,255,0.1);
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
                 letter-spacing: 0.04em;
                 opacity: 0;
-                transform: translateY(4px);
-                transition: opacity 0.3s ease, transform 0.3s ease;
+                transform: translateY(8px);
+                transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 pointer-events: none;
+                position: relative;
+                z-index: 5;
             }
 
             #mx-account-chip.visible {

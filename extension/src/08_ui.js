@@ -321,31 +321,37 @@ const UI = {
         btn.id = "mx-master-launcher";
         btn.innerHTML = "MXA";
         btn.title = "Abrir panel Monexa";
-        // El botón va dentro del wrapper pero necesita su propio positioning relativo
         btn.style.cssText = `
             position: relative;
-            bottom: auto;
-            right: auto;
-            width: 68px;
-            height: 68px;
-            background: var(--mx-primary);
+            width: 64px;
+            height: 64px;
+            background: ${PALETTE.itau_orange};
             color: white;
-            border-radius: 20px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(236,112,0,0.3), inset 0 1px 1px rgba(255,255,255,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 25px rgba(236,112,0,0.4), inset 0 1px 1px rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 22px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 20px;
             user-select: none;
+            z-index: 10;
         `;
 
-        btn.onmouseenter = () => { btn.style.background = PALETTE.itau_orange_hover; btn.style.transform = 'scale(1.1) rotate(5deg)'; };
-        btn.onmouseleave = () => { btn.style.background = PALETTE.itau_orange; btn.style.transform = ''; };
+        btn.onmouseenter = () => { 
+            btn.style.background = PALETTE.itau_orange_hover; 
+            btn.style.transform = 'scale(1.1) rotate(5deg)';
+            btn.style.boxShadow = '0 15px 35px rgba(236,112,0,0.5)';
+        };
+        btn.onmouseleave = () => { 
+            btn.style.background = PALETTE.itau_orange; 
+            btn.style.transform = '';
+            btn.style.boxShadow = '0 10px 25px rgba(236,112,0,0.4)';
+        };
 
         wrapper.appendChild(chip);
         wrapper.appendChild(btn);
@@ -393,23 +399,23 @@ const UI = {
         const l = document.createElement('div');
         l.id = "mx-disabled-launcher";
         l.innerHTML = `
-            <div style="width:24px; height:24px; background:white; border-radius:50%; position:absolute; left:4px; box-shadow:0 2px 5px rgba(0,0,0,0.2); transition:left 0.3s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-            <div style="font-size:11px; font-weight:700; color:white; margin-left:34px; letter-spacing:0.5px; transition:color 0.3s;">ON</div>
+            <div style="width:20px; height:20px; background:white; border-radius:50%; position:absolute; left:4px; box-shadow:0 2px 5px rgba(0,0,0,0.3); transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05);"></div>
+            <div style="font-size:10px; font-weight:900; color:white; margin-left:32px; letter-spacing:1px; transition:all 0.3s;">OFF</div>
         `;
-        l.title = "Monexa desactivado. Click para activar.";
+        l.title = "Sistema Inactivo - Click para activar Monexa Flow";
         l.style.cssText = `
             position: fixed;
             bottom: 30px;
             right: 30px;
-            width: 76px;
-            height: 32px;
-            background: #64748b;
+            width: 70px;
+            height: 28px;
+            background: ${PALETTE.itau_blue_dark};
             border-radius: 20px;
             display: flex;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border: 2px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 2px solid ${PALETTE.itau_orange};
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 99999;
             font-family: 'Inter', sans-serif;
@@ -889,6 +895,12 @@ const UI = {
                 d.style.borderColor = d.dataset.color === 'verde' ? 'rgba(255,255,255,0.6)' : 'transparent';
             });
             await UI.refreshRulesList();
+            
+            // 🚀 Re-escaneo reactivo para aplicar la nueva regla inmediatamente
+            if (typeof Scanner !== 'undefined') {
+                setTimeout(() => Scanner.reprocess(), 100);
+            }
+
             alert("Regla añadida.");
             await Logger.info(`Regla añadida: ${pat}${amt ? '+' + amt : ''} -> ${lab} [${_selectedRuleColor}]`);
         };
@@ -1288,6 +1300,11 @@ const UI = {
                 currentRules.splice(idx, 1);
                 await DB_Engine.commit(KEYS.RULES, currentRules);
                 await UI.refreshRulesList();
+
+                // 🚀 Re-escaneo reactivo tras eliminar regla
+                if (typeof Scanner !== 'undefined') {
+                    Scanner.reprocess();
+                }
             };
         });
     },

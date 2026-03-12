@@ -70,6 +70,12 @@ const Scanner = {
             childList: true,
             subtree: true
         });
+
+        // 🛡️ Heartbeat de seguridad: re-escanea cada 3 segundos
+        // para capturar cambios que el Observer por alguna razón no detecte (ej: iframes, AJAX lento)
+        setInterval(() => {
+            if (!this.isScanning) this.processDOM();
+        }, 3000);
     },
 
 
@@ -82,6 +88,16 @@ const Scanner = {
             this.observer = null;
         }
         this.isScanning = false;
+    },
+
+    /**
+     * Fuerza un re-escaneo completo limpiando las marcas de 'procesado'.
+     * Útil cuando cambian las reglas y queremos que se apliquen retroactivamente.
+     */
+    async reprocess() {
+        const rows = document.querySelectorAll('tr[data-monexa-ready]');
+        rows.forEach(r => r.removeAttribute('data-monexa-ready'));
+        await this.processDOM();
     },
 
     /**
