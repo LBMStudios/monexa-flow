@@ -691,7 +691,7 @@
             mouseY = e.clientY;
             if (!glowVisible) {
                 glowVisible = true;
-                mouseGlow.style.opacity = "0.15";
+                mouseGlow.style.opacity = "0.25";
             }
         });
 
@@ -701,9 +701,9 @@
         });
 
         function animateGlow() {
-            // Lerp (Linear Interpolation) for smooth movement
-            glowX += (mouseX - glowX) * 0.08;
-            glowY += (mouseY - glowY) * 0.08;
+            // Lerp (Linear Interpolation) for faster/smoother movement
+            glowX += (mouseX - glowX) * 0.18;
+            glowY += (mouseY - glowY) * 0.18;
 
             mouseGlow.style.transform = `translate(${glowX}px, ${glowY}px)`;
             requestAnimationFrame(animateGlow);

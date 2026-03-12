@@ -101,10 +101,13 @@ body {
 .orb-mouse {
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    background: radial-gradient(circle, 
+        rgba(236, 112, 0, 0.4) 0%, 
+        rgba(236, 112, 0, 0.1) 30%, 
+        transparent 70%);
     opacity: 0;
     transition: opacity 0.8s ease;
-    filter: blur(160px);
+    filter: blur(140px);
     z-index: -1;
     position: fixed;
     top: -300px;
