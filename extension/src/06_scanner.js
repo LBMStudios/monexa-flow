@@ -105,6 +105,23 @@ const Scanner = {
             const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
             const rules = await DB_Engine.fetch(KEYS.RULES, []);
 
+            // --- Generar Datalists de Sugerencias para Autocompletado ---
+            const allItems = Object.values(db.items);
+            const uniqueTags = [...new Set(allItems.map(i => (i.tag || '').trim()).filter(t => t.length > 0))].sort();
+            const uniqueNotes = [...new Set(allItems.map(i => (i.note || '').trim()).filter(n => n.length > 0 && !n.includes('Auto-Match')))].sort();
+
+            if (!document.getElementById('mx-data-tags')) {
+                const dlTags = document.createElement('datalist');
+                dlTags.id = 'mx-data-tags';
+                document.body.appendChild(dlTags);
+                const dlNotes = document.createElement('datalist');
+                dlNotes.id = 'mx-data-notes';
+                document.body.appendChild(dlNotes);
+            }
+            document.getElementById('mx-data-tags').innerHTML = uniqueTags.map(t => `<option value="${DataCore.sanitizeText(t)}">`).join('');
+            document.getElementById('mx-data-notes').innerHTML = uniqueNotes.map(n => `<option value="${DataCore.sanitizeText(n)}">`).join('');
+            // ------------------------------------------------------------
+
             // Busca el contenedor de tabla activo de forma tolerante
             const view =
                 document.querySelector(".tab-pane.active") ||
@@ -458,6 +475,7 @@ const Scanner = {
                     class="it-field-tag"
                     placeholder="Etiqueta"
                     aria-label="Etiqueta"
+                    list="mx-data-tags"
                     value="${DataCore.sanitizeText(data.tag || '')}"
                     title="${auditTip}"
                 style="${inputStyle} width: 70px; font-weight: 600; color: ${(data.ruleColor && RULE_COLORS[data.ruleColor]) ? RULE_COLORS[data.ruleColor].hex : '#059669'};"
@@ -468,6 +486,7 @@ const Scanner = {
                         class="it-field-note"
                         placeholder="Nota..."
                         aria-label="Nota"
+                        list="mx-data-notes"
                         value="${DataCore.sanitizeText(data.note || '')}"
                         title="${auditTip}"
                         style="${inputStyle} width: 120px; font-style: ${data.note ? 'normal' : 'italic'}; color: ${data.note ? '#374151' : '#9ca3af'}; position: relative; z-index: 2; background: transparent;"
@@ -683,36 +702,49 @@ const Scanner = {
             };
         });
 
-        // --- Lógica de autocompletado sugerido ---
-        inNote.addEventListener('input', async (e) => {
-            const val = inNote.value.trim().toLowerCase();
-            const sugg = td.querySelector('.it-note-suggestion');
-            if (!sugg) return;
+        // --- Lógica de autocompletado (Ghost Text y Control de Datalist) ---
+        [inTag, inNote].forEach(input => {
+            const listId = input.getAttribute('list');
+            input.removeAttribute('list'); // Empezamos sin lista
 
-            if (val.length < 2) {
-                sugg.textContent = '';
-                return;
-            }
-
-            try {
-                const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
-                const allNotes = Object.values(db.items)
-                    .map(i => (i.note || '').trim())
-                    .filter(n => n && n.toLowerCase() !== 'auto-match' && !n.includes('Auto-Match'));
+            input.addEventListener('input', async () => {
+                const val = input.value.trim().toLowerCase();
                 
-                // Buscar una nota única que empiece con lo que el usuario escribe
-                const match = allNotes.find(n => n.toLowerCase().startsWith(val));
-                
-                if (match && match.toLowerCase() !== val) {
-                    // Solo mostramos si el texto sugerido es diferente al actual
-                    // y mantenemos el casing original de la nota encontrada
-                    sugg.textContent = match;
+                // Mostrar datalist solo desde el 2ndo caracter
+                if (val.length >= 2) {
+                    input.setAttribute('list', listId);
                 } else {
-                    sugg.textContent = '';
+                    input.removeAttribute('list');
                 }
-            } catch (err) {
-                sugg.textContent = '';
-            }
+
+                // Específico para Ghost Text de notas
+                if (input === inNote) {
+                    const sugg = td.querySelector('.it-note-suggestion');
+                    if (!sugg) return;
+
+                    if (val.length < 2) {
+                        sugg.textContent = '';
+                        return;
+                    }
+
+                    try {
+                        const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+                        const allNotes = Object.values(db.items)
+                            .map(i => (i.note || '').trim())
+                            .filter(n => n && n.toLowerCase() !== 'auto-match' && !n.includes('Auto-Match'));
+                        
+                        const match = allNotes.find(n => n.toLowerCase().startsWith(val));
+                        
+                        if (match && match.toLowerCase() !== val) {
+                            sugg.textContent = match;
+                        } else {
+                            sugg.textContent = '';
+                        }
+                    } catch (err) {
+                        sugg.textContent = '';
+                    }
+                }
+            });
         });
     },
 
