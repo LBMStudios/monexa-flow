@@ -620,21 +620,24 @@ a { text-decoration: none; color: inherit; }
 /* Soporte Form Styles */
 .mx-form-input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px 20px;
+    border-radius: 14px;
+    padding: 1.1rem 1.4rem;
     color: white;
-    font-family: var(--font-body);
-    font-size: 13px;
-    transition: all 0.3s;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .mx-form-input:focus {
     outline: none;
     border-color: var(--primary);
-    background: rgba(236, 112, 0, 0.05);
-    box-shadow: 0 0 15px var(--primary-dim);
+    background: rgba(236, 112, 0, 0.04);
+    box-shadow: 0 0 20px var(--primary-dim), inset 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
 }
 
 /* Mejora de contraste para select y options */
