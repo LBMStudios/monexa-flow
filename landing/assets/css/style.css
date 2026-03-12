@@ -1,19 +1,21 @@
 :root {
-    /* Paleta Monexa Premium — Sincronizada con la App */
-    --bg-deep: #050505;
-    --bg-card: rgba(10, 12, 18, 0.95);
-    --primary: #EC7000; /* Itaú Orange Oficial */
-    --primary-hover: #ff851a;
-    --primary-glow: rgba(236, 112, 0, 0.3);
-    --primary-dim: rgba(236, 112, 0, 0.1);
+    /* Paleta Monexa Premium — Refinada */
+    --bg-deep: #02040a; /* Más profundo que el puro negro */
+    --bg-surface: #0a0c12;
+    --bg-card: rgba(15, 20, 30, 0.4);
+    --primary: #EC7000;
+    --primary-hover: #f97316;
+    --primary-glow: rgba(236, 112, 0, 0.2);
+    --primary-dim: rgba(236, 112, 0, 0.05);
+    
     --green: #10b981;
-    --green-glow: rgba(16, 185, 129, 0.2);
     --amber: #f59e0b;
     --rose: #ef4444;
-    --text-main: #f8fafc;
-    --text-dim: rgba(248, 250, 252, 0.6);
-    --border: rgba(255, 255, 255, 0.08);
-    --border-bright: rgba(255, 255, 255, 0.15);
+    
+    --text-main: #f1f5f9;
+    --text-dim: #94a3b8;
+    --border: rgba(255, 255, 255, 0.05);
+    --border-bright: rgba(255, 255, 255, 0.1);
     
     --font-heading: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
@@ -166,12 +168,12 @@ a { text-decoration: none; color: inherit; }
 }
 
 .hero-title {
-    font-size: 4.8rem;
+    font-size: 5.2rem;
     line-height: 1;
-    margin-bottom: 2rem;
+    margin-bottom: 2.2rem;
     font-weight: 800;
-    letter-spacing: -2px;
-    background: linear-gradient(180deg, #fff 30%, rgba(255,255,255,0.5) 100%);
+    letter-spacing: -3px;
+    background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.6) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -361,7 +363,7 @@ a { text-decoration: none; color: inherit; }
 
 .glass-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--border-bright);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
     border-color: var(--primary-dim);
 }
 
