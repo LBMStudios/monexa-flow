@@ -218,6 +218,34 @@ const UIStyles = {
                 outline: none;
                 border-color: ${PALETTE.itau_orange};
             }
+
+            /* Estilos Panel Maestro - Admin */
+            @keyframes mx-spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+            }
+
+            .mx-switch-mini {
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            .mx-switch-mini input:checked + span {
+                background: #10b981 !important;
+            }
+
+            .mx-switch-mini input:checked + span span {
+                left: 16px !important;
+            }
+
+            #mx-admin-card {
+                animation: mx-slide-up 0.4s ease-out;
+            }
+
+            @keyframes mx-slide-up {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
         `;
 
         const style = document.createElement('style');

@@ -445,30 +445,8 @@ const UI = {
         const existing = document.getElementById("mx-control-panel");
         if (existing) existing.remove();
 
-        const updateStatus = typeof UpdateSystem !== 'undefined' ? await UpdateSystem.getStatus() : { newVersion: null };
         let updateHtml = "";
-        
-        if (updateStatus.newVersion) {
-            updateHtml = `
-                <!-- Banner de Actualización -->
-                <div class="mx-card" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); padding: 14px 16px; margin-bottom: 20px; animation: mx-pulse 2s infinite;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <span style="font-size: 16px;">🚀</span>
-                        <div style="font-size: 13px; font-weight: 800; color: #f59e0b;">Nueva V${updateStatus.newVersion} Disponible</div>
-                    </div>
-                    <p style="font-size: 11px; color: rgba(255,255,255,0.7); line-height: 1.4; margin-bottom: 12px; font-family: 'Inter', sans-serif;">
-                        Nuevas mejoras detectadas. Actualiza ahora para disfrutar de la mejor experiencia.
-                    </p>
-                    <a href="${updateStatus.url || "https://monexa-flow.vercel.app"}" target="_blank" style="
-                        display: block; width: 100%; text-align: center;
-                        background: #f59e0b; color: #000; padding: 10px;
-                        border-radius: 10px; font-size: 11px; font-weight: 800;
-                        text-decoration: none; transition: 0.3s;
-                        font-family: 'Inter', sans-serif;
-                    " onmouseenter="this.style.filter='brightness(1.1)'" onmouseleave="this.style.filter='none'">Descargar V${updateStatus.newVersion} (.zip)</a>
-                </div>
-            `;
-        }
+
 
         const panel = document.createElement('div');
         panel.id = "mx-control-panel";
@@ -564,36 +542,42 @@ const UI = {
 
             <div class="mx-content">
                 ${updateHtml}
-                <!-- Sección de Licencia y Activación -->
-                <div class="mx-card" style="border-left: 4px solid ${isActivated ? '#10b981' : '#f59e0b'};">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                        <h4 style="margin: 0;">Licencia / Configuración</h4>
-                        <div style="font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${isActivated ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)'}; color: ${isActivated ? '#10b981' : '#f59e0b'};">
-                            ${isActivated ? 'ACTIVADO' : 'REQUIERE CÓDIGO'}
+                ${(config.user || "").toLowerCase() === 'lucas' ? `
+                    <!-- PANEL MAESTRO (SOLO LUCAS) -->
+                    <div id="mx-admin-card" class="mx-card" style="border-left: 4px solid #3b82f6; background: rgba(59, 130, 246, 0.05); margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 18px;">👑</span>
+                                <h4 style="margin: 0; color: #60a5fa;">Panel Maestro de Control</h4>
+                            </div>
+                            <button id="mx-btn-admin-refresh" style="background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.3);" title="Sincronizar">🔄</button>
                         </div>
-                    </div>
-                    
-                    <div style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05);">
-                        <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; margin-bottom: 4px; letter-spacing: 0.5px;">ID de Instalación Único:</div>
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <code style="font-size: 14px; color: white; font-weight: 700; letter-spacing: 1px;">${installID}</code>
-                            <button id="mx-btn-copy-id" style="background: rgba(255,255,255,0.05); border: none; color: white; padding: 4px 8px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: 700;">COPIAR</button>
-                        </div>
-                    </div>
 
-                    ${!isActivated ? `
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                            <input type="text" id="mx-input-activation" placeholder="Ingresar Código de Activación..." style="
-                                width: 100%; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: white; font-family: 'Outfit', sans-serif; font-size: 12px; text-align: center;
-                            ">
-                            <button id="mx-btn-activate" class="mx-btn-action" style="margin: 0; background: var(--mx-primary);">ACTIVAR AHORA</button>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                            <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Gestión de Auditores:</div>
+                            <div id="mx-admin-user-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 5px;">
+                                <div style="font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; padding: 10px;">Cargando lista maestra...</div>
+                            </div>
+                            <button id="mx-btn-admin-add" class="mx-btn-action" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 11px; margin-top: 5px;">+ REGISTRAR AUDITOR</button>
                         </div>
-                    ` : `
-                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; line-height: 1.4;">
-                            Suscripción válida para el mes en curso. Todo el procesamiento es 100% local y privado.
+
+                        <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
+                            <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom: 10px;">Generador de Llaves Offline:</div>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="mx-admin-gen-id" placeholder="ID de Instalación..." style="flex:1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-size: 11px; font-family: 'Outfit', sans-serif;">
+                                <button id="mx-btn-admin-gen" class="mx-btn-action" style="margin:0; padding: 0 15px; background: #3b82f6; font-size: 10px;">GENERAR</button>
+                            </div>
+                            <div id="mx-admin-gen-result" style="display: none; margin-top: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 12px; text-align: center;">
+                                <div style="font-size: 9px; color: #10b981; font-weight: 800; margin-bottom: 4px; text-transform: uppercase;">Token del Mes:</div>
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                    <code id="mx-admin-key-val" style="font-size: 20px; color: white; font-weight: 800; letter-spacing: 2px;">---</code>
+                                    <button id="mx-btn-admin-copy-key" style="background: white; color: black; border: none; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 800; cursor: pointer;">COPIAR</button>
+                                </div>
+                            </div>
                         </div>
-                    `}
-                </div>
+                    </div>
+                ` : ''}
+
 
                 ${isActivated ? `
                     <!-- Control del sistema -->
@@ -998,9 +982,152 @@ const UI = {
             };
         }
 
+        if ((config.user || "").toLowerCase() === 'lucas') {
+            await this.refreshAdminUserList();
+            this.bindAdminPanelEvents();
+        }
+
         await this.refreshSystemToggleButton();
         await this.refreshDashboard();
         await this.refreshRulesList();
+    },
+
+    /**
+     * Refresca la lista de usuarios en el Panel Maestro.
+     */
+    async refreshAdminUserList() {
+        const container = document.getElementById('mx-admin-user-list');
+        if (!container) return;
+
+        try {
+            const users = await DB_Engine.fetch(KEYS.USERS, []);
+            if (users.length === 0) {
+                container.innerHTML = `<div style="font-size: 10px; color: rgba(255,255,255,0.3); text-align: center; padding: 10px;">No hay auditores registrados.</div>`;
+                return;
+            }
+
+            container.innerHTML = users.map((user, idx) => {
+                const lastActiveTime = user.lastActive ? new Date(user.lastActive).getTime() : 0;
+                const diffMins = Math.floor((Date.now() - lastActiveTime) / 1000 / 60);
+                const isOnline = diffMins >= 0 && diffMins < 5;
+                const statusColor = isOnline ? '#10b981' : 'rgba(255,255,255,0.2)';
+
+                return `
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; box-shadow: ${isOnline ? '0 0 5px #10b981' : 'none'};"></div>
+                            <div>
+                                <div style="font-size: 11px; font-weight: 700; color: white;">${user.name}</div>
+                                <div style="font-size: 9px; color: rgba(255,255,255,0.4);">${user.enabled ? 'Acceso Permitido' : 'Acceso Bloqueado'}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label class="mx-switch-mini" style="position: relative; display: inline-block; width: 32px; height: 18px;">
+                                <input type="checkbox" ${user.enabled ? 'checked' : ''} onchange="UI.toggleAdminUser(${idx}, this.checked)" style="opacity: 0; width: 0; height: 0;">
+                                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: ${user.enabled ? '#10b981' : 'rgba(255,255,255,0.1)'}; transition: .3s; border-radius: 20px;">
+                                    <span style="position: absolute; content: ''; height: 14px; width: 14px; left: ${user.enabled ? '16px' : '2px'}; bottom: 2px; background: white; transition: .3s; border-radius: 50%;"></span>
+                                </span>
+                            </label>
+                            ${user.role !== 'admin' ? `
+                                <span onclick="UI.deleteAdminUser(${idx})" style="cursor:pointer; color: #ef4444; font-size: 14px; padding: 0 5px;" title="Eliminar">×</span>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            container.innerHTML = `<div style="font-size: 10px; color: #ef4444; text-align: center; padding: 10px;">Error al cargar: ${e.message}</div>`;
+        }
+    },
+
+    /**
+     * Vincula eventos del Panel Maestro.
+     */
+    bindAdminPanelEvents() {
+        const refreshBtn = document.getElementById('mx-btn-admin-refresh');
+        if (refreshBtn) {
+            refreshBtn.onclick = async () => {
+                refreshBtn.style.animation = "mx-spin 1s linear infinite";
+                if (typeof CloudConnector !== 'undefined') await CloudConnector.syncRemoteUsers();
+                await this.refreshAdminUserList();
+                refreshBtn.style.animation = "";
+            };
+        }
+
+        const addBtn = document.getElementById('mx-btn-admin-add');
+        if (addBtn) addBtn.onclick = () => this.addAdminUser();
+
+        const genBtn = document.getElementById('mx-btn-admin-gen');
+        if (genBtn) {
+            genBtn.onclick = async () => {
+                const id = document.getElementById('mx-admin-gen-id').value.trim();
+                if (!id) { alert("Ingresa un ID de instalación"); return; }
+                
+                const now = new Date();
+                const monthYear = (now.getMonth() + 1).toString().padStart(2, '0') + now.getFullYear();
+                
+                // Usamos la lógica de LicenseSystem para generar (es la misma)
+                const finalKey = await LicenseSystem._calculateKey(id, monthYear);
+                
+                const resultCont = document.getElementById('mx-admin-gen-result');
+                const keyVal = document.getElementById('mx-admin-key-val');
+                if (keyVal && resultCont) {
+                    keyVal.innerText = finalKey;
+                    resultCont.style.display = 'block';
+                }
+            };
+        }
+
+        const copyKeyBtn = document.getElementById('mx-btn-admin-copy-key');
+        if (copyKeyBtn) {
+            copyKeyBtn.onclick = () => {
+                const key = document.getElementById('mx-admin-key-val').innerText;
+                navigator.clipboard.writeText(key);
+                alert("Llave de acceso copiada.");
+            };
+        }
+    },
+
+    /**
+     * Acciones Administrativas
+     */
+    async addAdminUser() {
+        const name = prompt("Nombre del nuevo auditor:");
+        if (!name) return;
+        const pass = prompt("Contraseña (mínimo 6 caracteres):");
+        if (!pass || pass.length < 6) { alert("Contraseña inválida"); return; }
+        
+        const users = await DB_Engine.fetch(KEYS.USERS, []);
+        users.push({
+            name: name,
+            pass: pass,
+            role: "user",
+            enabled: true,
+            lastActive: 0,
+            loginCount: 0
+        });
+
+        await DB_Engine.commit(KEYS.USERS, users);
+        await this.refreshAdminUserList();
+        alert(`Auditor ${name} registrado correctamente.`);
+    },
+
+    async toggleAdminUser(index, enabled) {
+        const users = await DB_Engine.fetch(KEYS.USERS, []);
+        if (users[index]) {
+            users[index].enabled = enabled;
+            await DB_Engine.commit(KEYS.USERS, users);
+            // No refrescamos todo para mantener el estado del switch visualmente rápido
+        }
+    },
+
+    async deleteAdminUser(index) {
+        const users = await DB_Engine.fetch(KEYS.USERS, []);
+        if (users[index] && confirm(`¿Seguro que desea ELIMINAR a ${users[index].name}?`)) {
+            users.splice(index, 1);
+            await DB_Engine.commit(KEYS.USERS, users);
+            await this.refreshAdminUserList();
+        }
     },
 
     /**
