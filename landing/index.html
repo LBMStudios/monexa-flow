@@ -56,6 +56,7 @@
     <div class="orb-background">
         <div class="orb orb-amber"></div>
         <div class="orb orb-green"></div>
+        <div class="orb-mouse" id="mouse-glow"></div>
     </div>
 
     <!-- Navegación -->
@@ -678,6 +679,36 @@
                 animateValue("hero-count-validated", 0, 30, 2000);
             }, 1000);
         });
+
+        // Mouse Glow Interactive Logic
+        const mouseGlow = document.getElementById('mouse-glow');
+        let mouseX = 0, mouseY = 0;
+        let glowX = 0, glowY = 0;
+        let glowVisible = false;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            if (!glowVisible) {
+                glowVisible = true;
+                mouseGlow.style.opacity = "0.15";
+            }
+        });
+
+        window.addEventListener('mouseout', () => {
+            glowVisible = false;
+            mouseGlow.style.opacity = "0";
+        });
+
+        function animateGlow() {
+            // Lerp (Linear Interpolation) for smooth movement
+            glowX += (mouseX - glowX) * 0.08;
+            glowY += (mouseY - glowY) * 0.08;
+
+            mouseGlow.style.transform = `translate(${glowX}px, ${glowY}px)`;
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
 
 
     </script>
