@@ -777,8 +777,8 @@
             const formData = new FormData(supportForm);
             
             try {
-                // Usamos el endpoint directo de Formspree para máxima compatibilidad
-                const response = await fetch('https://formspree.io/monexabank@gmail.com', {
+                // Usamos el ID oficial proporcionado por Lucas para máxima seguridad
+                const response = await fetch('https://formspree.io/f/xqeybyjr', {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -788,7 +788,7 @@
 
                 if (response.ok) {
                     feedback.style.color = 'var(--green)';
-                    feedback.innerHTML = '🛡️ ¡Solicitud enviada! <br><small style="color:var(--text-dim)">Lucas, revisá tu casilla (y spam) para confirmar el mail de Formspree.</small>';
+                    feedback.innerHTML = '🛡️ ¡Solicitud enviada con éxito! <br><small style="color:var(--text-dim)">Responderemos a la brevedad a tu casilla de correo.</small>';
                     supportForm.reset();
                     fileNameDisplay.style.display = 'none';
                 } else {
