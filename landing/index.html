@@ -776,6 +776,14 @@
 
             const formData = new FormData(supportForm);
             
+            // Personalización dinámica del asunto en el Inbox de Lucas
+            const name = formData.get('name');
+            const reason = formData.get('reason') || 'Consulta General';
+            formData.append('_subject', `Monexa Support: ${reason.toUpperCase()} - ${name}`);
+            
+            // Asegurar que al responder se le escriba al cliente
+            formData.append('_replyto', formData.get('email'));
+
             try {
                 // Usamos el ID oficial proporcionado por Lucas para máxima seguridad
                 const response = await fetch('https://formspree.io/f/xqeybyjr', {
