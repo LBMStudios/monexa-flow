@@ -85,23 +85,26 @@ const UIStyles = {
             #mx-control-panel {
                 position: fixed;
                 top: 0;
-                right: -400px;
-                width: 380px;
-                height: 100vh;
-                background: rgba(10, 15, 25, 0.94);
+                right: -420px;
+                width: 400px !important;
+                height: 100vh !important;
+                background: #0a0f19;
                 backdrop-filter: blur(32px) saturate(1.8);
                 -webkit-backdrop-filter: blur(32px) saturate(1.8);
-                z-index: 100000;
-                box-shadow: -20px 0 80px rgba(0,0,0,0.6);
-                border-left: 1px solid rgba(255,255,255,0.08);
-                transition: right 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+                z-index: 10000000 !important;
+                box-shadow: -20px 0 80px rgba(0,0,0,0.8);
+                border-left: 1px solid rgba(255,255,255,0.1);
+                transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
                 display: flex;
                 flex-direction: column;
                 font-family: 'Inter', sans-serif;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box;
             }
 
             #mx-control-panel.active {
-                right: 0;
+                right: 0 !important;
             }
 
             .mx-header {
@@ -120,8 +123,28 @@ const UIStyles = {
             .mx-content {
                 flex: 1;
                 overflow-y: auto;
+                overflow-x: hidden;
                 padding: 20px;
                 background: transparent;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255,255,255,0.1) transparent;
+            }
+
+            .mx-content::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .mx-content::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .mx-content::-webkit-scrollbar-thumb {
+                background: rgba(255,255,255,0.1);
+                border-radius: 10px;
+            }
+
+            .mx-content::-webkit-scrollbar-thumb:hover {
+                background: rgba(255,255,255,0.2);
             }
 
             .mx-card {

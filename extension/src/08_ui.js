@@ -452,99 +452,80 @@ const UI = {
         panel.id = "mx-control-panel";
         panel.innerHTML = `
             <div class="mx-header" id="mx-panel-header" style="
-                background: linear-gradient(165deg, ${PALETTE.itau_orange} 0%, ${PALETTE.itau_blue_dark} 100%);
-                padding: 0;
+                background: linear-gradient(135deg, ${PALETTE.itau_orange} 0%, ${PALETTE.itau_blue_dark} 100%);
+                padding: 12px 16px;
                 position: relative;
                 overflow: hidden;
-                cursor: pointer;
-                user-select: none;
-                border-bottom: 1px solid rgba(255,255,255,0.1);
+                width: 100%;
+                box-sizing: border-box;
+                border-bottom: 2px solid rgba(255,255,255,0.1);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                min-height: 60px;
             ">
-                <!-- Capas decorativas de vidrio/aura -->
-                <div style="position: absolute; top: -50px; left: -50px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); filter: blur(40px); border-radius: 50%;"></div>
-                <div style="position: absolute; bottom: -30px; right: -20px; width: 120px; height: 120px; background: rgba(0,0,0,0.2); filter: blur(30px); border-radius: 50%;"></div>
-                
-                <!-- Contenido superior (Logo + Sync + Close) -->
-                <div style="padding: 20px 20px 10px; position: relative; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="8">
-                            <ellipse cx="50" cy="50" rx="45" ry="18" transform="rotate(-30 50 50)" opacity="0.4" />
-                            <circle cx="50" cy="50" r="12" fill="white" />
-                        </svg>
-                        <span style="font-size: 9px; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.9;">Monexa Flow</span>
-                    </div>
-
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="mx-sync-badge" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 8px;">
-                            <div id="mx-sync-dot" class="mx-sync-dot" style="width: 6px; height: 6px;"></div>
-                            <span style="font-size: 9px; font-weight: 800; color: white; opacity: 0.8;">Sync</span>
-                        </div>
-                        <button id="mx-panel-close" style="
-                            background: rgba(0,0,0,0.2);
-                            border: 1px solid rgba(255,255,255,0.15);
-                            color: white;
-                            width: 28px; height: 28px;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            display: flex; align-items: center; justify-content: center;
-                            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                        " onmouseenter="this.style.background='rgba(239, 68, 68, 0.2)'; this.style.borderColor='rgba(239, 68, 68, 0.4)';"
-                           onmouseleave="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.15)';"
-                        >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Perfil del Auditor (Glassmorphism) -->
-                <div style="padding: 15px 20px 25px; position: relative; display: flex; align-items: center; gap: 18px;">
+                <!-- Branding & Auditor Compact -->
+                <div style="display: flex; align-items: center; gap: 12px; position: relative; z-index: 5; flex: 1; min-width: 0;">
+                    <!-- Avatar Mini Glass -->
                     <div style="
-                        width: 64px; height: 64px;
-                        background: rgba(255, 255, 255, 0.1);
-                        backdrop-filter: blur(12px);
-                        -webkit-backdrop-filter: blur(12px);
+                        width: 36px; height: 36px;
+                        background: rgba(255, 255, 255, 0.15);
+                        backdrop-filter: blur(8px);
                         border: 1px solid rgba(255, 255, 255, 0.2);
-                        border-radius: 22px;
+                        border-radius: 10px;
                         display: flex; align-items: center; justify-content: center;
-                        font-size: 28px; font-weight: 900; color: white;
-                        text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                        font-size: 16px; font-weight: 900; color: white;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
                         flex-shrink: 0;
-                        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-                        transform: perspective(100px) rotateY(-5deg);
                     ">${(config.user || "?")[0].toUpperCase()}</div>
 
-                    <div style="flex: 1; min-width: 0;">
-                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Auditoría Activa</div>
-                        <div style="font-size: 22px; font-weight: 900; color: white; letter-spacing: -0.5px; line-height: 1; word-break: break-all;">
-                            ${(config.user || "Invitado").toUpperCase()}
+                    <div style="min-width: 0; flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="font-size: 14px; font-weight: 900; color: white; letter-spacing: -0.3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                ${(config.user || "Invitado").toUpperCase()}
+                            </span>
                         </div>
-                        <div style="margin-top: 8px;">
-                            <a id="mx-panel-logout" href="#" style="
-                                display: inline-flex; align-items: center; gap: 6px;
-                                background: rgba(0,0,0,0.2);
-                                padding: 4px 10px;
-                                border-radius: 6px;
-                                font-size: 10px; font-weight: 800; color: white;
-                                text-decoration: none;
-                                border: 1px solid rgba(255,255,255,0.05);
-                                transition: all 0.3s;
-                            " onmouseenter="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)';"
-                               onmouseleave="this.style.background='rgba(0,0,0,0.2)'; this.style.borderColor='rgba(255,255,255,0.05)';"
-                            >
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
-                                </svg>
-                                Cerrar Sesión
-                            </a>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 1px;">
+                            <div class="mx-sync-badge" style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 4px;">
+                                <div id="mx-sync-dot" class="mx-sync-dot" style="width: 5px; height: 5px;"></div>
+                            <span style="font-size: 7px; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase;">Protección Local</span>
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.6; color: white;">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Línea decorativa inferior -->
-            <div style="height: 3px; background: linear-gradient(90deg, var(--itau-blue), var(--itau-blue-dark), transparent);"></div>
+            <!-- Controles Compactos -->
+                <div style="display: flex; align-items: center; gap: 8px; position: relative; z-index: 5;">
+                    <a id="mx-panel-logout" href="#" title="Salir del Sistema" style="
+                        width: 32px; height: 32px;
+                        display: flex; align-items: center; justify-content: center;
+                        background: rgba(255,255,255,0.1);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 8px; color: white; transition: all 0.2s;
+                    " onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </a>
+                    
+                    <button id="mx-panel-close" title="Cerrar Panel" style="
+                        background: rgba(0,0,0,0.3);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        color: white; width: 32px; height: 32px;
+                        border-radius: 8px; cursor: pointer;
+                        display: flex; align-items: center; justify-content: center;
+                        transition: all 0.2s;
+                    " onmouseenter="this.style.background='rgba(239, 68, 68, 0.4)'" onmouseleave="this.style.background='rgba(0,0,0,0.3)'">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
             <div class="mx-content">
                 ${updateHtml}
