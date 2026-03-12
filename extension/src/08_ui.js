@@ -394,7 +394,7 @@ const UI = {
         l.id = "mx-disabled-launcher";
         l.innerHTML = `
             <div style="width:24px; height:24px; background:white; border-radius:50%; position:absolute; left:4px; box-shadow:0 2px 5px rgba(0,0,0,0.2); transition:left 0.3s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-            <div style="font-size:11px; font-weight:700; color:white; margin-left:34px; letter-spacing:0.5px; transition:color 0.3s;">OFF</div>
+            <div style="font-size:11px; font-weight:700; color:white; margin-left:34px; letter-spacing:0.5px; transition:color 0.3s;">ON</div>
         `;
         l.title = "Monexa desactivado. Click para activar.";
         l.style.cssText = `
