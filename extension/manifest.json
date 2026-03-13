@@ -10,7 +10,10 @@
   },
   "host_permissions": [
     "*://*.itau.com.uy/*",
-    "*://*.itaulink.com.uy/*"
+    "*://*.itaulink.com.uy/*",
+    "*://*.santander.com.uy/*",
+    "*://*.bbva.com.uy/*",
+    "*://*.brou.com.uy/*"
   ],
   "permissions": [
     "storage",
@@ -22,13 +25,17 @@
     {
       "matches": [
         "https://personas.itau.com.uy/*",
-        "https://www.itaulink.com.uy/*"
+        "https://www.itaulink.com.uy/*",
+        "https://*.santander.com.uy/*",
+        "https://*.bbva.com.uy/*",
+        "https://ebrou.com.uy/*"
       ],
       "css": [
         "style.css"
       ],
       "js": [
         "src/00_config.js",
+        "src/00b_adapters.js",
         "src/01_db.js",
         "src/02_logger.js",
         "src/03_system.js",
@@ -57,7 +64,10 @@
       ],
       "matches": [
         "https://personas.itau.com.uy/*",
-        "https://www.itaulink.com.uy/*"
+        "https://www.itaulink.com.uy/*",
+        "https://*.santander.com.uy/*",
+        "https://*.bbva.com.uy/*",
+        "https://ebrou.com.uy/*"
       ]
     }
   ]

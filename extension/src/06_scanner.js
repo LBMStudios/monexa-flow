@@ -181,97 +181,52 @@ const Scanner = {
             
             if (dlTags.innerHTML !== tagsHTML) dlTags.innerHTML = tagsHTML;
             if (dlNotes.innerHTML !== notesHTML) dlNotes.innerHTML = notesHTML;
-            // ------------------------------------------------------------
-
-            // Busca el contenedor de tabla activo de forma tolerante
-            const view =
-                document.querySelector(".tab-pane.active") ||
-                document.querySelector("#principal") ||
-                document.querySelector(".contenedor-tabla") ||
-                document.body;
-
-            const rows = view.querySelectorAll("tbody tr");
+            // -------------------------------------------            // DETECCIÓN DINÁMICA DE BANCO
+            const adapter = (typeof AdapterEngine !== 'undefined') ? AdapterEngine.getAdapter() : BANK_ADAPTERS.ITAU;
+            
+            const view = document.querySelector(adapter.tableContainer) || document.body;
+            const rows = view.querySelectorAll(adapter.rowSelector);
 
             let dbUpdated = false;
 
             for (const row of rows) {
-                if (row.hasAttribute('data-monexa-ready') || row.cells.length < 3) continue;
-
-                const cells = row.querySelectorAll("td");
-                const nCols = cells.length;
-
-                // Helper para limpiar espacios invisibles de las celdas del banco
-                const extractAndClean = (cell) => (cell?.innerText || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
-
-                const fecha = extractAndClean(cells[0]);
-                const concepto = extractAndClean(cells[1]);
-
-                // NUEVO: Extraer información visual directa de links/hipervínculos Y DATA TÉCNICA
-                let extra = "";
+                if (row.hasAttribute('data-monexa-ready')) continue;
                 
-                // Itaú suele pintar de azul y poner como hipervínculo la info valiosa en la segunda celda.
-                // Buscamos cualquier elemento dentro de la celda que destaque (enlace, botón, o span con clase)
-                const clickable = cells[1].querySelector('a, button, span.link, [onclick], [data-id], [data-nro]');
+                const cells = row.querySelectorAll("td");
+                if (cells.length < adapter.minCells) continue;
+
+                // Extraer datos usando la lógica del adaptador específico
+                const rawData = adapter.map(cells);
+                
+                const fecha    = rawData.fecha;
+                const concepto = rawData.concepto;
+                const debito   = rawData.debito;
+                const credito  = rawData.credito;
+                const saldo    = rawData.saldo;
+
+                // NUEVO: Extraer información visual extra (Solo si el adaptador lo soporta o vía genérica)
+                let extra = "";
+                const clickable = rawData.extraSelector ? cells[1].querySelector(rawData.extraSelector) : cells[1].querySelector('a, button, span.link');
                 
                 if (clickable) {
-                    const visibleText = extractAndClean(clickable);
+                    const visibleText = (clickable.innerText || "").trim();
                     const onclickText = clickable.getAttribute('onclick') || "";
-                    const titleText   = clickable.getAttribute('title') || "";
-                    const dataId      = clickable.getAttribute('data-id') || clickable.getAttribute('data-nro') || "";
-
-                    // 1. Prioridad: Texto que el humano realmente leyó
+                    
                     if (visibleText && visibleText.toLowerCase() !== concepto.toLowerCase()) {
                         extra = visibleText;
                     } 
                     
-                    // 2. Enriquecimiento técnico: Capturar IDs de operaciones (clave para auditoría forense)
-                    const technicalMatch = onclickText.match(/['"](\d{6,})['"]/) || onclickText.match(/(\d{10,})/);
-                    if (technicalMatch) {
-                        const techId = technicalMatch[1];
-                        extra += (extra ? " | ID:" : "ID:") + techId;
-                    }
-
-                    // 3. Atributos de ayuda
-                    if (titleText && !extra.includes(titleText) && titleText.toLowerCase() !== concepto.toLowerCase()) {
-                        extra += (extra ? " | " : "") + titleText;
-                    }
-
-                    if (dataId && !extra.includes(dataId)) {
-                        extra += (extra ? " | REF:" : "REF:") + dataId;
-                    }
-                }
-
-                // Ignorar filas que no sean movimientos reales (ej: Saldo anterior, cotizaciones)
-                const fLower = fecha.toLowerCase();
-                if (!fecha || !concepto || concepto.toLowerCase().includes('saldo') || fLower.includes('u$s') || fLower.includes('pizarra') || fLower.includes('brou')) {
-                    continue;
-                }
-
-                // Itaú: Fecha | Concepto | Débito | Crédito | Saldo
-                let debito = '';
-                let credito = '';
-                let saldo = '';
-
-                if (nCols >= 5) {
-                    // Tabla estándar de Itaú: col2=débito, col3=crédito, col4=saldo
-                    debito = extractAndClean(cells[2]);
-                    credito = extractAndClean(cells[3]);
-                    saldo = extractAndClean(cells[4]);
-                } else if (nCols >= 4) {
-                    debito = extractAndClean(cells[2]);
-                    credito = extractAndClean(cells[3]);
-                } else {
-                    debito = extractAndClean(cells[nCols - 1]);
+                    const techMatch = onclickText.match(/['"](\d{6,})['"]/) || onclickText.match(/(\d{10,})/);
+                    if (techMatch) extra += (extra ? " | ID:" : "ID:") + techMatch[1];
                 }
 
                 // Contabilidad Avanzada: Detección de Moneda y Contexto
                 const moneda = DataCore.normalizeCurrency(row.innerText + (this.currentAccount || ""));
                 const direction = DataCore.detectDirection(debito, credito);
-                const amount = DataCore.normalizeAmount(debito || credito);
+                const amount = DataCore.normalizeAmount(direction === 'OUT' ? debito : credito);
 
-                // Fingerprint basado en cuenta + moneda + fecha + concepto + débito + crédito + saldo
-                const importeKey = debito || credito || '';
-                const hash = DataCore.createFingerprint(concepto, importeKey, fecha, saldo, moneda, this.currentAccount || "GLOBAL");
+                // Fingerprint basado en cuenta + moneda + fecha + concepto + importe + saldo
+                const hash = DataCore.createFingerprint(concepto, (debito || credito || ''), fecha, saldo, moneda, this.currentAccount || "GLOBAL");
                 let record = db.items[hash];
 
                 // Guardar el hash en el dataset de la fila para delegación de eventos
