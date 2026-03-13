@@ -15,11 +15,13 @@ const Scanner = {
     observer: null,
     currentAccount: null,   // Número/nombre de cuenta detectado en el DOM
     _debounceTimer: null,   // Timer para debounce del observer
+    _worker: null,          // Instancia del Web Worker
 
     /**
      * Inicializa el scanner: procesa el DOM actual y activa el MutationObserver.
      */
     async init() {
+        this.initWorker();
         this.initEventListeners();
         await this.processDOM();
 
@@ -99,6 +101,44 @@ const Scanner = {
         const rows = document.querySelectorAll('tr[data-monexa-ready]');
         rows.forEach(r => r.removeAttribute('data-monexa-ready'));
         await this.processDOM();
+    },
+
+    /**
+     * Inicializa el Web Worker si no existe.
+     */
+    initWorker() {
+        if (this._worker) return;
+        try {
+            // Cargar worker desde la raíz de la extensión
+            this._worker = new Worker(chrome.runtime.getURL('src/01a_worker.js'));
+        } catch (e) {
+            console.error("No se pudo iniciar el Monexa Worker:", e);
+        }
+    },
+
+    /**
+     * Envía una fila al worker y devuelve una promesa con el resultado.
+     */
+    async processRowAsync(data, rules, dbItems) {
+        if (!this._worker) return { matchRule: null, prediction: null };
+
+        return new Promise((resolve) => {
+            const requestId = Math.random().toString(36).substring(7);
+            
+            const handler = (e) => {
+                if (e.data.action === 'ROW_PROCESSED' && e.data.requestId === requestId) {
+                    this._worker.removeEventListener('message', handler);
+                    resolve(e.data.result);
+                }
+            };
+            
+            this._worker.addEventListener('message', handler);
+            this._worker.postMessage({
+                action: 'PROCESS_ROW',
+                requestId,
+                data: { ...data, rules, dbItems }
+            });
+        });
     },
 
     /**
@@ -238,34 +278,16 @@ const Scanner = {
                 row.dataset.monexaHash = hash;
 
 
-                // Buscar si hace match con alguna regla
-                // Prioridad: primero reglas con texto+importe (más específicas), luego solo texto
-                const c_clean = concepto.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
-                const e_clean = extra.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
-                const normalizeAmt = (s) => (s || '').replace(/[.\s]/g, '').replace(/,/g, '').trim();
-                const sortedRules = [...rules].sort((a, b) => (b.importe ? 1 : 0) - (a.importe ? 1 : 0));
+                // DELEGACIÓN AL WORKER (OFF-MAIN-THREAD)
+                const workerResult = await this.processRowAsync(
+                    { concepto, extra, debito, credito },
+                    rules,
+                    db.items
+                );
 
-                const matchRule = sortedRules.find(r => {
-                    const r_clean = (r.pattern || "").replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
-                    if (!r_clean) return false;
-
-                    // Match en concepto O en info extra (links)
-                    const matchConcepto = c_clean.includes(r_clean);
-                    const matchExtra = e_clean.includes(r_clean);
-
-                    if (!matchConcepto && !matchExtra) return false;
-
-                    // Si la regla tiene importe, verificar que coincida
-                    if (r.importe) {
-                        const rAmt = normalizeAmt(r.importe);
-                        const txAmt = normalizeAmt(debito) || normalizeAmt(credito);
-                        return rAmt === txAmt;
-                    }
-                    return true;
-                });
+                const { matchRule, prediction } = workerResult;
 
                 // Crear registro en la DB obligatoriamente si no existe
-                // (Para que SIEMPRE aparezca en el Dashboard aunque el usuario no interactúe con él)
                 if (!record) {
                     record = {
                         fecha, concepto, extra, debito, credito, saldo,
@@ -280,14 +302,12 @@ const Scanner = {
                     db.items[hash] = record;
                     dbUpdated = true;
                 } else {
-                    // Acción retroactiva: Si ya existía pero no tenía 'extra' o cambió, lo actualizamos
                     if (extra && record.extra !== extra) {
                         record.extra = extra;
                         dbUpdated = true;
                     }
 
                     if (matchRule && (!record.tag || record.tag.trim().toLowerCase() === 'etiqueta') && (record.status === "NONE" || record.status === "PENDING")) {
-                        // Acción retroactiva: Si ya existía sin etiquetar, le aplica la nueva regla
                         record.tag = matchRule.label;
                         record.note = matchRule.note || "Auto-Match (Retroactivo)";
                         record.status = "VERDE";
@@ -297,13 +317,8 @@ const Scanner = {
                     }
                 }
 
-                // Predictive UX: Si no hay match de regla, buscar Ghost Prediction
-                let prediction = null;
-                if (!matchRule && record.status === 'NONE') {
-                    prediction = DataCore.getPrediction(concepto, db.items);
-                    if (prediction) {
-                        row.dataset.mxPrediction = JSON.stringify(prediction);
-                    }
+                if (prediction && record.status === 'NONE') {
+                    row.dataset.mxPrediction = JSON.stringify(prediction);
                 }
 
                 this.renderRowUI(
@@ -660,6 +675,7 @@ const Scanner = {
             }
         });
 
+        document.body.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && (e.target.classList.contains('it-field-tag') || e.target.classList.contains('it-field-note'))) {
                 e.target.blur();
             }
