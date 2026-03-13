@@ -387,6 +387,7 @@ const UI = {
         }
     },
 
+
     /**
      * Renderiza el botón flotante en modo "OFF" cuando el sistema está desactivado.
      */
@@ -517,7 +518,7 @@ const UI = {
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>
                         </svg>
                     </a>
-                    
+
                     <button id="mx-panel-close" title="Cerrar Panel" style="
                         background: rgba(0,0,0,0.3);
                         border: 1px solid rgba(255,255,255,0.1);
@@ -582,26 +583,9 @@ const UI = {
                             </div>
                         </div>
 
-                        <!-- Generador de Llaves Integrado -->
-                        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px;">
-                            <div style="font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;">GENERADOR DE LLAVES OFFLINE:</div>
-                            <div style="display: flex; gap: 12px; align-items: center;">
-                                <input type="text" id="mx-admin-gen-id" placeholder="ID de Instalación..." style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; color: white; font-size: 14px; font-family: 'Outfit', sans-serif;">
-                                <button id="mx-btn-admin-gen" style="background: #3b82f6; color: white; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">GENERAR</button>
-                            </div>
-                            <div id="mx-admin-gen-result" style="display: none; margin-top: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 20px; text-align: center;">
-                                <div style="font-size: 10px; color: #10b981; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">TOKEN DEL MES:</div>
-                                <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
-                                    <div id="mx-admin-key-val" style="background: rgba(255,255,255,0.95); color: #0f172a; padding: 10px 20px; border-radius: 12px; font-size: 24px; font-weight: 900; letter-spacing: 3px; font-family: 'Outfit', sans-serif; box-shadow: 0 0 20px rgba(255,255,255,0.1);">---</div>
-                                    <button id="mx-btn-admin-copy-key" style="background: white; color: #0f172a; border: none; padding: 8px 16px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">COPIAR</button>
-                                </div>
-                            </div>
-                        </div>
-                        
+
                         <div style="font-size: 10px; color: rgba(255,255,255,0.2); text-align: center; margin-top: 24px;">Monexa Flow — Módulo de Administración</div>
                     </div>
-                ` : ''}
-</div>
                 ` : ''}
 
 
@@ -635,15 +619,10 @@ const UI = {
                                 "></div>
                             </div>
                         </div>
+
                     </div>
                 ` : `
-                    <div class="mx-card" style="padding: 30px 20px; text-align: center; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1);">
-                        <div style="font-size: 32px; margin-bottom: 15px;">🔒</div>
-                        <h4 style="margin-bottom: 8px;">Funciones Bloqueadas</h4>
-                        <p style="font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.4;">
-                            Active su licencia para habilitar el motor de reglas, el dashboard de estadísticas y el etiquetado de movimientos.
-                        </p>
-                    </div>
+                    <!-- El sistema ahora está siempre activo en Itaú Direct Edition -->
                 `}
 
                 <!-- Integridad Contable (Gap Detection) -->
@@ -1019,25 +998,6 @@ const UI = {
             }
         };
 
-        if (document.getElementById('mx-btn-copy-id')) {
-            document.getElementById('mx-btn-copy-id').onclick = () => {
-                navigator.clipboard.writeText(installID);
-                alert("ID de Instalación copiado al portapapeles.");
-            };
-        }
-
-        if (document.getElementById('mx-btn-activate')) {
-            document.getElementById('mx-btn-activate').onclick = async () => {
-                const key = document.getElementById('mx-input-activation').value.trim();
-                const res = await LicenseSystem.activate(key);
-                if (res.success) {
-                    alert("¡Sistema activado exitosamente!");
-                    location.reload();
-                } else {
-                    alert("Llave de acceso inválida. Verifique el código o consulte a su asesor.");
-                }
-            };
-        }
 
         if ((config.user || "").toLowerCase() === 'lucas') {
             await this.refreshAdminUserList();
@@ -1148,37 +1108,6 @@ const UI = {
             };
         }
 
-        // Generar Llave
-        const genBtn = document.getElementById('mx-btn-admin-gen');
-        if (genBtn) {
-            genBtn.onclick = async () => {
-                const id = document.getElementById('mx-admin-gen-id').value.trim();
-                if (!id) { alert("Ingresa un ID de instalación"); return; }
-                
-                const now = new Date();
-                const monthYear = (now.getMonth() + 1).toString().padStart(2, '0') + now.getFullYear();
-                
-                const finalKey = await LicenseSystem._calculateKey(id, monthYear);
-                
-                const resultCont = document.getElementById('mx-admin-gen-result');
-                const keyVal = document.getElementById('mx-admin-key-val');
-                if (keyVal && resultCont) {
-                    keyVal.innerText = finalKey;
-                    resultCont.style.display = 'block';
-                    resultCont.style.animation = 'mxFadeIn 0.4s ease-out';
-                }
-            };
-        }
-
-        // Copiar Llave
-        const copyKeyBtn = document.getElementById('mx-btn-admin-copy-key');
-        if (copyKeyBtn) {
-            copyKeyBtn.onclick = () => {
-                const key = document.getElementById('mx-admin-key-val').innerText;
-                navigator.clipboard.writeText(key);
-                alert("Llave de acceso copiada al portapapeles.");
-            };
-        }
     },
 
     /**

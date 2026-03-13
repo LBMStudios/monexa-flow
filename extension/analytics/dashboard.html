@@ -57,6 +57,17 @@
                     </div>
                 </div>
 
+                <div class="sidebar-user-section">
+                    <div class="user-avatar-wrapper">
+                        <div class="user-avatar" id="sidebar-user-avatar">?</div>
+                        <div class="user-status-dot"></div>
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="sidebar-user-name">Iniciando...</div>
+                        <div class="user-role" id="sidebar-user-role">AUDITOR</div>
+                    </div>
+                </div>
+
                 <nav class="sidebar-nav">
                     <a href="#" class="nav-item active"><span class="icon">⊞</span> <span
                             class="nav-label">Dashboard</span></a>
@@ -71,15 +82,6 @@
         <div class="orb-main-content">
             <!-- STICKY TOP CONTAINER -->
             <div class="dash-sticky-top">
-                <!-- UPDATE BANNER (Hidden by default) -->
-                <div id="mx-update-banner" class="update-banner" style="display:none;">
-                    <div class="update-banner-content">
-                        <span class="update-icon">🚀</span>
-                        <span class="update-text">¡Nueva versión disponible (<span id="mx-new-version-val"></span>)! </span>
-                        <a href="https://github.com/lbmstudios/monexa-flow/archive/refs/heads/main.zip" target="_blank" class="update-link">Descargar ZIP</a>
-                        <button id="mx-close-update" class="update-close">&times;</button>
-                    </div>
-                </div>
                 <!-- HEADER -->
                 <header class="orb-header">
                     <div class="header-greeting">
@@ -246,30 +248,6 @@
                     </div>
                 </section>
 
-                <!-- ADMIN RELEASE SECTION (Only for role: admin) -->
-                <section id="admin-release-section" class="glass-card" style="display:none; margin-bottom: 30px; border-left: 4px solid #f59e0b; padding: 25px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                        <div>
-                            <h3 style="color: #f59e0b; margin-bottom: 4px;">🚀 Publicador de Actualización</h3>
-                            <p style="font-size: 13px; color: rgba(255,255,255,0.6);">Notifica instantáneamente a todos los usuarios de Monexa sobre una nueva versión.</p>
-                        </div>
-                        <div id="release-status-badge" style="font-size: 11px; padding: 4px 10px; border-radius: 6px; background: rgba(16,185,129,0.1); color: #10b981; font-weight: 700;">SISTEMA ONLINE</div>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 200px 1fr 200px; gap: 20px; align-items: flex-end;">
-                        <div class="filter-group">
-                            <label>Versión Nueva (ej: 1.2.1)</label>
-                            <input type="text" id="admin-new-ver-input" class="filter-input" placeholder="X.X.X">
-                        </div>
-                        <div class="filter-group">
-                            <label>Notas de Cambio (Changelog)</label>
-                            <input type="text" id="admin-changelog-input" class="filter-input" placeholder="Ej: Mejoras en UI y buscador...">
-                        </div>
-                        <div>
-                            <button id="btn-admin-publish" class="btn-orb-primary" style="width: 100%; height: 38px;">Lanzar Actualización</button>
-                        </div>
-                    </div>
-                </section>
 
                 <!-- ===== GRÁFICO + TAGS ===== -->
                 <section class="charts-row">
@@ -420,19 +398,6 @@
             <div class="orb-modal-footer">
                 <button id="btn-close-modal-extra-2" class="btn-orb-secondary">Cerrar</button>
             </div>
-        </div>
-    </div>
-    <!-- ===== ROCKET LAUNCH OVERLAY ===== -->
-    <div id="mx-rocket-overlay" class="mx-rocket-overlay">
-        <div id="mx-rocket-particles" class="launch-particles"></div>
-        <div class="rocket-container">
-            <div class="rocket-flame"></div>
-            <div class="rocket-icon">🚀</div>
-        </div>
-        <div class="launch-success-msg">
-            <div class="launch-title">¡Actualización Lanzada!</div>
-            <div class="launch-subtitle">Todos los auditores recibirán el aviso de inmediato.</div>
-            <button id="btn-close-rocket" class="btn-orb-secondary" style="margin-top: 30px; padding: 10px 40px;">Cerrar Panel</button>
         </div>
     </div>
 </body>

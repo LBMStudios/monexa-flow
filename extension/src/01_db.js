@@ -33,43 +33,52 @@ const DB_Engine = {
         });
     },
 
+    // Lista de llaves que NO se cifran (Metadata pública del sistema)
+    _publicKeys: [KEYS.USERS, KEYS.LICENSE, KEYS.SYSTEM_STATE, KEYS.REMOTE_VERSION, KEYS.UPDATE_STATUS],
+
     async fetch(key, fallback = null) {
         try {
             const db = await this._getDB();
-            return new Promise((resolve) => {
+            let rawData = await new Promise((resolve) => {
                 const transaction = db.transaction([this._storeName], 'readonly');
                 const store = transaction.objectStore(this._storeName);
                 const request = store.get(key);
-                request.onsuccess = () => resolve(request.result ?? fallback);
-                request.onerror = () => resolve(fallback);
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = () => resolve(null);
             });
+
+            if (rawData === undefined || rawData === null) return fallback;
+
+            // Retorno directo sin descifrado
+            return rawData;
         } catch (e) {
-            console.warn("DB_Engine.fetch falló, usando chrome.storage como fallback", e);
-            // Fallback para entornos donde IndexedDB falle (legacy)
-            return new Promise(r => chrome.storage.local.get([key], res => r(res[key] ?? fallback)));
+            console.error("DB_Engine.fetch falló para la llave:", key, e);
+            return fallback;
         }
     },
 
-    async commit(key, data, doCloudSync = true) {
+    async commit(key, data) {
         try {
             const db = await this._getDB();
+            
+            // Guardado directo sin cifrado
+            const preparedData = data;
+
             const success = await new Promise((resolve) => {
                 const transaction = db.transaction([this._storeName], 'readwrite');
                 const store = transaction.objectStore(this._storeName);
-                const request = store.put(data, key);
+                const request = store.put(preparedData, key);
                 request.onsuccess = () => resolve(true);
                 request.onerror = () => resolve(false);
             });
 
             if (success) {
                 // Sincronización Transparente con Firebase (SOLO METADATOS CRITICOS)
-                if (doCloudSync && typeof CloudConnector !== 'undefined') {
+                if (typeof CloudConnector !== 'undefined') {
                     if (key === KEYS.USERS) {
-                        CloudConnector.pushRemoteUsers(data);
+                        CloudConnector.pushRemoteUsers(data); // El cloud connector maneja su propio cifrado o transporte seguro
                     }
                 }
-                // Backup ligero en chrome.storage para redundancia
-                chrome.storage.local.set({ [key]: data });
             }
 
             return success;
@@ -93,6 +102,21 @@ const DB_Engine = {
             } catch (e) {
                 console.warn("DB_Engine.purge error:", e);
             }
+        }
+    },
+    async clearEverything() {
+        try {
+            const db = await this._getDB();
+            return new Promise((resolve) => {
+                const transaction = db.transaction([this._storeName], 'readwrite');
+                const store = transaction.objectStore(this._storeName);
+                const request = store.clear();
+                request.onsuccess = () => resolve(true);
+                request.onerror = () => resolve(false);
+            });
+        } catch (e) {
+            console.error("DB_Engine.clearEverything error:", e);
+            return false;
         }
     }
 };

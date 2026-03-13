@@ -31,14 +31,17 @@ let _currentKPIs = { total: 0, verde: 0, amarillo: 0, rojo: 0, notag: 0, pct: 0 
 // ============================================================
 // Fetch de storage
 // ============================================================
-function storageGet(key, fallback) {
+// ============================================================
+// Fetch de storage (Unificado v1.3.6)
+// ============================================================
+async function storageGet(key, fallback) {
+    if (typeof DB_Engine !== 'undefined') {
+        return await DB_Engine.fetch(key, fallback);
+    }
+    // Fallback de emergencia si DB_Engine no cargó
     return new Promise(resolve => {
         try {
-            const storage = chrome.storage.local;
-            storage.get([key], res => {
-                if (chrome.runtime.lastError) { resolve(fallback); return; }
-                resolve(res[key] ?? fallback);
-            });
+            chrome.storage.local.get([key], res => resolve(res[key] ?? fallback));
         } catch (_) { resolve(fallback); }
     });
 }
@@ -73,144 +76,64 @@ chrome.storage.onChanged.addListener((changes, area) => {
     }
 });
 
-// ============================================================
-// Sistema de Actualización (Sideloading)
-// ============================================================
-async function checkUpdate() {
-    try {
-        const currentVersion = VERSION; // Usar la constante global sync
-        let latestVersion = null;
-
-        // 1. Intentar desde Cloud (Firebase) para aviso instantáneo
-        if (typeof CloudConnector !== 'undefined') {
-            const cloudVer = await CloudConnector.syncRemoteVersion();
-            if (cloudVer) latestVersion = cloudVer.version;
-        }
-
-        // 2. Fallback a GitHub (Landing)
-        if (!latestVersion) {
-            const UPDATE_URL = "https://raw.githubusercontent.com/lbmstudios/monexa-flow/main/landing/version.json"; 
-            const response = await fetch(UPDATE_URL + "?t=" + Date.now());
-            if (response.ok) {
-                const data = await response.json();
-                latestVersion = data.version;
-            }
-        }
-
-        if (latestVersion && latestVersion !== currentVersion) {
-            const banner = document.getElementById('mx-update-banner');
-            const versionVal = document.getElementById('mx-new-version-val');
-            
-            if (banner && versionVal) {
-                versionVal.textContent = latestVersion;
-                banner.style.display = 'block';
-            }
-        }
-    } catch (e) {
-        console.warn("[Monexa Update] Error al verificar actualizaciones:", e);
-    }
-}
-
-// Handler para cerrar el banner de actualización
-document.addEventListener('click', e => {
-    if (e.target && e.target.id === 'mx-close-update') {
-        const banner = document.getElementById('mx-update-banner');
-        if (banner) banner.style.display = 'none';
-    }
-});
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Header meta
+    // Header meta & Identity Fail-Safe v1.3.7
     const config = await storageGet(KEYS.SETTINGS, {});
+    const users = await storageGet(KEYS.USERS, []);
     const now = new Date();
 
-    // Greeting name
+    // 1. Resolver Identidad (Validación Cruzada)
+    let userSession = config.user || '';
+    let userRole = config.role || 'user';
+    
+    // Si la sesión es genérica o vacía, buscamos al primer administrador
+    if ((!userSession || userSession === 'Auditor') && users.length > 0) {
+        const adminUser = users.find(u => u.role === 'admin') || users[0];
+        if (adminUser) {
+            userSession = adminUser.name;
+            userRole = adminUser.role;
+            console.log("[Monexa] Identidad recuperada de DB maestra:", userSession);
+        }
+    }
+
+    // 2. Inyectar en Sidebar Profile Section
+    const sideUserName = document.getElementById('sidebar-user-name');
+    const sideUserRole = document.getElementById('sidebar-user-role');
+    const sideUserAvatar = document.getElementById('sidebar-user-avatar');
+    
+    if (sideUserName) sideUserName.textContent = (userSession || 'Administrador').toUpperCase();
+    if (sideUserRole) sideUserRole.textContent = (userRole === 'admin' ? 'ADMINISTRADOR MAESTRO' : 'AUDITOR');
+    if (sideUserAvatar) sideUserAvatar.textContent = (userSession || 'A').charAt(0).toUpperCase();
+
+    // 3. Greeting name (Header)
     const userNameDisplay = document.getElementById('user-name-display');
-    if (userNameDisplay && config.user) {
-        userNameDisplay.textContent = config.user.charAt(0).toUpperCase() + config.user.slice(1);
+    if (userNameDisplay) {
+        userNameDisplay.textContent = (userSession || 'Auditor').charAt(0).toUpperCase() + (userSession || 'Auditor').slice(1);
     }
 
     const dashMeta = document.getElementById('dash-meta');
     if (dashMeta) {
         dashMeta.innerHTML =
-            `Auditor: <b style="color:white">${(config.user || 'N/D').toUpperCase()}</b><br>` +
+            `Auditor: <b style="color:white">${(userSession || 'N/D').toUpperCase()}</b><br>` +
             now.toLocaleDateString('es-UY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
 
-    // Admin Features
-    if (config.role === 'admin') {
+    // 4. Admin Features Visibility (Fail-Safe v1.3.8)
+    const isActuallyAdmin = userRole === 'admin' || users.length === 0;
+    if (isActuallyAdmin) {
         const navUsers = document.getElementById('nav-users');
         if (navUsers) navUsers.style.display = 'flex';
-
-        const adminReleaseSec = document.getElementById('admin-release-section');
-        if (adminReleaseSec) adminReleaseSec.style.display = 'block';
-
-        const btnPublish = document.getElementById('btn-admin-publish');
-        if (btnPublish) {
-            btnPublish.onclick = async () => {
-                const newVer = document.getElementById('admin-new-ver-input').value.trim();
-                const changelog = document.getElementById('admin-changelog-input').value.trim();
-
-                if (!newVer) { alert("Por favor indica la versión."); return; }
-                
-                btnPublish.disabled = true;
-                btnPublish.textContent = "Publicando...";
-                
-                try {
-                    const ok = await CloudConnector.publishRemoteVersion(newVer, changelog);
-                    if (ok) {
-                        // Lanzar cohete
-                        const overlay = document.getElementById('mx-rocket-overlay');
-                        const particles = document.getElementById('mx-rocket-particles');
-                        if (overlay) {
-                            // Generar partículas aleatorias
-                            particles.innerHTML = "";
-                            for(let i=0; i<30; i++) {
-                                const p = document.createElement('div');
-                                p.className = 'particle';
-                                p.style.left = '50%'; p.style.top = '50%';
-                                p.style.width = Math.random() * 8 + 4 + 'px';
-                                p.style.height = p.style.width;
-                                p.style.setProperty('--tx', (Math.random() - 0.5) * 800 + 'px');
-                                p.style.setProperty('--ty', (Math.random() - 0.5) * 800 + 'px');
-                                particles.appendChild(p);
-                            }
-
-                            overlay.classList.add('active');
-                            setTimeout(() => overlay.classList.add('launching'), 100);
-
-                            const btnCloseRocket = document.getElementById('btn-close-rocket');
-                            if (btnCloseRocket) {
-                                btnCloseRocket.onclick = () => {
-                                    overlay.classList.remove('active', 'launching');
-                                };
-                            }
-                        }
-
-                        document.getElementById('admin-new-ver-input').value = "";
-                        document.getElementById('admin-changelog-input').value = "";
-                    } else {
-                        alert("Error al publicar. Verifica la configuración de Firebase.");
-                    }
-                } catch (e) {
-                    alert("Falla crítica: " + e.message);
-                } finally {
-                    btnPublish.disabled = false;
-                    btnPublish.textContent = "Lanzar Actualización";
-                }
-            };
+        
+        // También mostrar botón de purga admin
+        const btnPurge = document.getElementById('btn-purge-audit');
+        if (btnPurge) {
+            btnPurge.style.display = 'flex';
+            btnPurge.title = (userRole === 'admin') ? 'Resetear Auditoría Completa' : 'Configurar Master Auditor';
+            btnPurge.addEventListener('click', purgeAudit);
         }
     }
-
-    const btnPurge = document.getElementById('btn-purge-audit');
-    if (btnPurge) {
-        btnPurge.style.display = 'flex';
-        btnPurge.title = (config.role === 'admin') ? 'Resetear Auditoría Completa' : 'Borrar mis etiquetas y notas';
-        btnPurge.addEventListener('click', purgeAudit);
-    }
     
-    // Check for updates (Sideloading support)
-    checkUpdate();
 
 
     // Sidebar Toggle
@@ -230,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const footerInfo = document.getElementById('footer-info');
     if (footerInfo) {
         footerInfo.innerHTML =
-            `<b>Versión 1.2.3</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
+            `<b>Versión 1.3.1</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
     }
 
     // Cargar datos
@@ -1426,11 +1349,16 @@ function renderLogs() {
 async function purgeAudit() {
     if (confirm("¿Desea eliminar TODAS las etiquetas, notas y reglas de auditoría? Esta acción no afectará a los usuarios registrados ni la configuración del sistema.")) {
         try {
-            // Borrar transacciones (local)
-            await chrome.storage.local.set({ [KEYS.TRANSACTIONS]: { items: {} } });
-
-            // Borrar reglas (sync)
-            await chrome.storage.sync.set({ [KEYS.RULES]: [] });
+            // Borrar transacciones y reglas (v1.3.6 compatible con DB_Engine)
+            if (typeof DB_Engine !== 'undefined') {
+                const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+                db.items = {};
+                await DB_Engine.commit(KEYS.TRANSACTIONS, db);
+                await DB_Engine.commit(KEYS.RULES, []);
+            } else {
+                await chrome.storage.local.set({ [KEYS.TRANSACTIONS]: { items: {} } });
+                await chrome.storage.sync.set({ [KEYS.RULES]: [] });
+            }
 
             // Recargar para reflejar cambios
             document.body.classList.add('fade-out'); // opcional

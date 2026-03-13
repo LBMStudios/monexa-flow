@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Monexa Flow — Auditoría Bancaria",
-  "version": "1.2.5",
+  "version": "1.3.8",
   "icons": {
     "128": "icons/icon128.png"
   },
@@ -10,10 +10,7 @@
   },
   "host_permissions": [
     "*://*.itau.com.uy/*",
-    "*://*.itaulink.com.uy/*",
-    "*://*.santander.com.uy/*",
-    "*://*.bbva.com.uy/*",
-    "*://*.brou.com.uy/*"
+    "*://*.itaulink.com.uy/*"
   ],
   "permissions": [
     "storage",
@@ -25,25 +22,23 @@
     {
       "matches": [
         "https://personas.itau.com.uy/*",
-        "https://www.itaulink.com.uy/*",
-        "https://*.santander.com.uy/*",
-        "https://*.bbva.com.uy/*",
-        "https://ebrou.com.uy/*"
+        "https://www.itaulink.com.uy/*"
       ],
       "css": [
         "style.css"
       ],
       "js": [
         "src/00_config.js",
-        "src/00b_adapters.js",
         "src/01_db.js",
         "src/02_logger.js",
         "src/03_system.js",
+        "src/03b_security.js",
         "src/03a_license.js",
         "src/04_data.js",
         "src/05_filesystem.js",
         "src/06_scanner.js",
         "src/07_search.js",
+        "src/10_simulator.js",
         "src/08a_ui_styles.js",
         "src/08b_ui_login.js",
         "src/08_ui.js",
@@ -64,10 +59,7 @@
       ],
       "matches": [
         "https://personas.itau.com.uy/*",
-        "https://www.itaulink.com.uy/*",
-        "https://*.santander.com.uy/*",
-        "https://*.bbva.com.uy/*",
-        "https://ebrou.com.uy/*"
+        "https://www.itaulink.com.uy/*"
       ]
     }
   ]

@@ -24,16 +24,39 @@ async function saveUsersToDB(usersArray) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Validar que sea admin el que accede
+    // Validar que sea admin el que accede (Validación Redundante v1.3.6)
     const config = await DB_Engine.fetch(KEYS.SETTINGS, {});
-    const role = config.role || 'user';
-    const me = config.user || 'Desconocido';
+    const users = await DB_Engine.fetch(KEYS.USERS, []);
+    const userSession = config.user || '';
+    
+    // Verificamos en ambas fuentes para evitar bloqueos por desincronización
+    const foundUser = users.find(u => u.name.toLowerCase() === userSession.toLowerCase());
+    
+    // FAIL-SAFE v1.3.6: Si no hay usuarios registrados en IndexedDB, permitimos entrada para auto-registro
+    let isActuallyAdmin = false;
+    if (users.length === 0) {
+        console.warn("[Monexa] Base de datos de usuarios vacía. Otorgando acceso de configuración.");
+        isActuallyAdmin = true;
+    } else {
+        isActuallyAdmin = (config.role === 'admin') || (foundUser && foundUser.role === 'admin');
+    }
 
-    if (role !== 'admin') {
+    if (!isActuallyAdmin) {
+        // Log de diagnóstico persistente en consola para el usuario
+        console.error(`[Monexa Access Denied]
+            User: "${userSession}"
+            Session Role: "${config.role}"
+            DB Match: ${foundUser ? 'YES' : 'NO'}
+            DB Role: "${foundUser?.role || 'N/D'}"
+            Total Users in DB: ${users.length}
+        `);
+            
         alert("Acceso denegado. Solo administradores pueden ver este panel.");
         window.location.href = 'dashboard.html';
         return;
     }
+
+    const me = userSession || 'Administrador';
 
     const now = new Date();
     const metaDiv = document.getElementById('dash-meta');

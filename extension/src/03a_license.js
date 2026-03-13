@@ -21,22 +21,9 @@ const LicenseSystem = {
         return license.installID;
     },
 
-    /**
-     * Verifica si la licencia es válida para el mes actual.
-     */
     async isActivated() {
-        const license = await DB_Engine.fetch(KEYS.LICENSE, {});
-        if (!license.activeKey || !license.expiryMonth) return false;
-
-        const now = new Date();
-        const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0') + now.getFullYear();
-        
-        // Si el mes guardado es igual al mes actual, está activo
-        if (license.expiryMonth === currentMonth) {
-            return true;
-        }
-
-        return false;
+        // Itaú Direct Edition: Licencia permanentemente activa para facilitar despliegue
+        return true;
     },
 
     /**

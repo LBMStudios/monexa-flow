@@ -63,50 +63,30 @@ const UILogin = {
                 <p style="color: rgba(255,255,255,0.6); font-size: 16px; margin-bottom: 40px; line-height: 1.6; font-family: 'Outfit', sans-serif;">
                     Bienvenido a <b>Monexa Flow</b>.<br>Ingresa tu Identificador para comenzar el seguimiento.
                 </p>
-
-                <div style="position: relative; margin-bottom: 25px;">
+                <div style="position: relative; margin-bottom: 30px;">
                     <input type="text" id="mx-init-user" placeholder="USUARIO..." autocomplete="off" style="
-                        width: 100%;
-                        padding: 20px;
-                        border-radius: 16px;
-                        border: 1px solid rgba(255,255,255,0.1);
-                        background: rgba(0,0,0,0.3);
-                        color: white;
-                        font-family: 'Outfit', sans-serif;
-                        font-size: 18px;
-                        box-sizing: border-box;
-                        text-align: center;
-                        font-weight: 700;
-                        letter-spacing: 2px;
-                        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                        box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);
+                        width: 100%; padding: 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+                        background: rgba(0,0,0,0.3); color: white; font-family: 'Outfit', sans-serif;
+                        font-size: 16px; text-align: center; font-weight: 700; letter-spacing: 1px;
+                        transition: all 0.3s;
                     " onfocus="this.style.borderColor='${PALETTE.itau_orange}'; this.style.background='rgba(0,0,0,0.5)'; this.style.boxShadow='0 0 0 4px rgba(236,112,0,0.1), inset 0 4px 20px rgba(0,0,0,0.4)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(0,0,0,0.3)'; this.style.boxShadow='inset 0 4px 20px rgba(0,0,0,0.4)'">
                 </div>
                 
                 <button id="mx-init-btn" style="
-                    width: 100%;
-                    padding: 20px;
-                    border-radius: 16px;
-                    border: none;
-                    background: ${PALETTE.itau_orange};
-                    color: white;
-                    font-weight: 800;
-                    font-size: 18px;
-                    cursor: pointer;
-                    margin-bottom: 30px;
-                    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                    box-shadow: 0 10px 30px rgba(236,112,0,0.3);
-                    font-family: 'Outfit', sans-serif;
-                    letter-spacing: 1px;
+                    width: 100%; padding: 20px; border-radius: 16px; border: none;
+                    background: ${PALETTE.itau_orange}; color: white; font-weight: 800;
+                    font-size: 18px; cursor: pointer; margin-bottom: 30px;
+                    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 10px 30px rgba(236,112,0,0.3);
+                    font-family: 'Outfit', sans-serif; letter-spacing: 1px;
                     display: flex; align-items: center; justify-content: center; gap: 10px;
                 " onmouseover="this.style.transform='translateY(-4px) scale(1.02)'; this.style.boxShadow='0 20px 40px rgba(236,112,0,0.4)'" onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(236,112,0,0.3)'">
-                    <span>ACCEDER AL FLUJO</span>
+                    <span>INGRESAR AL SISTEMA</span>
                 </button>
 
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; color: rgba(255,255,255,0.4); font-size: 12px; text-align: left;">
-                    <div style="font-size: 24px;">🛡️</div>
+                <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; color: rgba(255,255,255,0.6); font-size: 11px; text-align: left;">
+                    <div style="font-size: 24px;">👤</div>
                     <div style="line-height: 1.4;">
-                        <b>Entorno Seguro LBM.</b> Esta extensión opera localmente. Sus datos bancarios nunca salen de su navegador.
+                        <b>Identidad de Auditor.</b> Ingrese su usuario autorizado para acceder al panel de seguimiento.
                     </div>
                 </div>
             </div>
@@ -119,9 +99,9 @@ const UILogin = {
 
         loginBtn.onclick = async () => {
             const user = userInput.value.trim();
+            
             if (!user) {
-                userInput.style.borderColor = '#ef4444';
-                userInput.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
+                alert("Por favor, ingrese su usuario.");
                 return;
             }
 
@@ -133,7 +113,7 @@ const UILogin = {
                     <circle cx="12" cy="12" r="10" stroke="white" stroke-width="4" fill="none" style="opacity:0.2;"></circle>
                     <path d="M12 2 a10 10 0 0 1 10 10" stroke="white" stroke-width="4" stroke-linecap="round" fill="none"></path>
                 </svg>
-                <span>VALIDANDO...</span>
+                <span>VERIFICANDO...</span>
             `;
 
             // Lógica de validación de usuarios apoyada en DB_Engine
@@ -141,33 +121,25 @@ const UILogin = {
             let role = 'user';
 
             if (users.length === 0) {
-                // Primer ingreso global, creación del dueño (admin)
-                if (user.toLowerCase() === 'admin') {
-                    role = 'admin';
-                    users.push({ 
-                        name: 'admin', 
-                        role: role, 
-                        enabled: true,
-                        loginCount: 1,
-                        lastActive: new Date().toISOString()
-                    });
-                    await DB_Engine.commit(KEYS.USERS, users);
-                    
-                    // Sincronizar con Firebase de inmediato si está configurado
-                    if (typeof CloudConnector !== 'undefined') {
-                        await CloudConnector.pushRemoteUsers(users);
-                    }
-
-                    await Logger.info(`Primer acceso: cuenta master (admin) creada.`);
-                    alert(`¡Bienvenido! Has sido registrado como Administrador del sistema.`);
-                } else {
-                    // Resetear botón si no es admin en sistema vacío
-                    loginBtn.disabled = false;
-                    loginBtn.style.opacity = '1';
-                    loginBtn.innerHTML = '<span>ACCEDER AL FLUJO</span>';
-                    alert(`El sistema no está inicializado. Inicia sesión con la cuenta maestra ('admin') primero.`);
-                    return;
+                // Primer ingreso global: El primer usuario se convierte en Admin automáticamente
+                role = 'admin';
+                const firstUser = { 
+                    name: user, 
+                    role: role, 
+                    enabled: true,
+                    loginCount: 1,
+                    lastActive: new Date().toISOString()
+                };
+                users.push(firstUser);
+                
+                // Guardado atómico en base de datos maestra
+                await DB_Engine.commit(KEYS.USERS, users);
+                
+                if (typeof CloudConnector !== 'undefined') {
+                    await CloudConnector.pushRemoteUsers(users);
                 }
+
+                await Logger.info(`Primer acceso: cuenta master (${user}) creada como ADMINISTRADOR.`);
             } else {
                 // Validar acceso para sistema ya inicializado
                 const foundUser = users.find(u => u.name.toLowerCase() === user.toLowerCase());
@@ -175,7 +147,6 @@ const UILogin = {
                 const showErrorScreen = (icon, title, message) => {
                     const overlay = document.getElementById('mx-welcome-overlay');
                     if (overlay) {
-                        // Limpiar todo el contenido del overlay y poner la tarjeta de error
                         overlay.innerHTML = `
                             <div style="
                                 background: rgba(255, 255, 255, 0.03);
@@ -212,7 +183,7 @@ const UILogin = {
                 };
 
                 if (!foundUser) {
-                    showErrorScreen('❓', 'Auditor No Encontrado', `El usuario <b>"${user}"</b> no está registrado en el sistema. Solicite acceso al administrador.`);
+                    showErrorScreen('❓', 'Auditor No Encontrado', `El usuario <b>"${user}"</b> no tiene permiso de acceso. Contacte al administrador.`);
                     return;
                 }
                 if (!foundUser.enabled) {
@@ -221,18 +192,16 @@ const UILogin = {
                 }
                 role = foundUser.role || 'user';
 
-                // Actualizar estadísticas de acceso
                 foundUser.loginCount = (foundUser.loginCount || 0) + 1;
                 foundUser.lastActive = new Date().toISOString();
                 await DB_Engine.commit(KEYS.USERS, users);
 
-                // Sincronizar con Firebase de inmediato si está configurado
                 if (typeof CloudConnector !== 'undefined') {
                     await CloudConnector.pushRemoteUsers(users);
                 }
             }
 
-            // Iniciar sesión y guardar contexto (Preservando configuración existente como remote_admin_url)
+            // Iniciar sesión y guardar contexto
             const currentSettings = await DB_Engine.fetch(KEYS.SETTINGS, {});
             const newSettings = { 
                 ...currentSettings, 
@@ -243,8 +212,22 @@ const UILogin = {
             
             await DB_Engine.commit(KEYS.SETTINGS, newSettings);
             await DB_Engine.commit(KEYS.SYSTEM_STATE, { enabled: true });
+            
             await Logger.info(`Sesión iniciada por ${user} (${role})`);
-            window.location.reload(); // Recarga limpia para renderizar el panel
+            
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.remove();
+                    if (typeof UI !== 'undefined') {
+                        UI.renderControlCenter();
+                        UI.renderLauncher();
+                    }
+                    if (typeof Scanner !== 'undefined') {
+                        Scanner.init();
+                    }
+                }, 800);
+            }
         };
     }
 };

@@ -158,11 +158,14 @@ const Scanner = {
                 this.isScanning = false;
                 return;
             }
-
             const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
             const rules = await DB_Engine.fetch(KEYS.RULES, []);
 
             // --- Gestión Eficiente de Datalists ---
+            const allItems = Object.values(db.items || {});
+            const uniqueTags = [...new Set(allItems.map(i => i.tag).filter(t => t))];
+            const uniqueNotes = [...new Set(allItems.map(i => i.note).filter(n => n))];
+
             let dlTags = document.getElementById('mx-data-tags');
             let dlNotes = document.getElementById('mx-data-notes');
             
@@ -181,11 +184,14 @@ const Scanner = {
             
             if (dlTags.innerHTML !== tagsHTML) dlTags.innerHTML = tagsHTML;
             if (dlNotes.innerHTML !== notesHTML) dlNotes.innerHTML = notesHTML;
-            // -------------------------------------------            // DETECCIÓN DINÁMICA DE BANCO
-            const adapter = (typeof AdapterEngine !== 'undefined') ? AdapterEngine.getAdapter() : BANK_ADAPTERS.ITAU;
-            
-            const view = document.querySelector(adapter.tableContainer) || document.body;
-            const rows = view.querySelectorAll(adapter.rowSelector);
+            // BUSCA EL CONTENEDOR DE TABLA ACTIVO (ITAÚ ESPECÍFICO)
+            const view =
+                document.querySelector(".tab-pane.active") ||
+                document.querySelector("#principal") ||
+                document.querySelector(".contenedor-tabla") ||
+                document.body;
+
+            const rows = view.querySelectorAll("tbody tr");
 
             let dbUpdated = false;
 
@@ -193,39 +199,45 @@ const Scanner = {
                 if (row.hasAttribute('data-monexa-ready')) continue;
                 
                 const cells = row.querySelectorAll("td");
-                if (cells.length < adapter.minCells) continue;
+                if (cells.length < 3) continue;
 
-                // Extraer datos usando la lógica del adaptador específico
-                const rawData = adapter.map(cells);
-                
-                const fecha    = rawData.fecha;
-                const concepto = rawData.concepto;
-                const debito   = rawData.debito;
-                const credito  = rawData.credito;
-                const saldo    = rawData.saldo;
+                // Helper para limpiar espacios invisibles de las celdas del banco
+                const extractAndClean = (cell) => (cell?.innerText || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim();
 
-                // NUEVO: Extraer información visual extra (Solo si el adaptador lo soporta o vía genérica)
+                const fecha    = extractAndClean(cells[0]);
+                const concepto = extractAndClean(cells[1]);
+                const debito   = extractAndClean(cells[2]);
+                const credito  = extractAndClean(cells[3]);
+                const saldo    = extractAndClean(cells[4]);
+
+                // NUEVO: Extraer información visual extra de Itaú (Links/Hipervínculos)
                 let extra = "";
-                const clickable = rawData.extraSelector ? cells[1].querySelector(rawData.extraSelector) : cells[1].querySelector('a, button, span.link');
+                const clickable = cells[1].querySelector('a, button, span.link, [onclick], [data-id], [data-nro]');
                 
                 if (clickable) {
-                    const visibleText = (clickable.innerText || "").trim();
+                    const visibleText = extractAndClean(clickable);
                     const onclickText = clickable.getAttribute('onclick') || "";
                     
                     if (visibleText && visibleText.toLowerCase() !== concepto.toLowerCase()) {
                         extra = visibleText;
                     } 
                     
+                    // Capturar IDs técnicos de Itaú
                     const techMatch = onclickText.match(/['"](\d{6,})['"]/) || onclickText.match(/(\d{10,})/);
                     if (techMatch) extra += (extra ? " | ID:" : "ID:") + techMatch[1];
                 }
 
-                // Contabilidad Avanzada: Detección de Moneda y Contexto
-                const moneda = DataCore.normalizeCurrency(row.innerText + (this.currentAccount || ""));
+                // Normalización de moneda y sentido (Itaú Pro)
+                const moneda    = DataCore.normalizeCurrency(fecha + concepto);
                 const direction = DataCore.detectDirection(debito, credito);
-                const amount = DataCore.normalizeAmount(direction === 'OUT' ? debito : credito);
+                const amount    = DataCore.normalizeAmount(direction === 'OUT' ? debito : credito);
 
-                // Fingerprint basado en cuenta + moneda + fecha + concepto + importe + saldo
+                // Filtro de integridad (Itaú)
+                const fLower = fecha.toLowerCase();
+                if (!fecha || !concepto || concepto.toLowerCase().includes('saldo') || fLower.includes('u$s') || fLower.includes('pizarra')) {
+                    continue;
+                }
+
                 const hash = DataCore.createFingerprint(concepto, (debito || credito || ''), fecha, saldo, moneda, this.currentAccount || "GLOBAL");
                 let record = db.items[hash];
 
