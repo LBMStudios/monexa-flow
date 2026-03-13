@@ -1,4 +1,5 @@
-# Monexa Flow — Documentación Técnica y de Usuario
+# 🏦 Monexa Flow: Sistema de Auditoría Bancaria V2
+## Documentación Técnica y Operativa (Actualización v1.2.6)
 
 Monexa Flow es una herramienta de auditoría bancaria in-situ diseñada para profesionales que operan con **Itaú Link (Uruguay)**. El programa transforma la interfaz bancaria estándar en una terminal de contabilidad avanzada, permitiendo extraer, validar y auditar datos sin que la información sensible salga del computador del usuario.
 
