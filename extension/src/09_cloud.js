@@ -12,12 +12,14 @@ const CloudConnector = {
      * Resuelve la URL remota base para Firebase.
      */
     async _getFirebaseUrl() {
+        if (this._cachedUrl) return this._cachedUrl;
         const config = await DB_Engine.fetch(KEYS.SETTINGS, {});
         let masterUrl = config.remote_admin_url || "https://monexa-b1a87-default-rtdb.firebaseio.com/";
         if (!masterUrl.includes('firebaseio.com')) return null;
         
         if (!masterUrl.endsWith('/')) masterUrl += '/';
-        return `${masterUrl}users.json`;
+        this._cachedUrl = `${masterUrl}users.json`;
+        return this._cachedUrl;
     },
 
     /**

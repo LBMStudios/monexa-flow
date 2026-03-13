@@ -701,6 +701,11 @@
         });
 
         function animateGlow() {
+            if (!glowVisible && Math.abs(mouseX - glowX) < 1 && Math.abs(mouseY - glowY) < 1) {
+                requestAnimationFrame(animateGlow);
+                return;
+            }
+            
             // Lerp (Linear Interpolation) for faster/smoother movement
             glowX += (mouseX - glowX) * 0.18;
             glowY += (mouseY - glowY) * 0.18;
