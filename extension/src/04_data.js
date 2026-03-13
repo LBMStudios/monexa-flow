@@ -94,5 +94,51 @@ const DataCore = {
         const div = document.createElement('div');
         div.textContent = text ?? "";
         return div.innerHTML.replace(/"/g, '&quot;');
+    },
+
+    /**
+     * Motor de Inferencia Heurística (Ghost Action).
+     * Analiza el historial para predecir qué etiqueta/nota pondría el usuario.
+     */
+    getPrediction(concepto, dbItems) {
+        if (!concepto || !dbItems) return null;
+        const c_target = concepto.toUpperCase().trim();
+        const scores = {};
+
+        // 1. Recolectar datos de transacciones procesadas manualmente
+        for (const hash in dbItems) {
+            const item = dbItems[hash];
+            if (!item.tag || item.status === 'NONE') continue;
+
+            const c_hist = (item.concepto || "").toUpperCase().trim();
+            if (!c_hist) continue;
+
+            // Simple match de "Comienza con" o "Contiene" para velocidad
+            let matchScore = 0;
+            if (c_hist === c_target) matchScore = 1.0;
+            else if (c_target.includes(c_hist) || c_hist.includes(c_target)) matchScore = 0.8;
+            
+            if (matchScore > 0) {
+                const key = `${item.tag}|${item.note || ""}`;
+                scores[key] = (scores[key] || 0) + matchScore;
+            }
+        }
+
+        // 2. Encontrar la combinación más frecuente
+        let bestKey = null;
+        let maxScore = 0;
+        for (const key in scores) {
+            if (scores[key] > maxScore) {
+                maxScore = scores[key];
+                bestKey = key;
+            }
+        }
+
+        if (bestKey && maxScore >= 0.8) {
+            const [tag, note] = bestKey.split('|');
+            return { tag, note, confidence: maxScore };
+        }
+
+        return null;
     }
 };

@@ -297,11 +297,21 @@ const Scanner = {
                     }
                 }
 
+                // Predictive UX: Si no hay match de regla, buscar Ghost Prediction
+                let prediction = null;
+                if (!matchRule && record.status === 'NONE') {
+                    prediction = DataCore.getPrediction(concepto, db.items);
+                    if (prediction) {
+                        row.dataset.mxPrediction = JSON.stringify(prediction);
+                    }
+                }
+
                 this.renderRowUI(
                     row,
                     record,
                     hash,
-                    config.user
+                    config.user,
+                    prediction
                 );
 
                 row.setAttribute('data-monexa-ready', 'true');
@@ -427,7 +437,7 @@ const Scanner = {
      * Inyecta una celda de auditoría al final de cada fila de transacción.
      * Incluye inputs de tag/nota, botón de ciclo de estado y botón de borrado.
      */
-    renderRowUI(row, data, hash, user) {
+    renderRowUI(row, data, hash, user, prediction = null) {
         const existingCell = row.querySelector(".it-data-node");
         if (existingCell) return;
 
@@ -504,14 +514,16 @@ const Scanner = {
                     <input
                         type="text"
                         class="it-field-note"
-                        placeholder="Nota..."
+                        placeholder="${prediction ? '' : 'Nota...'}"
                         aria-label="Nota"
                         list="mx-data-notes"
                         value="${DataCore.sanitizeText(data.note || '')}"
                         title="${auditTip}"
                         style="${inputStyle} width: 120px; font-style: ${data.note ? 'normal' : 'italic'}; color: ${data.note ? '#374151' : '#9ca3af'}; position: relative; z-index: 2; background: transparent;"
                     >
-                    <div class="it-note-suggestion" style="position: absolute; left: 10px; top: 0; bottom: 0; display: flex; align-items: center; color: rgba(0,0,0,0.2); font-family: 'Outfit', sans-serif; font-size: 11px; pointer-events: none; z-index: 1; white-space: nowrap; overflow: hidden; width: 100px;"></div>
+                    <div class="it-note-suggestion" style="position: absolute; left: 10px; top: 0; bottom: 0; display: flex; align-items: center; color: rgba(0,0,0,0.25); font-family: 'Outfit', sans-serif; font-size: 11px; pointer-events: none; z-index: 1; white-space: nowrap; overflow: hidden; width: 100px;">
+                        ${prediction ? (data.note ? '' : prediction.note) : ''}
+                    </div>
                 </div>
                 <button
                     class="it-btn-cycle"
@@ -639,9 +651,42 @@ const Scanner = {
             }
         });
 
-        document.body.addEventListener('keydown', (e) => {
+        // Ocultar sugerencia al escribir
+        document.body.addEventListener('input', (e) => {
+            const target = e.target;
+            if (target.classList.contains('it-field-note')) {
+                const suggestion = target.parentElement.querySelector('.it-note-suggestion');
+                if (suggestion) suggestion.style.display = 'none';
+            }
+        });
+
             if (e.key === 'Enter' && (e.target.classList.contains('it-field-tag') || e.target.classList.contains('it-field-note'))) {
                 e.target.blur();
+            }
+
+            // AUTO-COMPLETE (GHOST ACTION) CON TAB
+            if (e.key === 'Tab' && e.target.classList.contains('it-field-note')) {
+                const row = e.target.closest('tr[data-monexa-hash]');
+                if (row && row.dataset.mxPrediction && !e.target.value) {
+                    const prediction = JSON.parse(row.dataset.mxPrediction);
+                    e.preventDefault(); // Evitar que el foco salte
+                    
+                    const tagInput = row.querySelector('.it-field-tag');
+                    const noteInput = e.target;
+                    
+                    tagInput.value = prediction.tag;
+                    noteInput.value = prediction.note;
+                    
+                    const suggestion = row.querySelector('.it-note-suggestion');
+                    if (suggestion) suggestion.style.display = 'none';
+                    
+                    noteInput.focus();
+                    noteInput.blur(); // Trigger focusout per-save logic
+                    
+                    // Efecto visual de Flash Verde sutil
+                    noteInput.style.background = "rgba(16, 185, 129, 0.1)";
+                    setTimeout(() => noteInput.style.background = "rgba(0,0,0,0.03)", 300);
+                }
             }
         });
     },
