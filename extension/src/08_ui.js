@@ -800,54 +800,59 @@ const UI = {
 
         // --- Eventos del panel ---
 
-        document.getElementById('mx-btn-open-dashboard').onclick = () => {
-            // El Content Security Policy (CSP) del banco puede bloquear window.open
-            // Así que enviamos un mensaje al background worker para que abra la pestaña
-            chrome.runtime.sendMessage({ action: 'openDashboard' });
-        };
+        // --- Motor de Delegación de Eventos del Panel ---
+        panel.addEventListener('click', async (e) => {
+            const target = e.target.closest('button, a, .mx-stat-item, .mx-color-dot');
+            if (!target) return;
 
-        const header = document.getElementById('mx-panel-header');
-        if (header) {
-            header.onclick = (e) => {
-                // No cerrar si se hizo click en el botón de logout o el de cerrar
-                if (e.target.id === 'mx-panel-logout' || e.target.id === 'mx-panel-close') return;
-                panel.classList.toggle('active');
-            };
-        }
+            // 1. Abrir Dashboard
+            if (target.id === 'mx-btn-open-dashboard') {
+                chrome.runtime.sendMessage({ action: 'openDashboard' });
+            }
 
-        document.getElementById('mx-panel-close').onclick = (e) => {
-            e.stopPropagation(); // Evitar doble click con el header
-            panel.classList.remove('active');
-        };
+            // 2. Cerrar Panel
+            if (target.id === 'mx-panel-close') {
+                e.stopPropagation();
+                panel.classList.remove('active');
+            }
 
-        const btnLogout = document.getElementById('mx-panel-logout');
-        if (btnLogout) {
-            btnLogout.onclick = async (e) => {
+            // 3. Logout
+            if (target.id === 'mx-panel-logout') {
                 e.preventDefault();
                 const currentSettings = await DB_Engine.fetch(KEYS.SETTINGS, {});
-                const newSettings = { 
-                    ...currentSettings, 
-                    user: '', 
-                    role: 'user', 
-                    enabled: false 
-                };
-                await DB_Engine.commit(KEYS.SETTINGS, newSettings);
+                await DB_Engine.commit(KEYS.SETTINGS, { ...currentSettings, user: '', role: 'user' });
                 await DB_Engine.commit(KEYS.SYSTEM_STATE, { enabled: false });
-                await Logger.info(`Sesión finalizada`);
                 location.reload();
-            };
-        }
+            }
 
-        document.getElementById('mx-btn-export-all').onclick = () => {
-            FileSystem.exportAuditory();
-        };
+            // 4. Exportar / Importar (Triggers)
+            if (target.id === 'mx-btn-export-all') FileSystem.exportAuditory();
+            if (target.id === 'mx-btn-import-audit') document.getElementById('mx-file-audit').click();
+            if (target.id === 'mx-btn-imp-rules') document.getElementById('mx-file-rules').click();
+            if (target.id === 'mx-btn-exp-rules') FileSystem.exportRules();
 
-        const btnPurge = document.getElementById('mx-btn-purge');
-        if (btnPurge) {
-            btnPurge.onclick = () => {
-                DB_Engine.purge();
-            };
-        }
+            // 5. Purga de datos
+            if (target.id === 'mx-btn-purge') DB_Engine.purge();
+
+            // 6. Firma de Auditoría
+            if (target.id === 'mx-btn-audit-sign') {
+                const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+                const sig = DataCore.generateAuditSignature(db.items);
+                const output = document.getElementById('mx-sign-output');
+                if (output) {
+                    output.textContent = sig;
+                    output.style.opacity = '1';
+                    alert(`Firma Generada Exitosamente:\n\n${sig}`);
+                }
+            }
+
+            // 7. Toggle Sistema
+            if (target.id === 'mx-toggle-track') {
+                const next = await SystemControl.toggle();
+                this._applyToggleState(next);
+                setTimeout(() => window.location.reload(), 600);
+            }
+        });
 
         document.getElementById('mx-btn-import-audit').onclick = () => {
             document.getElementById('mx-file-audit').click();
@@ -1222,20 +1227,30 @@ const UI = {
 
     /**
      * Recalcula la diferencia entre lo que dice el banco y lo que tenemos en pantalla.
+     * Optimizado: caché local de sumas para evitar O(n) excesivo.
      */
     async _recalculateGap() {
         if (this._officialBalance === undefined || isNaN(this._officialBalance)) return;
         
+        // Usamos una caché simple de 500ms para evitar cálculos pesados seguidos
+        if (this._lastGapCalc && (Date.now() - this._lastGapCalc < 500)) return;
+        this._lastGapCalc = Date.now();
+
         const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
         const items = Object.values(db.items || {});
         
-        const internalSum = items.reduce((acc, curr) => {
-            const amt = curr.amount || 0;
-            return curr.direction === 'IN' ? acc + amt : acc - amt;
-        }, 0);
+        let internalSum = 0;
+        for (let i = 0; i < items.length; i++) {
+            const r = items[i];
+            const amt = r.amount || 0;
+            internalSum += (r.direction === 'IN' ? amt : -amt);
+        }
 
         const intVal = document.getElementById('mx-internal-val');
-        if (intVal) intVal.textContent = `$ ${Math.abs(internalSum).toLocaleString('es-UY', { minimumFractionDigits: 2 })}`;
+        if (intVal) {
+            const formatted = `$ ${Math.abs(internalSum).toLocaleString('es-UY', { minimumFractionDigits: 2 })}`;
+            if (intVal.textContent !== formatted) intVal.textContent = formatted;
+        }
 
         const gapRow = document.getElementById('mx-gap-row');
         const gapVal = document.getElementById('mx-gap-val');
@@ -1245,18 +1260,22 @@ const UI = {
         if (gapRow && gapVal && status && card) {
             gapRow.style.display = 'flex';
             const gap = Math.abs(this._officialBalance - Math.abs(internalSum));
-            gapVal.textContent = `$ ${gap.toLocaleString('es-UY', { minimumFractionDigits: 2 })}`;
+            const formattedGap = `$ ${gap.toLocaleString('es-UY', { minimumFractionDigits: 2 })}`;
+            
+            if (gapVal.textContent !== formattedGap) gapVal.textContent = formattedGap;
 
-            if (gap < 0.01) {
-                status.textContent = 'INTEGRO';
-                status.style.background = '#065f46';
-                status.style.color = '#34d399';
-                card.style.borderLeftColor = '#10b981';
-            } else {
-                status.textContent = 'BRECHA';
-                status.style.background = '#991b1b';
-                status.style.color = '#f87171';
-                card.style.borderLeftColor = '#ef4444';
+            const isIntegro = gap < 0.01;
+            const newStatus = isIntegro ? 'INTEGRO' : 'BRECHA';
+            
+            if (status.textContent !== newStatus) {
+                status.textContent = newStatus;
+                status.style.background = isIntegro ? '#065f46' : '#991b1b';
+                status.style.color = isIntegro ? '#34d399' : '#f87171';
+                card.style.borderLeftColor = isIntegro ? '#10b981' : '#ef4444';
+                
+                // Efecto visual premium al cambiar estado
+                card.style.transform = 'scale(1.02)';
+                setTimeout(() => card.style.transform = 'scale(1)', 300);
             }
         }
     },

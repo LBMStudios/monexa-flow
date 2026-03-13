@@ -20,6 +20,7 @@ const Scanner = {
      * Inicializa el scanner: procesa el DOM actual y activa el MutationObserver.
      */
     async init() {
+        this.initEventListeners();
         await this.processDOM();
 
         if (this.observer) {
@@ -121,21 +122,25 @@ const Scanner = {
             const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
             const rules = await DB_Engine.fetch(KEYS.RULES, []);
 
-            // --- Generar Datalists de Sugerencias para Autocompletado ---
-            const allItems = Object.values(db.items);
-            const uniqueTags = [...new Set(allItems.map(i => (i.tag || '').trim()).filter(t => t.length > 0))].sort();
-            const uniqueNotes = [...new Set(allItems.map(i => (i.note || '').trim()).filter(n => n.length > 0 && !n.includes('Auto-Match')))].sort();
-
-            if (!document.getElementById('mx-data-tags')) {
-                const dlTags = document.createElement('datalist');
+            // --- Gestión Eficiente de Datalists ---
+            let dlTags = document.getElementById('mx-data-tags');
+            let dlNotes = document.getElementById('mx-data-notes');
+            
+            if (!dlTags) {
+                dlTags = document.createElement('datalist');
                 dlTags.id = 'mx-data-tags';
                 document.body.appendChild(dlTags);
-                const dlNotes = document.createElement('datalist');
+                dlNotes = document.createElement('datalist');
                 dlNotes.id = 'mx-data-notes';
                 document.body.appendChild(dlNotes);
             }
-            document.getElementById('mx-data-tags').innerHTML = uniqueTags.map(t => `<option value="${DataCore.sanitizeText(t)}">`).join('');
-            document.getElementById('mx-data-notes').innerHTML = uniqueNotes.map(n => `<option value="${DataCore.sanitizeText(n)}">`).join('');
+
+            // Solo actualizar el DOM si el contenido cambió (previene reflows)
+            const tagsHTML = uniqueTags.map(t => `<option value="${DataCore.sanitizeText(t)}">`).join('');
+            const notesHTML = uniqueNotes.map(n => `<option value="${DataCore.sanitizeText(n)}">`).join('');
+            
+            if (dlTags.innerHTML !== tagsHTML) dlTags.innerHTML = tagsHTML;
+            if (dlNotes.innerHTML !== notesHTML) dlNotes.innerHTML = notesHTML;
             // ------------------------------------------------------------
 
             // Busca el contenedor de tabla activo de forma tolerante
@@ -229,12 +234,8 @@ const Scanner = {
                 const hash = DataCore.createFingerprint(concepto, importeKey, fecha, saldo, moneda, this.currentAccount || "GLOBAL");
                 let record = db.items[hash];
 
-                // Rastrear click para vincular el modal que se abrirá (Detección en toda la fila)
-                // Rastrear click para vincular el modal que se abrirá (Detección en toda la fila)
-                row.addEventListener('click', () => {
-                    window._mxLastClickedHash = hash;
-                    chrome.storage.local.set({ "_mxLastClickedHash": hash });
-                }, true); // Use capture to catch it before potential redirection
+                // Guardar el hash en el dataset de la fila para delegación de eventos
+                row.dataset.monexaHash = hash;
 
 
                 // Buscar si hace match con alguna regla
@@ -307,19 +308,21 @@ const Scanner = {
             }
 
             // Commit solo una vez al final si agregamos registros nuevos
-            // Usamos requestIdleCallback para no bloquear la UI del banco en el guardado
             if (dbUpdated) {
                 const finalizeCommit = async () => {
-                    UI.setSyncing(true);
+                    if (typeof UI !== 'undefined') UI.setSyncing(true);
                     await DB_Engine.commit(KEYS.TRANSACTIONS, db);
-                    setTimeout(() => UI.setSyncing(false), 800);
-                    await UI.refreshDashboard();
+                    if (typeof UI !== 'undefined') {
+                        setTimeout(() => UI.setSyncing(false), 800);
+                        await UI.refreshDashboard();
+                    }
                 };
 
+                // Prioridad baja para el guardado
                 if (window.requestIdleCallback) {
                     window.requestIdleCallback(() => finalizeCommit());
                 } else {
-                    finalizeCommit();
+                    setTimeout(() => finalizeCommit(), 100);
                 }
             }
             // Detectar número de cuenta y actualizar chip del launcher
@@ -454,6 +457,7 @@ const Scanner = {
 
         const td = document.createElement("td");
         td.className = "it-data-node";
+        td.dataset.hash = hash;
         td.style.cssText = `
             border-left: 2px solid #e5e7eb;
             padding: 0 8px;
@@ -549,219 +553,130 @@ const Scanner = {
 
         row.appendChild(td);
 
-        // --- Hover en fila: mostrar botón borrar ---
-        row.addEventListener('mouseenter', () => {
-            const del = row.querySelector('.it-btn-del');
-            if (del) del.style.opacity = '1';
-        });
-        row.addEventListener('mouseleave', () => {
-            const del = row.querySelector('.it-btn-del');
-            if (del) del.style.opacity = '0';
-        });
+    },
 
-        const btnCycle = td.querySelector(".it-btn-cycle");
-        const btnDel = td.querySelector(".it-btn-del");
-        const inTag = td.querySelector(".it-field-tag");
-        const inNote = td.querySelector(".it-field-note");
+    /**
+     * Motor de delegación de eventos global. 
+     * Centraliza todas las interacciones de las filas de transacciones en un solo punto.
+     */
+    initEventListeners() {
+        if (this._eventsInitialized) return;
+        this._eventsInitialized = true;
 
-        // --- Input focus styling (borde naranja Itaú sutil) ---
-        [inTag, inNote].forEach(input => {
-            input.addEventListener('focus', () => {
-                input.style.borderColor = '#ec7000';
-                input.style.background = 'rgba(236,112,0,0.04)';
-                if (input === inNote) {
-                    input.style.fontStyle = 'normal';
-                    input.style.color = '#374151';
-                }
-            });
-            input.addEventListener('blur', () => {
-                input.style.borderColor = 'transparent';
-                input.style.background = 'transparent';
-                if (input === inNote && !input.value) {
-                    input.style.fontStyle = 'italic';
-                    input.style.color = '#9ca3af';
-                }
-            });
-        });
+        document.body.addEventListener('click', async (e) => {
+            const target = e.target;
+            const row = target.closest('tr[data-monexa-hash]');
+            if (!row) return;
 
-        // --- Hover en botón de estado ---
-        btnCycle.addEventListener('mouseenter', () => {
-            btnCycle.style.transform = 'scale(1.15)';
-            btnCycle.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-        });
-        btnCycle.addEventListener('mouseleave', () => {
-            btnCycle.style.transform = 'scale(1)';
-            btnCycle.style.boxShadow = '0 1px 3px rgba(0,0,0,0.12)';
-        });
+            const hash = row.dataset.monexaHash;
+            
+            // 1. Click en la fila -> Guardar hash para el modal de comprobantes
+            window._mxLastClickedHash = hash;
+            chrome.storage.local.set({ "_mxLastClickedHash": hash });
 
-        // --- Hover en botón borrar ---
-        btnDel.addEventListener('mouseenter', () => { btnDel.style.color = '#ef4444'; });
-        btnDel.addEventListener('mouseleave', () => { btnDel.style.color = '#d1d5db'; });
+            // 2. Botón de Ciclo de Estado
+            if (target.closest('.it-btn-cycle')) {
+                e.stopPropagation();
+                const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+                const record = db.items[hash];
+                if (!record) return;
 
-        // Guarda cambios en storage y actualiza visualmente la fila
-        const updateRecord = async (newStatus) => {
-            try {
-                const enabled = await SystemControl.isEnabled();
-                if (!enabled) return;
-
-                const currentDB = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
-                const cells = row.querySelectorAll("td");
-                const nC = cells.length;
-
-                // Extraer débito/crédito/saldo de las columnas del banco (limpiando NBSP)
-                const extractAndClean = (cell) => (cell?.innerText || '').replace(/\u00A0/g, ' ').trim();
-
-                let deb = '', cred = '', sal = '';
-                if (nC >= 5) {
-                    deb = extractAndClean(cells[2]);
-                    cred = extractAndClean(cells[3]);
-                    sal = extractAndClean(cells[4]);
-                } else if (nC >= 4) {
-                    deb = extractAndClean(cells[2]);
-                    cred = extractAndClean(cells[3]);
-                } else {
-                    deb = extractAndClean(cells[nC - 1]);
-                }
-
-                currentDB.items[hash] = {
-                    fecha: (cells[0]?.innerText || "").trim(),
-                    concepto: (cells[1]?.innerText || "").trim(),
-                    debito: deb,
-                    credito: cred,
-                    saldo: sal,
-                    tag: inTag.value,
-                    note: inNote.value,
-                    status: newStatus,
-                    user: user,
-                    ts: new Date().toLocaleString()
-                };
-
-                UI.setSyncing(true);
-                await DB_Engine.commit(KEYS.TRANSACTIONS, currentDB);
-                setTimeout(() => UI.setSyncing(false), 500);
-
-                row.style.backgroundColor = rowColors[newStatus];
-                const nextStatusObj = STATUS_MAP[
-                    Object.keys(STATUS_MAP).find(k => STATUS_MAP[k].id === newStatus)
-                ] || STATUS_MAP.PENDING;
-
-                btnCycle.style.background = nextStatusObj.color;
-                btnCycle.innerText = nextStatusObj.icon;
-                btnCycle.title = nextStatusObj.label;
-
-                // Actualizar tooltip con info de auditoría
-                const newTip = `Editado por ${user} · ${new Date().toLocaleString()}`;
-                inTag.title = newTip;
-                inNote.title = newTip;
-
-                await UI.refreshDashboard();
-            } catch (err) {
-                console.error("Update record error:", err);
-                await Logger.error("Update record failure: " + err.message);
-            }
-        };
-
-        // Cicla el estado: NONE → VERDE → AMARILLO → ROJO → NONE
-        btnCycle.onclick = async () => {
-            const next = STATE_NEXT[data.status] || 'NONE';
-            const concepto = (row.querySelector('td:nth-child(2)')?.innerText || '').trim();
-            data.status = next;
-            await updateRecord(next);
-            await Logger.info(`Estado → ${next} | ${concepto.substring(0, 40)}`, 'STATUS_CHANGE');
-        };
-
-        // Borra el registro de este movimiento
-        btnDel.onclick = async () => {
-            if (!confirm("¿Eliminar nota y estado de este movimiento?")) return;
-
-            try {
-                const currentDB = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
-                delete currentDB.items[hash];
-                await DB_Engine.commit(KEYS.TRANSACTIONS, currentDB);
-
-                inTag.value = "";
-                inNote.value = "";
-                data.status = "NONE";
-                row.style.backgroundColor = "transparent";
-                btnCycle.style.background = STATUS_MAP.PENDING.color;
-                btnCycle.innerText = STATUS_MAP.PENDING.icon;
-
-                const concepto = (row.querySelector('td:nth-child(2)')?.innerText || '').trim();
-                await Logger.info(`Registro eliminado | ${concepto.substring(0, 40)}`, 'DELETE');
-                await UI.refreshDashboard();
-            } catch (err) {
-                console.error("Delete record error:", err);
-                await Logger.error("Delete record failure: " + err.message);
-            }
-        };
-
-        // Guarda al perder foco o al presionar Enter
-        [inTag, inNote].forEach(input => {
-            input.onblur = () => {
-                updateRecord(data.status);
-                if (input === inNote) {
-                    const sugg = td.querySelector('.it-note-suggestion');
-                    if (sugg) sugg.textContent = '';
-                }
-            };
-            input.onkeydown = (e) => { 
-                if (e.key === 'Enter') updateRecord(data.status); 
-                if (input === inNote && (e.key === 'Tab' || e.key === 'ArrowRight')) {
-                    const sugg = td.querySelector('.it-note-suggestion');
-                    if (sugg && sugg.textContent) {
-                        e.preventDefault();
-                        input.value = sugg.textContent;
-                        sugg.textContent = '';
-                        updateRecord(data.status);
-                    }
-                }
-            };
-        });
-
-        // --- Lógica de autocompletado (Ghost Text y Control de Datalist) ---
-        [inTag, inNote].forEach(input => {
-            const listId = input.getAttribute('list');
-            input.removeAttribute('list'); // Empezamos sin lista
-
-            input.addEventListener('input', async () => {
-                const val = input.value.trim().toLowerCase();
+                const nextStatus = STATE_NEXT[record.status] || 'NONE';
+                record.status = nextStatus;
+                record.ts = new Date().toLocaleString();
                 
-                // Mostrar datalist solo desde el 2ndo caracter
-                if (val.length >= 2) {
-                    input.setAttribute('list', listId);
-                } else {
-                    input.removeAttribute('list');
+                await this.updateRecordAndUI(row, record, hash);
+            }
+
+            // 3. Botón Borrar
+            if (target.closest('.it-btn-del')) {
+                e.stopPropagation();
+                if (!confirm("¿Eliminar nota y estado de este movimiento?")) return;
+
+                const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+                delete db.items[hash];
+                await DB_Engine.commit(KEYS.TRANSACTIONS, db);
+
+                const itNode = row.querySelector('.it-data-node');
+                if (itNode) {
+                    itNode.querySelector('.it-field-tag').value = "";
+                    itNode.querySelector('.it-field-note').value = "";
+                }
+                
+                row.style.backgroundColor = "transparent";
+                row.style.borderLeft = "0 solid transparent";
+                
+                const btnPulse = row.querySelector('.it-btn-cycle');
+                if (btnPulse) {
+                    btnPulse.style.background = STATUS_MAP.PENDING.color;
+                    btnPulse.innerText = STATUS_MAP.PENDING.icon;
                 }
 
-                // Específico para Ghost Text de notas
-                if (input === inNote) {
-                    const sugg = td.querySelector('.it-note-suggestion');
-                    if (!sugg) return;
-
-                    if (val.length < 2) {
-                        sugg.textContent = '';
-                        return;
-                    }
-
-                    try {
-                        const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
-                        const allNotes = Object.values(db.items)
-                            .map(i => (i.note || '').trim())
-                            .filter(n => n && n.toLowerCase() !== 'auto-match' && !n.includes('Auto-Match'));
-                        
-                        const match = allNotes.find(n => n.toLowerCase().startsWith(val));
-                        
-                        if (match && match.toLowerCase() !== val) {
-                            sugg.textContent = match;
-                        } else {
-                            sugg.textContent = '';
-                        }
-                    } catch (err) {
-                        sugg.textContent = '';
-                    }
-                }
-            });
+                await UI.refreshDashboard();
+            }
         });
+
+        // Eventos de Input (Tag y Note) con Throttling
+        document.body.addEventListener('focusout', async (e) => {
+            const target = e.target;
+            if (target.classList.contains('it-field-tag') || target.classList.contains('it-field-note')) {
+                const row = target.closest('tr[data-monexa-hash]');
+                if (!row) return;
+                
+                const hash = row.dataset.monexaHash;
+                const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+                const record = db.items[hash];
+                if (!record) return;
+
+                const tagInput = row.querySelector('.it-field-tag');
+                const noteInput = row.querySelector('.it-field-note');
+                
+                record.tag = tagInput.value;
+                record.note = noteInput.value;
+                record.ts = new Date().toLocaleString();
+
+                await this.updateRecordAndUI(row, record, hash);
+            }
+        });
+
+        document.body.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.target.classList.contains('it-field-tag') || e.target.classList.contains('it-field-note'))) {
+                e.target.blur();
+            }
+        });
+    },
+
+    /**
+     * Actualiza el registro en la DB y refresca visualmente la fila específica.
+     */
+    async updateRecordAndUI(row, record, hash) {
+        const config = await DB_Engine.fetch(KEYS.SETTINGS, { user: "Auditor" });
+        record.user = config.user;
+
+        const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+        db.items[hash] = record;
+
+        if (typeof UI !== 'undefined') UI.setSyncing(true);
+        await DB_Engine.commit(KEYS.TRANSACTIONS, db);
+        if (typeof UI !== 'undefined') {
+            setTimeout(() => UI.setSyncing(false), 500);
+            await UI.refreshDashboard();
+        }
+
+        // Refresco visual de la fila
+        const statusColors = { 'VERDE': 'rgba(16, 185, 129, 0.08)', 'AMARILLO': 'rgba(245, 158, 11, 0.08)', 'ROJO': 'rgba(225, 29, 72, 0.08)', 'NONE': 'transparent' };
+        const statusBorders = { 'VERDE': '4px solid #10b981', 'AMARILLO': '4px solid #f59e0b', 'ROJO': '4px solid #ef4444', 'NONE': '0px solid transparent' };
+        
+        row.style.backgroundColor = statusColors[record.status] || 'transparent';
+        row.style.borderLeft = statusBorders[record.status] || '0 solid transparent';
+
+        const statusInfo = STATUS_MAP[Object.keys(STATUS_MAP).find(k => STATUS_MAP[k].id === record.status)] || STATUS_MAP.PENDING;
+        const btn = row.querySelector('.it-btn-cycle');
+        if (btn) {
+            btn.style.background = statusInfo.color;
+            btn.innerText = statusInfo.icon;
+            btn.title = statusInfo.label;
+        }
     },
 
     /**
