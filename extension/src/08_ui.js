@@ -534,41 +534,74 @@ const UI = {
             </div>
 
             <div class="mx-content">
-                ${updateHtml}
-                ${(config.user || "").toLowerCase() === 'lucas' ? `
-                    <!-- PANEL MAESTRO (SOLO LUCAS) -->
-                    <div id="mx-admin-card" class="mx-card" style="border-left: 4px solid #3b82f6; background: rgba(59, 130, 246, 0.05); margin-bottom: 20px;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 18px;">👑</span>
-                                <h4 style="margin: 0; color: #60a5fa;">Panel Maestro de Control</h4>
-                            </div>
-                            <button id="mx-btn-admin-refresh" style="background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.3);" title="Sincronizar">🔄</button>
+                       ${(config.user || "").toLowerCase() === 'lucas' ? `
+                    <!-- PANEL MAESTRO PRO (SOLO LUCAS) -->
+                    <div id="mx-admin-card" style="
+                        background: rgba(15, 23, 42, 0.4);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        border-radius: 24px;
+                        padding: 24px;
+                        margin-bottom: 24px;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                        font-family: 'Inter', sans-serif;
+                    ">
+                        <!-- Cabecera Admin -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: white;">Auditores Registrados</h3>
+                            <button id="mx-btn-admin-refresh" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:6px; cursor:pointer; color:white;" title="Refrescar">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            </button>
                         </div>
 
-                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-                            <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Gestión de Auditores:</div>
-                            <div id="mx-admin-user-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 5px;">
-                                <div style="font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; padding: 10px;">Cargando lista maestra...</div>
+                        <!-- Formulario de Registro Express -->
+                        <div style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; padding: 16px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 120px; gap: 12px;">
+                            <div>
+                                <label style="font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 6px; display: block;">Nombre de Auditor</label>
+                                <input type="text" id="mx-admin-new-name" placeholder="Ej: Juan Perez" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; color: white; font-size: 13px;">
                             </div>
-                            <button id="mx-btn-admin-add" class="mx-btn-action" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 11px; margin-top: 5px;">+ REGISTRAR AUDITOR</button>
+                            <div>
+                                <label style="font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 6px; display: block;">Rol</label>
+                                <select id="mx-admin-new-role" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 9px; color: white; font-size: 12px; cursor: pointer;">
+                                    <option value="user">Auditor</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <button id="mx-btn-admin-add" style="grid-column: span 2; background: ${PALETTE.itau_orange}; color: white; border: none; border-radius: 10px; padding: 10px; font-weight: 800; font-size: 11px; cursor: pointer; transition: all 0.2s;">REGISTRAR NUEVO AUDITOR</button>
                         </div>
 
-                        <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
-                            <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom: 10px;">Generador de Llaves Offline:</div>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" id="mx-admin-gen-id" placeholder="ID de Instalación..." style="flex:1; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; font-size: 11px; font-family: 'Outfit', sans-serif;">
-                                <button id="mx-btn-admin-gen" class="mx-btn-action" style="margin:0; padding: 0 15px; background: #3b82f6; font-size: 10px;">GENERAR</button>
+                        <!-- Tabla de Auditores Pro -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 1.5fr; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 12px 12px 0 0; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase;">
+                                <div>Nombre</div>
+                                <div style="text-align: center;">Rol</div>
+                                <div style="text-align: center;">Ingresos</div>
+                                <div style="text-align: right;">Última Actividad</div>
                             </div>
-                            <div id="mx-admin-gen-result" style="display: none; margin-top: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 12px; text-align: center;">
-                                <div style="font-size: 9px; color: #10b981; font-weight: 800; margin-bottom: 4px; text-transform: uppercase;">Token del Mes:</div>
-                                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                                    <code id="mx-admin-key-val" style="font-size: 20px; color: white; font-weight: 800; letter-spacing: 2px;">---</code>
-                                    <button id="mx-btn-admin-copy-key" style="background: white; color: black; border: none; padding: 2px 8px; border-radius: 4px; font-size: 9px; font-weight: 800; cursor: pointer;">COPIAR</button>
+                            <div id="mx-admin-user-list" style="max-height: 240px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05); border-top: none; border-radius: 0 0 12px 12px;">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
+
+                        <!-- Generador de Llaves Integrado -->
+                        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 24px;">
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px;">GENERADOR DE LLAVES OFFLINE:</div>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <input type="text" id="mx-admin-gen-id" placeholder="ID de Instalación..." style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; color: white; font-size: 14px; font-family: 'Outfit', sans-serif;">
+                                <button id="mx-btn-admin-gen" style="background: #3b82f6; color: white; border: none; border-radius: 12px; padding: 12px 24px; font-weight: 800; font-size: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">GENERAR</button>
+                            </div>
+                            <div id="mx-admin-gen-result" style="display: none; margin-top: 20px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 20px; text-align: center;">
+                                <div style="font-size: 10px; color: #10b981; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">TOKEN DEL MES:</div>
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
+                                    <div id="mx-admin-key-val" style="background: rgba(255,255,255,0.95); color: #0f172a; padding: 10px 20px; border-radius: 12px; font-size: 24px; font-weight: 900; letter-spacing: 3px; font-family: 'Outfit', sans-serif; box-shadow: 0 0 20px rgba(255,255,255,0.1);">---</div>
+                                    <button id="mx-btn-admin-copy-key" style="background: white; color: #0f172a; border: none; padding: 8px 16px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">COPIAR</button>
                                 </div>
                             </div>
                         </div>
+                        
+                        <div style="font-size: 10px; color: rgba(255,255,255,0.2); text-align: center; margin-top: 24px;">Monexa Flow — Módulo de Administración</div>
                     </div>
+                ` : ''}
+</div>
                 ` : ''}
 
 
@@ -1032,29 +1065,39 @@ const UI = {
 
             container.innerHTML = users.map((user, idx) => {
                 const lastActiveTime = user.lastActive ? new Date(user.lastActive).getTime() : 0;
-                const diffMins = Math.floor((Date.now() - lastActiveTime) / 1000 / 60);
-                const isOnline = diffMins >= 0 && diffMins < 5;
-                const statusColor = isOnline ? '#10b981' : 'rgba(255,255,255,0.2)';
+                const formattedTime = user.lastActive ? new Date(user.lastActive).toLocaleString('es-UY', { hour12: true }) : 'Nunca';
+                
+                const roleLabel = (user.role || 'user') === 'admin' ? 'ADMINISTRADOR' : 'AUDITOR';
+                const roleColor = (user.role || 'user') === 'admin' ? '#f59e0b' : '#3b82f6';
 
                 return `
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; box-shadow: ${isOnline ? '0 0 5px #10b981' : 'none'};"></div>
-                            <div>
-                                <div style="font-size: 11px; font-weight: 700; color: white;">${user.name}</div>
-                                <div style="font-size: 9px; color: rgba(255,255,255,0.4);">${user.enabled ? 'Acceso Permitido' : 'Acceso Bloqueado'}</div>
-                            </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 1.5fr; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center; transition: background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.02)'" onmouseleave="this.style.background='transparent'">
+                        <!-- Nombre -->
+                        <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background: ${user.enabled ? '#10b981' : '#64748b'}; flex-shrink: 0;"></div>
+                            <span style="font-size: 13px; font-weight: 700; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.name}</span>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <label class="mx-switch-mini" style="position: relative; display: inline-block; width: 32px; height: 18px;">
-                                <input type="checkbox" ${user.enabled ? 'checked' : ''} onchange="UI.toggleAdminUser(${idx}, this.checked)" style="opacity: 0; width: 0; height: 0;">
-                                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: ${user.enabled ? '#10b981' : 'rgba(255,255,255,0.1)'}; transition: .3s; border-radius: 20px;">
-                                    <span style="position: absolute; content: ''; height: 14px; width: 14px; left: ${user.enabled ? '16px' : '2px'}; bottom: 2px; background: white; transition: .3s; border-radius: 50%;"></span>
-                                </span>
-                            </label>
+
+                        <!-- Rol Badge -->
+                        <div style="text-align: center;">
+                            <span style="background: ${roleColor}22; color: ${roleColor}; padding: 2px 8px; border-radius: 99px; font-size: 8px; font-weight: 900; letter-spacing: 0.5px; border: 1px solid ${roleColor}44;">
+                                ${roleLabel}
+                            </span>
+                        </div>
+
+                        <!-- Ingresos -->
+                        <div style="text-align: center;">
+                            <span style="background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; color: white;">
+                                ${user.loginCount || 0}
+                            </span>
+                        </div>
+
+                        <!-- Ultima Actividad -->
+                        <div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+                            <span style="font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600;">${formattedTime}</span>
                             ${user.role !== 'admin' ? `
-                                <span onclick="UI.deleteAdminUser(${idx})" style="cursor:pointer; color: #ef4444; font-size: 14px; padding: 0 5px;" title="Eliminar">×</span>
-                            ` : ''}
+                                <button onclick="UI.deleteAdminUser(${idx})" style="background:none; border:none; color:#ef4444; font-size:16px; cursor:pointer;" title="Eliminar">&times;</button>
+                            ` : '<div style="width:16px;"></div>'}
                         </div>
                     </div>
                 `;
@@ -1068,19 +1111,44 @@ const UI = {
      * Vincula eventos del Panel Maestro.
      */
     bindAdminPanelEvents() {
+        // Refrescar
         const refreshBtn = document.getElementById('mx-btn-admin-refresh');
         if (refreshBtn) {
             refreshBtn.onclick = async () => {
-                refreshBtn.style.animation = "mx-spin 1s linear infinite";
+                refreshBtn.querySelector('svg').style.animation = "mx-spin 1s linear infinite";
                 if (typeof CloudConnector !== 'undefined') await CloudConnector.syncRemoteUsers();
                 await this.refreshAdminUserList();
-                refreshBtn.style.animation = "";
+                refreshBtn.querySelector('svg').style.animation = "";
             };
         }
 
+        // Registrar Auditor Express
         const addBtn = document.getElementById('mx-btn-admin-add');
-        if (addBtn) addBtn.onclick = () => this.addAdminUser();
+        if (addBtn) {
+            addBtn.onclick = async () => {
+                const name = document.getElementById('mx-admin-new-name').value.trim();
+                const role = document.getElementById('mx-admin-new-role').value;
+                
+                if (!name) { alert("Ingresa un nombre"); return; }
+                
+                const users = await DB_Engine.fetch(KEYS.USERS, []);
+                users.push({
+                    name: name,
+                    pass: "123456", // Password default para el primer login
+                    role: role,
+                    enabled: true,
+                    lastActive: 0,
+                    loginCount: 0
+                });
 
+                await DB_Engine.commit(KEYS.USERS, users);
+                document.getElementById('mx-admin-new-name').value = "";
+                await this.refreshAdminUserList();
+                alert(`Auditor ${name} registrado correctamente.`);
+            };
+        }
+
+        // Generar Llave
         const genBtn = document.getElementById('mx-btn-admin-gen');
         if (genBtn) {
             genBtn.onclick = async () => {
@@ -1090,7 +1158,6 @@ const UI = {
                 const now = new Date();
                 const monthYear = (now.getMonth() + 1).toString().padStart(2, '0') + now.getFullYear();
                 
-                // Usamos la lógica de LicenseSystem para generar (es la misma)
                 const finalKey = await LicenseSystem._calculateKey(id, monthYear);
                 
                 const resultCont = document.getElementById('mx-admin-gen-result');
@@ -1098,16 +1165,18 @@ const UI = {
                 if (keyVal && resultCont) {
                     keyVal.innerText = finalKey;
                     resultCont.style.display = 'block';
+                    resultCont.style.animation = 'mxFadeIn 0.4s ease-out';
                 }
             };
         }
 
+        // Copiar Llave
         const copyKeyBtn = document.getElementById('mx-btn-admin-copy-key');
         if (copyKeyBtn) {
             copyKeyBtn.onclick = () => {
                 const key = document.getElementById('mx-admin-key-val').innerText;
                 navigator.clipboard.writeText(key);
-                alert("Llave de acceso copiada.");
+                alert("Llave de acceso copiada al portapapeles.");
             };
         }
     },
