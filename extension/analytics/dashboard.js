@@ -69,10 +69,14 @@ async function refreshData() {
 }
 
 // Escuchar actualizaciones desde el scanner u otras pestañas
-window.addEventListener('mx-db-updated', refreshData);
+window.addEventListener('mx-db-updated', () => {
+    refreshData();
+    if (typeof triggerChangeNotification === 'function') triggerChangeNotification();
+});
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && changes[KEYS.TRANSACTIONS]) {
         refreshData();
+        if (typeof triggerChangeNotification === 'function') triggerChangeNotification();
     }
 });
 
@@ -1246,6 +1250,8 @@ async function exportRawCSV() {
 // Notificaciones
 // ============================================================
 let notificationsEnabled = false;
+let notificationTimeout = null;
+
 function toggleNotifications(e) {
     const btn = e.currentTarget;
     notificationsEnabled = !notificationsEnabled;
@@ -1253,12 +1259,67 @@ function toggleNotifications(e) {
     if (notificationsEnabled) {
         btn.style.color = '#f59e0b';
         btn.title = "Desactivar Notificaciones";
-        alert("Notificaciones activadas. Recibirás alertas sobre nuevos cambios en la revisión.");
+        showLocalToast("Notificaciones de alta privacidad activadas. Los avisos se muestran sólo de forma local en esta pestaña.");
     } else {
         btn.style.color = '';
         btn.title = "Activar Notificaciones";
-        alert("Notificaciones desactivadas.");
+        showLocalToast("Notificaciones desactivadas.");
+        document.title = "Monexa Flow Dashboard"; // Reset por si quedó atascado
     }
+}
+
+function showLocalToast(message) {
+    let toast = document.getElementById('mx-local-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'mx-local-toast';
+        toast.style.cssText = `
+            position: fixed; bottom: 30px; right: 30px;
+            background: linear-gradient(135deg, rgba(20,20,30,0.95), rgba(10,10,15,0.95));
+            border: 1px solid rgba(16,185,129,0.3); color: white;
+            padding: 16px 24px; border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6), 0 0 20px rgba(16,185,129,0.15);
+            font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+            z-index: 999999; pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; transform: translateY(20px);
+            display: flex; align-items: center; gap: 12px; backdrop-filter: blur(10px);
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    toast.innerHTML = `<span style="font-size:20px; filter: drop-shadow(0 0 5px rgba(245,158,11,0.5));">🔔</span> <span>${message}</span>`;
+    
+    // Mostrar
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    });
+
+    if (notificationTimeout) clearTimeout(notificationTimeout);
+    notificationTimeout = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+    }, 4500);
+}
+
+// Throttle a las notificaciones para no sofocar al usuario en guardados masivos (debounce/throttle de 2s)
+let lastNotificationTime = 0;
+function triggerChangeNotification() {
+    if (!notificationsEnabled) return;
+    const now = Date.now();
+    if (now - lastNotificationTime < 2000) return; // Máximo 1 aviso cada 2 segundos
+    lastNotificationTime = now;
+    
+    // Parpadeo de la pestaña
+    const originalTitle = document.title;
+    if (!originalTitle.includes("🔔")) {
+        document.title = "(🔔) Nuevos Datos - " + originalTitle;
+        setTimeout(() => { document.title = originalTitle; }, 3000);
+    }
+    
+    // Mostrar Toast local
+    showLocalToast("Se detectó un cambio en Itaú. Base de datos local sincronizada de manera segura.");
 }
 
 // ============================================================
