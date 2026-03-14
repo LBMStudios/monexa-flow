@@ -26,6 +26,14 @@ const UI = {
         const isActivated = await LicenseSystem.isActivated();
         console.log("[Monexa] Estado Activación:", isActivated);
 
+        if (!isActivated) {
+            console.warn("[Monexa] Sistema no activado. Mostrando pantalla de activación...");
+            if (window === window.top) {
+                UILogin.renderActivation();
+            }
+            return;
+        }
+
         // 2. Si está activado, verificar sesión de usuario
         const config = await DB_Engine.fetch(KEYS.SETTINGS, { user: "" });
 

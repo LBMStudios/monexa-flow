@@ -22,13 +22,8 @@ const DB_Engine = {
 
         try {
             // Verificar si ya se migró
-            const check = await new Promise(resolve => {
-                chrome.storage.local.get(['_mx_idb_migrated'], r => {
-                    resolve(r._mx_idb_migrated === true);
-                });
-            });
-
-            if (check) return; // Ya migrado
+            const r = await chrome.storage.local.get(['_mx_idb_migrated']);
+            if (r._mx_idb_migrated === true) return; // Ya migrado
 
             // Intentar abrir IndexedDB
             const db = await new Promise((resolve, reject) => {
@@ -67,15 +62,11 @@ const DB_Engine = {
             const keyCount = Object.keys(allData).length;
             if (keyCount > 0) {
                 allData['_mx_idb_migrated'] = true;
-                await new Promise(resolve => {
-                    chrome.storage.local.set(allData, () => resolve());
-                });
+                await chrome.storage.local.set(allData);
                 console.log(`[Monexa] Migración IndexedDB → chrome.storage.local completada: ${keyCount} llaves migradas.`);
             } else {
                 // Marcar como migrado aunque no haya datos
-                await new Promise(resolve => {
-                    chrome.storage.local.set({ '_mx_idb_migrated': true }, () => resolve());
-                });
+                await chrome.storage.local.set({ '_mx_idb_migrated': true });
             }
 
             db.close();
@@ -85,9 +76,7 @@ const DB_Engine = {
             }
             // Marcar como migrado para no reintentar
             try {
-                await new Promise(resolve => {
-                    chrome.storage.local.set({ '_mx_idb_migrated': true }, () => resolve());
-                });
+                await chrome.storage.local.set({ '_mx_idb_migrated': true });
             } catch (_) {}
         }
     },
@@ -99,17 +88,9 @@ const DB_Engine = {
         try {
             await this._migrateFromIndexedDB();
             
-            return new Promise((resolve) => {
-                chrome.storage.local.get([key], (result) => {
-                    if (chrome.runtime.lastError) {
-                        console.error("DB_Engine.fetch error:", chrome.runtime.lastError);
-                        resolve(fallback);
-                        return;
-                    }
-                    const val = result[key];
-                    resolve(val !== undefined && val !== null ? val : fallback);
-                });
-            });
+            const result = await chrome.storage.local.get([key]);
+            const val = result[key];
+            return val !== undefined && val !== null ? val : fallback;
         } catch (e) {
             console.error("DB_Engine.fetch falló para la llave:", key, e);
             return fallback;
@@ -121,16 +102,8 @@ const DB_Engine = {
      */
     async commit(key, data) {
         try {
-            return new Promise((resolve) => {
-                chrome.storage.local.set({ [key]: data }, () => {
-                    if (chrome.runtime.lastError) {
-                        console.error("DB_Engine.commit error:", chrome.runtime.lastError);
-                        resolve(false);
-                        return;
-                    }
-                    resolve(true);
-                });
-            });
+            await chrome.storage.local.set({ [key]: data });
+            return true;
         } catch (e) {
             console.error("DB_Engine.commit error:", e);
             return false;
@@ -140,11 +113,7 @@ const DB_Engine = {
     async purge() {
         if (confirm("¿Desea eliminar TODAS las etiquetas, notas y reglas de auditoría? (Local-First)")) {
             try {
-                await new Promise((resolve) => {
-                    chrome.storage.local.remove([KEYS.TRANSACTIONS, KEYS.RULES], () => {
-                        resolve(true);
-                    });
-                });
+                await chrome.storage.local.remove([KEYS.TRANSACTIONS, KEYS.RULES]);
                 
                 if (typeof Logger !== 'undefined') await Logger.info("Local Audit Data Purged");
                 window.location.reload();
@@ -156,15 +125,8 @@ const DB_Engine = {
 
     async clearEverything() {
         try {
-            return new Promise((resolve) => {
-                chrome.storage.local.clear(() => {
-                    if (chrome.runtime.lastError) {
-                        resolve(false);
-                        return;
-                    }
-                    resolve(true);
-                });
-            });
+            await chrome.storage.local.clear();
+            return true;
         } catch (e) {
             console.error("DB_Engine.clearEverything error:", e);
             return false;

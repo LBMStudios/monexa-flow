@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dashMeta = document.getElementById('dash-meta');
     if (dashMeta) {
         dashMeta.innerHTML =
-            `Auditor: <b style="color:white">${(userSession || 'N/D').toUpperCase()}</b><br>` +
+            `Auditor: <b style="color:white">${DataCore.sanitizeText(userSession || 'N/D').toUpperCase()}</b><br>` +
             now.toLocaleDateString('es-UY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
 
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const footerInfo = document.getElementById('footer-info');
     if (footerInfo) {
         footerInfo.innerHTML =
-            `<b>Versión 1.3.1</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${config.user || 'N/D'}`;
+            `<b>Versión 1.3.1</b> · Desarrollada por <b>LBM Studios</b> · Generado el ${now.toLocaleString('es-UY')} · Auditor: ${DataCore.sanitizeText(config.user || 'N/D')}`;
     }
 
     // Cargar datos
@@ -372,7 +372,7 @@ function populateTagFilter(records) {
 
     let html = '<option value="">Todas</option>';
     html += '<option value="NO_TAG">○ Sin etiqueta</option>';
-    sorted.forEach(t => html += `<option value="${DataCore.sanitizeText(t)}">${DataCore.sanitizeText(t)}</option>`);
+    html += sorted.map(t => `<option value="${DataCore.sanitizeText(t)}">${DataCore.sanitizeText(t)}</option>`).join('');
     sel.innerHTML = html;
 }
 
@@ -1043,7 +1043,8 @@ async function exportCSV() {
     const sorted = [...records].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
     const hashSrc = sorted.map(r => `${r.fecha}|${r.concepto}|${r.debito || r.importe || ''}|${r.credito || ''}|${r.status}`).join('||');
     let h = 0;
-    for (let i = 0; i < hashSrc.length; i++) { h = ((h << 5) - h) + hashSrc.charCodeAt(i); h = h & h; }
+    const len = hashSrc.length;
+    for (let i = 0; i < len; i++) { h = ((h << 5) - h) + hashSrc.charCodeAt(i); h = h | 0; }
     const hash = 'MX-' + Math.abs(h).toString(36).toUpperCase();
 
     const bf = 'font-family:Calibri,Arial,sans-serif;';
