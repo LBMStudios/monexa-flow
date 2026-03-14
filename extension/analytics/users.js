@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const metaDiv = document.getElementById('dash-meta');
     if (metaDiv) {
         metaDiv.innerHTML =
-            `Auditor: <b style="color:white">${me.toUpperCase()}</b> (ADMIN)<br>` +
+            `Auditor: <b style="color:white">${DataCore.sanitizeText(me.toUpperCase())}</b> (ADMIN)<br>` +
             now.toLocaleDateString('es-UY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     }
 
@@ -75,12 +75,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadUsers() {
     allUsers = await DB_Engine.fetch(KEYS.USERS, []);
     renderUsers();
-}
-
-function esc(str) {
-    const d = document.createElement('div');
-    d.textContent = String(str ?? '');
-    return d.innerHTML;
 }
 
 async function renderUsers() {
@@ -124,7 +118,7 @@ async function renderUsers() {
                         </div>
                         <div class="user-main-info">
                             <div class="user-name" style="font-size: 16px;">
-                                ${esc(u.name)}
+                                ${DataCore.sanitizeText(u.name)}
                                 <span class="user-status-tag" style="background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; font-size: 8px;">OFFLINE</span>
                             </div>
                             <div class="user-role-label" style="font-size: 9px;">${roleText}</div>
@@ -149,7 +143,7 @@ async function renderUsers() {
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px;">
                     <div>
                         <div style="font-size: 8px; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Clave de Origen</div>
-                        <div style="font-size: 11px; color: #10b981; font-weight: 800; font-family: monospace;">${userKey}</div>
+                        <div style="font-size: 11px; color: #10b981; font-weight: 800; font-family: monospace;">${DataCore.sanitizeText(userKey)}</div>
                     </div>
                     <div>
                         <div style="font-size: 8px; color: rgba(255,255,255,0.4); text-transform: uppercase; font-weight: 800; margin-bottom: 4px;">Instalación</div>

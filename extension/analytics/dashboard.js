@@ -372,7 +372,7 @@ function populateTagFilter(records) {
 
     let html = '<option value="">Todas</option>';
     html += '<option value="NO_TAG">○ Sin etiqueta</option>';
-    sorted.forEach(t => html += `<option value="${esc(t)}">${esc(t)}</option>`);
+    sorted.forEach(t => html += `<option value="${DataCore.sanitizeText(t)}">${DataCore.sanitizeText(t)}</option>`);
     sel.innerHTML = html;
 }
 
@@ -671,7 +671,7 @@ function renderTags(records) {
         <div class="tag-item">
             <div class="tag-name">
                 <span class="tag-pill">#</span>
-                ${esc(tag)}
+                ${DataCore.sanitizeText(tag)}
             </div>
             <div class="tag-meta" style="gap:24px;">
                 <span class="tag-sum" style="font-weight:700; color: ${data.sum < 0 ? '#DC2626' : (data.sum > 0 ? '#059669' : 'var(--slate)')}; font-variant-numeric: tabular-nums;">
@@ -895,7 +895,7 @@ function _onChartClick(e) {
         tip.innerHTML = `
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
                 <div style="width:10px;height:10px;border-radius:50%;background:${nearest.color};"></div>
-                <b style="color:white;">${esc(nearest.tag)}</b>
+                <b style="color:white;">${DataCore.sanitizeText(nearest.tag)}</b>
             </div>
             <div style="color:rgba(255,255,255,0.6);font-size:11px;margin-bottom:2px;">${nearest.month}</div>
             <div style="font-size:16px;font-weight:800;color:white;">${fmtM(nearest.val)}</div>
@@ -919,9 +919,9 @@ function _renderMonthlyLegend() {
         months.forEach(m => total += (dataByMonth[m.key][t] || 0));
         const off = hiddenTags.has(t);
         return `
-            <div class="monthly-legend-item" data-tag="${esc(t)}" style="cursor:pointer;opacity:${off ? '0.35' : '1'};transition:opacity 0.2s;user-select:none;">
+            <div class="monthly-legend-item" data-tag="${DataCore.sanitizeText(t)}" style="cursor:pointer;opacity:${off ? '0.35' : '1'};transition:opacity 0.2s;user-select:none;">
                 <div class="monthly-legend-dot" style="background:${off ? 'rgba(255,255,255,0.2)' : colorMap[t]}"></div>
-                ${esc(t)}
+                ${DataCore.sanitizeText(t)}
                 <span style="color:${off ? 'rgba(255,255,255,0.4)' : 'white'};font-weight:700;margin-left:2px;">
                     $ ${total.toLocaleString('es-UY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </span>
@@ -978,29 +978,29 @@ function renderTable(records) {
         const t = (r.tag || '').trim();
         const tagHTML = (!t || t.toLowerCase() === 'etiqueta')
             ? '<span style="color:rgba(255,255,255,0.3)">—</span>'
-            : `<span style="background:rgba(16,185,129,0.15);color:#34d399;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700;">${esc(t)}</span>`;
+            : `<span style="background:rgba(16,185,129,0.15);color:#34d399;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700;">${DataCore.sanitizeText(t)}</span>`;
         // Compatibilidad: registros antiguos tenían 'importe' del último campo (saldo)
         const debe = r.debito || '';
         const haber = r.credito || '';
         const saldo = r.saldo || r.importe || '';
         return `
-            <tr data-hash="${esc(r._hash || '')}">
-                <td>${esc(r.fecha || '—')}</td>
-                <td class="td-concepto" title="${esc(r.concepto || '')}">
-                    ${esc((r.concepto || '').substring(0, 45))}${(r.concepto || '').length > 45 ? '…' : ''}
+            <tr data-hash="${DataCore.sanitizeText(r._hash || '')}">
+                <td>${DataCore.sanitizeText(r.fecha || '—')}</td>
+                <td class="td-concepto" title="${DataCore.sanitizeText(r.concepto || '')}">
+                    ${DataCore.sanitizeText((r.concepto || '').substring(0, 45))}${(r.concepto || '').length > 45 ? '…' : ''}
                 </td>
-                <td class="td-importe" style="color:${debe ? '#DC2626' : '#ccc'}">${esc(debe || '—')}</td>
-                <td class="td-importe" style="color:${haber ? '#059669' : '#ccc'}">${esc(haber || '—')}</td>
-                <td class="td-importe" style="font-weight:600">${esc(saldo || '—')}</td>
+                <td class="td-importe" style="color:${debe ? '#DC2626' : '#ccc'}">${DataCore.sanitizeText(debe || '—')}</td>
+                <td class="td-importe" style="color:${haber ? '#059669' : '#ccc'}">${DataCore.sanitizeText(haber || '—')}</td>
+                <td class="td-importe" style="font-weight:600">${DataCore.sanitizeText(saldo || '—')}</td>
                 <td>${tagHTML}</td>
-                <td class="td-note" title="${esc(r.note || '')}">${esc((r.note || '').substring(0, 40))}${(r.note || '').length > 40 ? '…' : ''}</td>
+                <td class="td-note" title="${DataCore.sanitizeText(r.note || '')}">${DataCore.sanitizeText((r.note || '').substring(0, 40))}${(r.note || '').length > 40 ? '…' : ''}</td>
                 <td>
                     <span class="status-badge status-${statusKey}">
                         ${s.icon} ${s.label}
                     </span>
                 </td>
-                <td class="td-user">${esc(r.user || '—')}</td>
-                <td class="td-ts">${esc(r.ts || '—')}</td>
+                <td class="td-user">${DataCore.sanitizeText(r.user || '—')}</td>
+                <td class="td-ts">${DataCore.sanitizeText(r.ts || '—')}</td>
             </tr>
         `;
     }).join('');
@@ -1156,19 +1156,6 @@ ${filterNote}
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-}
-
-// ============================================================
-// Utilidad: escape HTML
-// ============================================================
-function esc(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
 }
 
 // ============================================================
@@ -1338,11 +1325,11 @@ function renderLogs() {
             : '—';
         return `
             <tr>
-                <td style="font-family:monospace;font-size:11px;color:#6B7280;">${esc(ts)}</td>
-                <td><span style="background:${lc.bg};color:${lc.color};padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;">${esc(log.level)}</span></td>
-                <td style="font-size:12px;color:#6B7280;">${esc(log.action || '—')}</td>
-                <td style="font-size:12px;">${esc(log.msg || '')}</td>
-                <td style="font-size:10px;color:#9CA3AF;text-align:center;">${esc(log.version || '')}</td>
+                <td style="font-family:monospace;font-size:11px;color:#6B7280;">${DataCore.sanitizeText(ts)}</td>
+                <td><span style="background:${lc.bg};color:${lc.color};padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;">${DataCore.sanitizeText(log.level)}</span></td>
+                <td style="font-size:12px;color:#6B7280;">${DataCore.sanitizeText(log.action || '—')}</td>
+                <td style="font-size:12px;">${DataCore.sanitizeText(log.msg || '')}</td>
+                <td style="font-size:10px;color:#9CA3AF;text-align:center;">${DataCore.sanitizeText(log.version || '')}</td>
             </tr>`;
     }).join('');
 }
@@ -1395,7 +1382,7 @@ function showExtraDetails(rawExtra, hash) {
     // Ya no hay "Extra Protegido", el scanner (V3) extrae el texto puro
     if (rawExtra.startsWith("COMPROBANTE:")) {
         const cleanText = rawExtra.replace("COMPROBANTE:", "").trim();
-        body.innerHTML = `<div class="extra-fallback-text">${esc(cleanText)}</div>`;
+        body.innerHTML = `<div class="extra-fallback-text">${DataCore.sanitizeText(cleanText)}</div>`;
         return;
     }
 
@@ -1422,14 +1409,14 @@ function showExtraDetails(rawExtra, hash) {
 
             html += `
                 <div class="extra-detail-row">
-                    <div class="extra-label">${esc(displayLabel)}</div>
-                    <div class="extra-value">${esc(value)}</div>
+                    <div class="extra-label">${DataCore.sanitizeText(displayLabel)}</div>
+                    <div class="extra-value">${DataCore.sanitizeText(value)}</div>
                 </div>
             `;
         } else {
             html += `
                 <div class="extra-detail-row">
-                    <div class="extra-value">${esc(trimP)}</div>
+                    <div class="extra-value">${DataCore.sanitizeText(trimP)}</div>
                 </div>
             `;
         }
