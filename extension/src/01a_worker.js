@@ -8,6 +8,27 @@
  */
 const normalizeText = (s) => (s || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
 
+const parseAmount = (s) => {
+    if (s === undefined || s === null || s === '') return NaN;
+    // Limpieza específica para Itaú Uruguay:
+    // 1. Quitar moneda y espacios, dejando solo dígitos, comas, puntos y signos
+    let clean = s.toString().replace(/[^\d,.-]/g, '');
+
+    // 2. Si hay comas y puntos (1.250,50), es formato ES/UY: limpiar puntos (miles) y cambiar coma por punto (decimal)
+    if (clean.includes(',') && clean.includes('.')) {
+        clean = clean.replace(/\./g, '').replace(',', '.');
+    } else if (clean.includes(',')) {
+        clean = clean.replace(',', '.');
+    } else if (clean.includes('.')) {
+        const parts = clean.split('.');
+        const lastPart = parts[parts.length - 1];
+        if (lastPart.length === 3) {
+            clean = clean.replace(/\./g, '');
+        }
+    }
+    return parseFloat(clean);
+};
+
 self.onmessage = function(e) {
     const { action, data } = e.data;
 
@@ -17,7 +38,7 @@ self.onmessage = function(e) {
         // 1. Matching de Reglas (Lógica de 06_scanner.js movida aquí)
         const c_clean = normalizeText(concepto);
         const e_clean = normalizeText(extra);
-        const normalizeAmt = (s) => (s || '').replace(/[.\s]/g, '').replace(/,/g, '').trim();
+
         const sortedRules = [...rules].sort((a, b) => (b.importe ? 1 : 0) - (a.importe ? 1 : 0));
 
         const matchRule = sortedRules.find(r => {
@@ -27,8 +48,8 @@ self.onmessage = function(e) {
             const matchExtra = e_clean.includes(r_clean);
             if (!matchConcepto && !matchExtra) return false;
             if (r.importe) {
-                const rAmt = normalizeAmt(r.importe);
-                const txAmt = normalizeAmt(debito) || normalizeAmt(credito);
+                const rAmt = parseAmount(r.importe);
+                const txAmt = parseAmount(debito) || parseAmount(credito);
                 return rAmt === txAmt;
             }
             return true;
