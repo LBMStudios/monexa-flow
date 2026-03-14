@@ -1,0 +1,11 @@
+{
+  "name": "monexa-flow",
+  "version": "1.0.0",
+  "description": "Monexa Flow Chrome Extension",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
