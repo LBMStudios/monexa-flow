@@ -681,25 +681,53 @@ function parseCurrency(str) {
 
 function renderTags(records) {
     const tagMap = {};
+    let untaggedData = { count: 0, sum: 0 };
+
     records.forEach(r => {
         const t = r.tag || '(Sin etiqueta)';
-        if (!tagMap[t]) tagMap[t] = { count: 0, sum: 0 };
-        tagMap[t].count++;
-
         const d = parseCurrency(r.debito);
         const c = parseCurrency(r.credito);
-        tagMap[t].sum += (c - d);
+
+        if (t === '(Sin etiqueta)') {
+            untaggedData.count++;
+            untaggedData.sum += Math.abs(c - d);
+        } else {
+            if (!tagMap[t]) tagMap[t] = { count: 0, sum: 0 };
+            tagMap[t].count++;
+            tagMap[t].sum += (c - d);
+        }
     });
 
     const sorted = Object.entries(tagMap).sort((a, b) => b[1].count - a[1].count);
     const container = document.getElementById('tags-list');
 
-    if (sorted.length === 0) {
+    if (sorted.length === 0 && untaggedData.count === 0) {
         container.innerHTML = '<div class="tags-empty">Sin etiquetas registradas.</div>';
         return;
     }
 
-    container.innerHTML = sorted.map(([tag, data]) => `
+    let html = '';
+
+    // Primera fila separada: volumen sin etiquetar (valor absoluto)
+    if (untaggedData.count > 0) {
+        html += `
+        <div class="tag-item" style="border-bottom: 1px dashed rgba(255,255,255,0.1); margin-bottom: 12px; padding-bottom: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; padding: 8px;">
+            <div class="tag-name" style="color: rgba(255,255,255,0.5);">
+                <span class="tag-pill" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5);">#</span>
+                Volumen sin etiquetar
+            </div>
+            <div class="tag-meta" style="gap:24px;">
+                <span class="tag-sum" style="font-weight:700; color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums;">
+                    $ ${untaggedData.sum.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span class="tag-count" style="width: 55px; text-align: right; color: rgba(255,255,255,0.4);">${untaggedData.count} mov.</span>
+            </div>
+        </div>
+        `;
+    }
+
+    // Resto de etiquetas ordenadas
+    html += sorted.map(([tag, data]) => `
         <div class="tag-item">
             <div class="tag-name">
                 <span class="tag-pill">#</span>
@@ -713,6 +741,8 @@ function renderTags(records) {
             </div>
         </div>
     `).join('');
+
+    container.innerHTML = html;
 }
 
 // ============================================================
