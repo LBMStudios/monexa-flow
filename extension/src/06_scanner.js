@@ -349,7 +349,7 @@ const Scanner = {
                 if (!record) {
                     record = {
                         fecha, concepto, extra, debito, credito, saldo,
-                        moneda, direction, amount,
+                        moneda, cuenta: this.currentAccount || "GLOBAL", direction, amount,
                         tag: matchRule ? matchRule.label : "",
                         note: matchRule ? (matchRule.note || "Auto-Match") : "",
                         status: matchRule ? "VERDE" : "NONE",
@@ -362,6 +362,10 @@ const Scanner = {
                 } else {
                     if (extra && record.extra !== extra) {
                         record.extra = extra;
+                        dbUpdated = true;
+                    }
+                    if (!record.cuenta) {
+                        record.cuenta = this.currentAccount || "GLOBAL";
                         dbUpdated = true;
                     }
 

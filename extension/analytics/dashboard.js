@@ -57,6 +57,7 @@ async function refreshData() {
         return !fLower.includes('u$s') && !fLower.includes('pizarra') && !fLower.includes('brou');
     });
     populateTagFilter(allRecords);
+    if (typeof populateAccountFilter === 'function') populateAccountFilter(allRecords);
     applyFiltersAndRender();
 
     // Re-abrir modal si estaba abierto para actualizar datos en vivo
@@ -167,8 +168,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return !fLower.includes('u$s') && !fLower.includes('pizarra') && !fLower.includes('brou');
     });
 
-    // Poblar select de tags
+    // Poblar select de tags y cuentas
     populateTagFilter(allRecords);
+    if (typeof populateAccountFilter === 'function') populateAccountFilter(allRecords);
 
     // Render inicial (SE MUEVE AL TIMEOUT DEL LOADER PARA QUE SEA VISIBLE)
     // applyFiltersAndRender(); 
@@ -195,10 +197,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fSearch = document.getElementById('filter-search');
     const fStatus = document.getElementById('filter-status');
     const fTag = document.getElementById('filter-tag');
+    const fAccount = document.getElementById('filter-account');
+    const fCurrency = document.getElementById('filter-currency');
 
     if (fSearch) fSearch.addEventListener('input', applyFiltersAndRender);
     if (fStatus) fStatus.addEventListener('change', applyFiltersAndRender);
     if (fTag) fTag.addEventListener('change', applyFiltersAndRender);
+    if (fAccount) fAccount.addEventListener('change', applyFiltersAndRender);
+    if (fCurrency) fCurrency.addEventListener('change', applyFiltersAndRender);
 
     // Delegación de eventos para la tabla (Detalles Extra)
     const movementsTbody = document.getElementById('movements-tbody');
@@ -380,10 +386,27 @@ function populateTagFilter(records) {
     sel.innerHTML = html;
 }
 
+function populateAccountFilter(records) {
+    const sel = document.getElementById('filter-account');
+    if (!sel) return;
+    const accounts = new Set();
+    records.forEach(r => {
+        const a = (r.cuenta || '').trim();
+        if (a) accounts.add(a);
+    });
+    const sorted = Array.from(accounts).sort();
+
+    let html = '<option value="">Todas</option>';
+    html += sorted.map(a => `<option value="${DataCore.sanitizeText(a)}">${DataCore.sanitizeText(a)}</option>`).join('');
+    sel.innerHTML = html;
+}
+
 function clearFilters() {
     document.getElementById('filter-search').value = '';
     document.getElementById('filter-status').value = '';
     document.getElementById('filter-tag').value = '';
+    const fa = document.getElementById('filter-account'); if (fa) fa.value = '';
+    const fc = document.getElementById('filter-currency'); if (fc) fc.value = '';
     document.getElementById('filter-date-from').value = '';
     document.getElementById('filter-date-to').value = '';
 
@@ -409,6 +432,8 @@ function applyFiltersAndRender() {
     const q = (document.getElementById('filter-search').value || '').toLowerCase();
     const status = document.getElementById('filter-status').value;
     const tag = document.getElementById('filter-tag').value;
+    const account = document.getElementById('filter-account') ? document.getElementById('filter-account').value : '';
+    const currency = document.getElementById('filter-currency') ? document.getElementById('filter-currency').value : '';
     const dateFrom = document.getElementById('filter-date-from').value;
     const dateTo = document.getElementById('filter-date-to').value;
 
@@ -438,7 +463,10 @@ function applyFiltersAndRender() {
             }
         }
 
-        return matchSearch && matchStatus && matchTag && matchDate;
+        let matchAccount = !account || (r.cuenta || '').trim() === account;
+        let matchCurrency = !currency || (r.moneda || '').trim() === currency;
+
+        return matchSearch && matchStatus && matchTag && matchDate && matchAccount && matchCurrency;
     });
 
     renderKPIs(filteredRecs);
