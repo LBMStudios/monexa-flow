@@ -50,7 +50,7 @@ const DB_Engine = {
         }
     },
 
-    async commit(key, data, doCloudSync = true) {
+    async commit(key, data, doCloudSync = false) {
         try {
             const db = await this._getDB();
             const success = await new Promise((resolve) => {
