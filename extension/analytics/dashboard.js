@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 1. Resolver Identidad (Validación Cruzada)
     let userSession = config.user || '';
     let userRole = config.role || 'user';
-    
+
     // Si la sesión es genérica o vacía, buscamos al primer administrador
     if ((!userSession || userSession === 'Auditor') && users.length > 0) {
         const adminUser = users.find(u => u.role === 'admin') || users[0];
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sideUserName = document.getElementById('sidebar-user-name');
     const sideUserRole = document.getElementById('sidebar-user-role');
     const sideUserAvatar = document.getElementById('sidebar-user-avatar');
-    
+
     if (sideUserName) sideUserName.textContent = (userSession || 'Administrador').toUpperCase();
     if (sideUserRole) sideUserRole.textContent = (userRole === 'admin' ? 'ADMINISTRADOR MAESTRO' : 'AUDITOR');
     if (sideUserAvatar) sideUserAvatar.textContent = (userSession || 'A').charAt(0).toUpperCase();
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (isActuallyAdmin) {
         const navUsers = document.getElementById('nav-users');
         if (navUsers) navUsers.style.display = 'flex';
-        
+
         // También mostrar botón de purga admin
         const btnPurge = document.getElementById('btn-purge-audit');
         if (btnPurge) {
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btnPurge.addEventListener('click', purgeAudit);
         }
     }
-    
+
 
 
     // Sidebar Toggle
@@ -1232,7 +1232,7 @@ async function exportRawCSV() {
 
     // Cabeceras (UTF-8 con BOM para Excel)
     const headers = [
-        "Fecha", "Concepto", "Debito", "Credito", 
+        "Fecha", "Concepto", "Debito", "Credito",
         "Saldo", "Etiqueta", "Nota", "Estado", "Auditor", "Timestamp"
     ];
 
@@ -1258,7 +1258,7 @@ async function exportRawCSV() {
     const csvBody = [headers.join(';'), ...csvContent].join('\n');
     const bom = '\uFEFF'; // Para que Excel detecte UTF-8
     const blob = new Blob([bom + csvBody], { type: 'text/csv;charset=utf-8;' });
-    
+
     const now = new Date();
     const config = await storageGet(KEYS.SETTINGS, {});
     const auditor = (config.user || 'N/D').replace(/\s+/g, '_');
@@ -1315,9 +1315,9 @@ function showLocalToast(message) {
         `;
         document.body.appendChild(toast);
     }
-    
+
     toast.innerHTML = `<span style="font-size:20px; filter: drop-shadow(0 0 5px rgba(245,158,11,0.5));">🔔</span> <span>${message}</span>`;
-    
+
     // Mostrar
     requestAnimationFrame(() => {
         toast.style.opacity = '1';
@@ -1338,14 +1338,14 @@ function triggerChangeNotification() {
     const now = Date.now();
     if (now - lastNotificationTime < 2000) return; // Máximo 1 aviso cada 2 segundos
     lastNotificationTime = now;
-    
+
     // Parpadeo de la pestaña
     const originalTitle = document.title;
     if (!originalTitle.includes("🔔")) {
         document.title = "(🔔) Nuevos Datos - " + originalTitle;
         setTimeout(() => { document.title = originalTitle; }, 3000);
     }
-    
+
     // Mostrar Toast local
     showLocalToast("Se detectó un cambio en Itaú. Base de datos local sincronizada de manera segura.");
 }
@@ -1450,7 +1450,7 @@ async function purgeAudit() {
 // ============================================================
 function showExtraDetails(rawExtra, hash) {
     console.log("[Monexa] Abriendo detalles extra:", rawExtra, hash);
-    
+
     // Guardar el hash abierto globalmente por si hay updates in-vivo
     window._mxOpenExtraHash = hash;
 
