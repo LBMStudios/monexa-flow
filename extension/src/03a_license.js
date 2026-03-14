@@ -13,38 +13,59 @@ const LicenseSystem = {
      * Obtiene o genera el ID de Instalación Único.
      */
     async getInstallationID() {
-        let license = await DB_Engine.fetch(KEYS.LICENSE, {});
+        let license = await DB_Engine.fetch(KEYS.LICENSE, { activeLicenses: {} });
         if (!license.installID) {
             license.installID = this._generateID();
             await DB_Engine.commit(KEYS.LICENSE, license);
+            console.log("[LicenseSystem] Nuevo ID Generado:", license.installID);
         }
         return license.installID;
     },
 
-    async isActivated() {
-        // Itaú Direct Edition: Licencia permanentemente activa para facilitar despliegue
-        return true;
+    async isActivated(username = null) {
+        let license = await DB_Engine.fetch(KEYS.LICENSE, { activeLicenses: {} });
+        if (!license || !license.activeLicenses) return false;
+        
+        const id = await this.getInstallationID();
+
+        // 1. Si se provee nombre, validar su llave permanente
+        if (username) {
+            const cleanName = username.trim().toUpperCase();
+            const storedKey = license.activeLicenses[cleanName];
+            if (!storedKey) return false;
+            
+            const expected = await this._calculatePermanentKey(id, cleanName);
+            return storedKey === expected;
+        }
+
+        // 2. Si no hay nombre (Boot), verificar si hay al menos una licencia grabada
+        return Object.keys(license.activeLicenses).length > 0;
     },
 
     /**
-     * Intenta activar el sistema con una llave.
+     * Activa un usuario de forma PERMANENTE.
      */
-    async activate(key) {
+    async activate(username, key) {
+        if (!username) return { success: false, error: "Nombre requerido" };
         const id = await this.getInstallationID();
-        const now = new Date();
-        const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0') + now.getFullYear();
+        const cleanName = username.trim().toUpperCase();
         
-        const expected = await this._calculateKey(id, currentMonth);
-        
-        if (key.trim().toUpperCase() === expected) {
-            const license = await DB_Engine.fetch(KEYS.LICENSE, {});
-            license.activeKey = key.trim().toUpperCase();
-            license.expiryMonth = currentMonth;
-            await DB_Engine.commit(KEYS.LICENSE, license);
-            return { success: true, expiry: currentMonth };
-        }
+        try {
+            const expected = await this._calculatePermanentKey(id, cleanName);
+            const inputKey = key.trim().toUpperCase();
 
-        return { success: false };
+            console.log("[License Activation] Checking:", { id, cleanName, inputKey, expected });
+            
+            if (inputKey === expected) {
+                const license = await DB_Engine.fetch(KEYS.LICENSE, { activeLicenses: {} });
+                license.activeLicenses[cleanName] = inputKey;
+                await DB_Engine.commit(KEYS.LICENSE, license);
+                return { success: true };
+            }
+            return { success: false, error: "Llave incorrecta para este ID y Nombre." };
+        } catch (e) {
+            return { success: false, error: e.message };
+        }
     },
 
     /**
@@ -61,16 +82,34 @@ const LicenseSystem = {
     },
 
     /**
-     * Algoritmo de generación de llave (determinístico).
+     * Algoritmo de generación de llave PERMANENTE (sin fecha).
      */
-    async _calculateKey(id, monthYear) {
-        const raw = id + this._SALT + monthYear;
-        const msgUint8 = new TextEncoder().encode(raw);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    async _calculatePermanentKey(id, username) {
+        const cleanName = (username || "").trim().toUpperCase();
+        const raw = id + cleanName + this._SALT + "PERMANENT";
         
-        // Tomamos 10 caracteres del hash para que sea la llave
-        return hashHex.substring(7, 17); 
+        try {
+            const msgUint8 = new TextEncoder().encode(raw);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+            
+            return hashHex.substring(5, 15); // Llave de 10 caracteres
+        } catch (e) {
+            return null;
+        }
+    },
+
+    async _calculateKey(id, username, monthYear) {
+        return this._calculatePermanentKey(id, username);
+    },
+
+    /**
+     * Devuelve el estado actual para depuración.
+     */
+    async debug() {
+        const license = await DB_Engine.fetch(KEYS.LICENSE, {});
+        const id = await this.getInstallationID();
+        console.log("[LicenseDebug] State:", { id, license });
     }
 };

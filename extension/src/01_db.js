@@ -1,87 +1,136 @@
 /**
  * 01_db.js — MONEXA FLOW
  * Motor de almacenamiento atómico (DB_Engine).
- * Wrapper sobre chrome.storage.local con operaciones fetch / commit / purge.
- * Depende de: 00_config.js (KEYS), 02_logger.js (Logger)
+ * Usa chrome.storage.local (compartido entre TODOS los contextos de la extensión).
+ * Incluye migración automática desde IndexedDB para preservar datos existentes.
+ * Depende de: 00_config.js (KEYS)
  */
 
 'use strict';
 
 const DB_Engine = {
-    _dbName: 'MonexaFlowDB',
-    _storeName: 'DataStore',
-    _db: null,
+
+    _migrated: false,
 
     /**
-     * Inicializa la conexión a IndexedDB.
+     * Migración ONE-TIME: copia todos los datos de IndexedDB → chrome.storage.local.
+     * Solo se ejecuta una vez y luego marca la migración como completada.
      */
-    async _getDB() {
-        if (this._db) return this._db;
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(this._dbName, 1);
-            request.onupgradeneeded = (e) => {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains(this._storeName)) {
-                    db.createObjectStore(this._storeName);
-                }
-            };
-            request.onsuccess = (e) => {
-                this._db = e.target.result;
-                resolve(this._db);
-            };
-            request.onerror = (e) => reject("Error opening IndexedDB");
-        });
-    },
+    async _migrateFromIndexedDB() {
+        if (this._migrated) return;
+        this._migrated = true;
 
-    // Lista de llaves que NO se cifran (Metadata pública del sistema)
-    _publicKeys: [KEYS.USERS, KEYS.LICENSE, KEYS.SYSTEM_STATE, KEYS.REMOTE_VERSION, KEYS.UPDATE_STATUS],
-
-    async fetch(key, fallback = null) {
         try {
-            const db = await this._getDB();
-            let rawData = await new Promise((resolve) => {
-                const transaction = db.transaction([this._storeName], 'readonly');
-                const store = transaction.objectStore(this._storeName);
-                const request = store.get(key);
-                request.onsuccess = (e) => resolve(e.target.result);
-                request.onerror = () => resolve(null);
+            // Verificar si ya se migró
+            const check = await new Promise(resolve => {
+                chrome.storage.local.get(['_mx_idb_migrated'], r => {
+                    resolve(r._mx_idb_migrated === true);
+                });
             });
 
-            if (rawData === undefined || rawData === null) return fallback;
+            if (check) return; // Ya migrado
 
-            // Retorno directo sin descifrado
-            return rawData;
+            // Intentar abrir IndexedDB
+            const db = await new Promise((resolve, reject) => {
+                const request = indexedDB.open('MonexaFlowDB', 1);
+                request.onupgradeneeded = (e) => {
+                    // Si upgradeneeded se dispara, la DB no existía → no hay datos
+                    e.target.transaction.abort();
+                    reject('NO_DATA');
+                };
+                request.onsuccess = (e) => resolve(e.target.result);
+                request.onerror = () => reject('IDB_ERROR');
+            });
+
+            // Leer todos los datos del ObjectStore
+            const allData = await new Promise((resolve, reject) => {
+                try {
+                    const tx = db.transaction(['DataStore'], 'readonly');
+                    const store = tx.objectStore('DataStore');
+                    const allKeys = store.getAllKeys();
+                    const allValues = store.getAll();
+
+                    tx.oncomplete = () => {
+                        const keys = allKeys.result;
+                        const values = allValues.result;
+                        const data = {};
+                        keys.forEach((k, i) => { data[k] = values[i]; });
+                        resolve(data);
+                    };
+                    tx.onerror = () => reject('TX_ERROR');
+                } catch (e) {
+                    reject('STORE_NOT_FOUND');
+                }
+            });
+
+            // Escribir todo en chrome.storage.local
+            const keyCount = Object.keys(allData).length;
+            if (keyCount > 0) {
+                allData['_mx_idb_migrated'] = true;
+                await new Promise(resolve => {
+                    chrome.storage.local.set(allData, () => resolve());
+                });
+                console.log(`[Monexa] Migración IndexedDB → chrome.storage.local completada: ${keyCount} llaves migradas.`);
+            } else {
+                // Marcar como migrado aunque no haya datos
+                await new Promise(resolve => {
+                    chrome.storage.local.set({ '_mx_idb_migrated': true }, () => resolve());
+                });
+            }
+
+            db.close();
+        } catch (e) {
+            if (e !== 'NO_DATA' && e !== 'STORE_NOT_FOUND') {
+                console.warn("[Monexa] Migración IndexedDB no necesaria o falló:", e);
+            }
+            // Marcar como migrado para no reintentar
+            try {
+                await new Promise(resolve => {
+                    chrome.storage.local.set({ '_mx_idb_migrated': true }, () => resolve());
+                });
+            } catch (_) {}
+        }
+    },
+
+    /**
+     * Lee un valor de la base de datos local compartida.
+     */
+    async fetch(key, fallback = null) {
+        try {
+            await this._migrateFromIndexedDB();
+            
+            return new Promise((resolve) => {
+                chrome.storage.local.get([key], (result) => {
+                    if (chrome.runtime.lastError) {
+                        console.error("DB_Engine.fetch error:", chrome.runtime.lastError);
+                        resolve(fallback);
+                        return;
+                    }
+                    const val = result[key];
+                    resolve(val !== undefined && val !== null ? val : fallback);
+                });
+            });
         } catch (e) {
             console.error("DB_Engine.fetch falló para la llave:", key, e);
             return fallback;
         }
     },
 
+    /**
+     * Escribe un valor en la base de datos local compartida.
+     */
     async commit(key, data) {
         try {
-            const db = await this._getDB();
-            
-            // Guardado directo sin cifrado
-            const preparedData = data;
-
-            const success = await new Promise((resolve) => {
-                const transaction = db.transaction([this._storeName], 'readwrite');
-                const store = transaction.objectStore(this._storeName);
-                const request = store.put(preparedData, key);
-                request.onsuccess = () => resolve(true);
-                request.onerror = () => resolve(false);
-            });
-
-            if (success) {
-                // Sincronización Transparente con Firebase (SOLO METADATOS CRITICOS)
-                if (typeof CloudConnector !== 'undefined') {
-                    if (key === KEYS.USERS) {
-                        CloudConnector.pushRemoteUsers(data); // El cloud connector maneja su propio cifrado o transporte seguro
+            return new Promise((resolve) => {
+                chrome.storage.local.set({ [key]: data }, () => {
+                    if (chrome.runtime.lastError) {
+                        console.error("DB_Engine.commit error:", chrome.runtime.lastError);
+                        resolve(false);
+                        return;
                     }
-                }
-            }
-
-            return success;
+                    resolve(true);
+                });
+            });
         } catch (e) {
             console.error("DB_Engine.commit error:", e);
             return false;
@@ -91,28 +140,30 @@ const DB_Engine = {
     async purge() {
         if (confirm("¿Desea eliminar TODAS las etiquetas, notas y reglas de auditoría? (Local-First)")) {
             try {
-                const db = await this._getDB();
-                const transaction = db.transaction([this._storeName], 'readwrite');
-                const store = transaction.objectStore(this._storeName);
-                store.delete(KEYS.TRANSACTIONS);
-                store.delete(KEYS.RULES);
+                await new Promise((resolve) => {
+                    chrome.storage.local.remove([KEYS.TRANSACTIONS, KEYS.RULES], () => {
+                        resolve(true);
+                    });
+                });
                 
-                await Logger.info("Local Audit Data Purged");
+                if (typeof Logger !== 'undefined') await Logger.info("Local Audit Data Purged");
                 window.location.reload();
             } catch (e) {
                 console.warn("DB_Engine.purge error:", e);
             }
         }
     },
+
     async clearEverything() {
         try {
-            const db = await this._getDB();
             return new Promise((resolve) => {
-                const transaction = db.transaction([this._storeName], 'readwrite');
-                const store = transaction.objectStore(this._storeName);
-                const request = store.clear();
-                request.onsuccess = () => resolve(true);
-                request.onerror = () => resolve(false);
+                chrome.storage.local.clear(() => {
+                    if (chrome.runtime.lastError) {
+                        resolve(false);
+                        return;
+                    }
+                    resolve(true);
+                });
             });
         } catch (e) {
             console.error("DB_Engine.clearEverything error:", e);

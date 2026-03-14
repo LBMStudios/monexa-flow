@@ -2,79 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso — Monexa Flow</title>
-    <link rel="stylesheet" href="assets/css/login.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Redirigir siempre al inicio, ya no hay login
+        window.location.href = 'index.html';
+    </script>
 </head>
 <body>
-    <div class="login-container">
-        <div class="orbit-box">
-            <svg viewBox="0 0 100 100" class="monexa-orbit-svg">
-                <ellipse class="orbit-ring ring-1" cx="50" cy="50" rx="45" ry="18" transform="rotate(-30 50 50)" />
-                <ellipse class="orbit-ring ring-2" cx="50" cy="50" rx="32" ry="13" transform="rotate(-30 50 50)" />
-                <ellipse class="orbit-ring ring-3" cx="50" cy="50" rx="18" ry="7" transform="rotate(-30 50 50)" />
-            </svg>
-        </div>
-        
-        <div class="login-card">
-            <div class="login-header">
-                <h1>Monexa Flow</h1>
-                <p>Ingresa tus credenciales para continuar</p>
-            </div>
-            
-            <form id="login-form">
-                <div class="input-group">
-                    <label for="username">Usuario</label>
-                    <input type="text" id="username" placeholder="Tu usuario" required autocomplete="username">
-                </div>
-                
-                <div class="input-group">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" placeholder="••••" required autocomplete="current-password">
-                </div>
-                
-                <div id="error-msg" class="error-msg">Credenciales incorrectas</div>
-                
-                <button type="submit" class="btn-login">Acceder</button>
-            </form>
-            
-            <div class="login-footer">
-                &copy; 2026 LBM Studios. Todos los derechos reservados.
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const user = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value;
-            const error = document.getElementById('error-msg');
-            
-            if (user.toLowerCase() === 'lucas' && pass === '123456789') {
-                localStorage.setItem('mx_authenticated', 'true');
-                localStorage.setItem('mx_user', 'Lucas');
-                localStorage.setItem('mx_role', 'admin');
-                window.location.href = 'index.html';
-            } else if (pass === '1234') {
-                // Mantener el acceso anterior para compatibilidad o demo
-                localStorage.setItem('mx_authenticated', 'true');
-                localStorage.setItem('mx_user', user || 'Demo');
-                localStorage.setItem('mx_role', 'user');
-                window.location.href = 'index.html';
-            } else {
-                error.style.display = 'block';
-                document.getElementById('password').value = '';
-                document.getElementById('password').focus();
-            }
-        });
-
-        // Redirect if already authenticated with all required data
-        if (localStorage.getItem('mx_authenticated') === 'true' && localStorage.getItem('mx_user')) {
-            window.location.href = 'index.html';
-        }
-    </script>
+    Redirigiendo...
 </body>
 </html>

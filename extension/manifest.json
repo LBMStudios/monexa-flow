@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Monexa Flow — Auditoría Bancaria",
-  "version": "1.3.8",
+  "version": "1.3.9",
   "icons": {
     "128": "icons/icon128.png"
   },
@@ -55,7 +55,8 @@
         "analytics/dashboard.html",
         "analytics/dashboard.js",
         "analytics/dashboard.css",
-        "docs/*"
+        "docs/*",
+        "src/01a_worker.js"
       ],
       "matches": [
         "https://personas.itau.com.uy/*",

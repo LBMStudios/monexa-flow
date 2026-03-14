@@ -8,7 +8,17 @@
 'use strict';
 
 (async function boot() {
+    console.info("%c[Monexa Debug] Initiating Boot Flow... v" + VERSION, "color: #ec7000; font-weight: bold;");
+    if (typeof LicenseSystem !== 'undefined') await LicenseSystem.debug();
+    
     try {
+        // Marcador visual de carga para diagnóstico
+        const debugTag = document.createElement('div');
+        debugTag.id = 'mx-boot-tag';
+        debugTag.style.cssText = 'position:fixed; top:2px; left:2px; background:rgba(236,112,0,0.8); color:white; font-size:8px; padding:2px 4px; z-index:999999; border-radius:3px; pointer-events:none;';
+        debugTag.innerText = 'MX:BOOTING';
+        document.body.appendChild(debugTag);
+
         // Validar que el contexto de extensión siga vivo
         if (!chrome.runtime?.id) {
             console.warn("Monexa: contexto de extensión no disponible, abortando boot.");
@@ -16,25 +26,19 @@
         }
 
         const enabled = await SystemControl.isUserEnabled();
+        console.log("[Monexa Boot] SystemControl.isUserEnabled:", enabled);
 
         if (!enabled) {
-            await Logger.info(`MONEXA FLOW v${VERSION} está desactivado.`);
+            console.warn("MONEXA FLOW está desactivado por el usuario.");
             if (window === window.top) {
                 UI.renderDisabledLauncher();
+                if (document.getElementById('mx-boot-tag')) document.getElementById('mx-boot-tag').innerText = 'MX:OFF';
             }
             return;
         }
 
-        // --- Sincronización de Usuarios al Arranque ---
-        if (typeof CloudConnector !== 'undefined') {
-            CloudConnector.syncRemoteUsers();
-        }
-
         // --- Verificación de Actualizaciones ---
-        if (typeof UpdateSystem !== 'undefined') {
-            UpdateSystem.check();
-        }
-
+        console.log("[Monexa Boot] Iniciando UI.init...");
         await UI.init();
 
         // --- Registro de Actividad Silencioso (Check-in) ---
@@ -63,45 +67,8 @@
             `background:${PALETTE.itau_orange};color:white;padding:5px;border-radius:3px;`,
             ""
         );
-
-        // V2 — Monitor de Salud y Heartbeat de Actividad
-        const healthCheck = setInterval(async () => {
-            // 1. Validar contexto
-            if (!chrome.runtime?.id) {
-                console.warn("Monexa: Contexto invalidado. Deteniendo monitores.");
-                clearInterval(healthCheck);
-                if (window === window.top) {
-                    const panel = document.getElementById('mx-control-panel');
-                    if (panel) {
-                        panel.style.filter = 'grayscale(1) opacity(0.5)';
-                        panel.style.pointerEvents = 'none';
-                        panel.style.borderLeft = '4px solid #ef4444';
-                    }
-                }
-                return;
-            }
-
-            // 2. Heartbeat de Actividad (Cada 3 minutos para el panel maestro)
-            const config = await DB_Engine.fetch(KEYS.SETTINGS, { user: "" });
-            if (config.user) {
-                let users = await DB_Engine.fetch(KEYS.USERS, []);
-                let currentUser = users.find(u => u.name.toLowerCase() === config.user.toLowerCase());
-                if (currentUser) {
-                    const now = Date.now();
-                    const last = currentUser.lastActive ? new Date(currentUser.lastActive).getTime() : 0;
-                    
-                    // Solo empujamos si pasaron más de 3 minutos para no saturar Firebase
-                    if (now - last > 3 * 60 * 1000) {
-                        currentUser.lastActive = new Date().toISOString();
-                        await DB_Engine.commit(KEYS.USERS, users);
-                        console.log("Monexa: Heartbeat enviado.");
-                    }
-                }
-            }
-        }, 10000); // Check cada 10s, pero pulsa cada 3m
     } catch (e) {
         console.error("Critical Failure in Monexa Initialization:", e);
-        // Solo logear si el contexto sigue vivo
         if (chrome.runtime?.id) {
             await Logger.error("Critical Init Failure: " + e.message);
         }

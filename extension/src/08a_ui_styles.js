@@ -12,8 +12,6 @@ const UIStyles = {
         if (this.stylesInjected || document.getElementById("mx-global-styles")) return;
 
         const css = `
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-
             #mx-master-launcher {
                 position: relative;
                 width: 64px;
@@ -162,8 +160,10 @@ const UIStyles = {
             }
 
             .mx-card:hover {
-                border-color: rgba(255,255,255,0.2);
-                background: rgba(255,255,255,0.05);
+                border-color: rgba(255,255,255,0.25);
+                background: rgba(255,255,255,0.06);
+                transform: translateY(-4px);
+                box-shadow: -10px 10px 40px rgba(59, 130, 246, 0.15), 0 20px 40px rgba(0,0,0,0.4);
             }
 
             .mx-card h4 {
@@ -285,12 +285,124 @@ const UIStyles = {
                 from { opacity: 0; transform: translateY(10px); }
                 to { opacity: 1; transform: translateY(0); }
             }
+
+            /* Estilos Inyectados en Filas del Banco */
+            .it-data-node {
+                padding: 0 12px !important;
+                vertical-align: middle !important;
+                background: transparent !important;
+            }
+
+            .it-row-container {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                height: 100%;
+                padding: 4px 0;
+            }
+
+            .it-field-tag, .it-field-note {
+                font-family: 'Outfit', sans-serif !important;
+                font-size: 11px !important;
+                background: white !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 8px !important;
+                padding: 6px 10px !important;
+                outline: none !important;
+                transition: all 0.2s ease !important;
+                box-shadow: inset 0 1px 2px rgba(0,0,0,0.02) !important;
+            }
+
+            .it-field-tag:focus, .it-field-note:focus {
+                border-color: ${PALETTE.itau_orange} !important;
+                box-shadow: 0 0 0 3px ${PALETTE.itau_orange}22 !important;
+                background: white !important;
+            }
+
+            .it-field-tag {
+                width: 90px !important;
+                font-weight: 700 !important;
+            }
+
+            .it-field-note {
+                width: 140px !important;
+                flex: 1;
+                min-width: 100px;
+            }
+
+            .it-btn-cycle {
+                border: none !important;
+                border-radius: 10px !important;
+                width: 28px !important;
+                height: 28px !important;
+                min-width: 28px !important;
+                cursor: pointer !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 12px !important;
+                font-weight: 800 !important;
+                color: white !important;
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+                padding: 0 !important;
+                line-height: 1 !important;
+            }
+
+            .it-btn-cycle:hover {
+                transform: scale(1.1) rotate(5deg);
+                filter: brightness(1.1);
+            }
+
+            .it-btn-del {
+                background: none !important;
+                border: none !important;
+                color: #94a3b8 !important;
+                cursor: pointer !important;
+                font-size: 18px !important;
+                padding: 0 4px !important;
+                line-height: 1 !important;
+                transition: all 0.2s !important;
+                opacity: 0.4;
+            }
+
+            tr:hover .it-btn-del {
+                opacity: 1;
+            }
+
+            .it-btn-del:hover {
+                color: #ef4444 !important;
+                transform: scale(1.2);
+            }
+
+            .it-note-wrapper {
+                position: relative;
+                display: flex;
+                align-items: center;
+                flex: 1;
+            }
+
+            .it-note-suggestion {
+                position: absolute;
+                left: 11px;
+                top: 0;
+                bottom: 0;
+                display: flex;
+                align-items: center;
+                color: #94a3b8;
+                font-family: 'Outfit', sans-serif;
+                font-size: 11px;
+                pointer-events: none;
+                z-index: 1;
+                white-space: nowrap;
+                overflow: hidden;
+                opacity: 0.5;
+            }
         `;
 
         const style = document.createElement('style');
         style.id = "mx-global-styles";
         style.textContent = css;
-        document.head.appendChild(style);
+        (document.head || document.documentElement).appendChild(style);
         this.stylesInjected = true;
     }
 };

@@ -10,74 +10,145 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <style>
-        .users-table-card {
-            margin-top: 24px;
-        }
-
-        .user-action-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .user-action-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .user-action-btn.btn-danger {
-            color: #ef4444;
-            border-color: rgba(239, 68, 68, 0.3);
-        }
-
-        .user-action-btn.btn-danger:hover {
-            background: rgba(239, 68, 68, 0.15);
-        }
-
-        .user-action-btn.btn-success {
-            color: #10b981;
-            border-color: rgba(16, 185, 129, 0.3);
-        }
-
-        .user-action-btn.btn-success:hover {
-            background: rgba(16, 185, 129, 0.15);
-        }
-
-        .add-user-form {
+        .user-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
             display: flex;
-            gap: 12px;
-            align-items: flex-end;
-            margin-bottom: 24px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-            overflow: visible;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .role-badge {
+        .user-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: -10px 10px 40px rgba(59, 130, 246, 0.15), 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .user-avatar {
+            width: 64px;
+            height: 64px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: #ec7000;
+            margin-right: 20px;
+            position: relative;
+        }
+
+        .status-dot {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #0a0f19;
+            background: #475569;
+        }
+
+        .status-dot.active {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .user-main-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-status-tag {
             font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 99px;
-            font-weight: 700;
+            font-weight: 900;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1px;
             text-transform: uppercase;
         }
 
-        .role-admin {
-            background: rgba(236, 112, 0, 0.15);
-            color: #ec7000;
-            border: 1px solid rgba(236, 112, 0, 0.3);
+        .user-meta-line {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 4px;
         }
 
-        .role-user {
-            background: rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .user-role-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #ec7000;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Toggle Switch Premium */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: #10b981; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .btn-add-auditor {
+            background: #ec7000;
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add-auditor:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(236,112,0,0.3);
         }
     </style>
 </head>
@@ -131,46 +202,53 @@
                     </div>
                 </section>
 
-                <section class="card table-card users-table-card">
-                    <div class="card-header">
-                        <h3>Auditores Registrados</h3>
-                        <span id="users-count" class="card-badge">0 usuarios</span>
-                    </div>
-
-                    <div style="padding: 0 24px;">
-                        <div class="add-user-form">
-                            <div class="filter-group" style="flex:1;">
-                                <label for="new-user-name">Nombre de Auditor</label>
-                                <input type="text" id="new-user-name" placeholder="Ej: Juan Perez" class="filter-input">
-                            </div>
-                            <div class="filter-group" style="width: 150px;">
-                                <label for="new-user-role">Rol</label>
-                                <select id="new-user-role" class="filter-select">
-                                    <option value="user">Usuario normal</option>
-                                    <option value="admin">Administrador</option>
-                                </select>
-                            </div>
-                            <button id="btn-add-user" class="btn-orb-primary"
-                                style="padding: 12px 24px; height: 42px;">Agregar Auditor</button>
+                <section class="users-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; margin-top: 20px;">
+                        <h3 style="font-size: 14px; font-weight: 900; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Lista de Auditores</h3>
+                        <div style="display: flex; gap: 12px;">
+                            <input type="text" id="new-user-name" placeholder="Nombre..." style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 15px; color: white; outline: none; font-size: 13px;">
+                            <select id="new-user-role" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0 10px; color: white; outline: none; font-size: 13px;">
+                                <option value="user">Auditor</option>
+                                <option value="admin">Maestro</option>
+                            </select>
+                            <button id="btn-add-user" class="btn-add-auditor">+ AÑADIR AUDITOR</button>
                         </div>
                     </div>
 
-                    <div class="table-wrapper">
-                        <table id="users-table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Rol</th>
-                                    <th style="width: 100px; text-align: center;">Ingresos</th>
-                                    <th style="width: 180px;">Última Actividad</th>
-                                    <th>Estado</th>
-                                    <th style="width: 160px; text-align: center;">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="users-tbody">
-                                <!-- Users rendered here -->
-                            </tbody>
-                        </table>
+                    <div id="users-list-container">
+                        <!-- User cards will be rendered here -->
+                    </div>
+                </section>
+
+                <section class="card" style="margin-top: 24px; padding-bottom: 24px;">
+                    <div class="card-header">
+                        <h3>Generador de Licencias Offline</h3>
+                        <span class="card-badge">Solo Administradores</span>
+                    </div>
+                    <div style="padding: 0 24px;">
+                        <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin: 16px 0; line-height: 1.5;">
+                            Ingresa el <b>ID de Instalación</b> y el <b>Nombre del Auditor</b> para generar una <b>Llave de Activación Permanente</b>. Esta llave habilitará el sistema de forma indefinida en ese equipo específico sin necesidad de renovaciones.
+                        </p>
+                        
+                        <div style="display: flex; gap: 12px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;">
+                            <div class="filter-group" style="flex:1; min-width: 200px;">
+                                <label for="gen-auditor-name">Nombre del Auditor</label>
+                                <input type="text" id="gen-auditor-name" placeholder="Ej: Juan Perez" class="filter-input" style="width: 100%;">
+                            </div>
+                            <div class="filter-group" style="flex:1; min-width: 200px;">
+                                <label for="gen-install-id">ID de Instalación</label>
+                                <input type="text" id="gen-install-id" placeholder="Ej: ABC-123-XYZ" class="filter-input" style="width: 100%;">
+                            </div>
+                            <button id="btn-generate-key" class="btn-orb-primary" style="height: 42px; margin-top: 20px; padding: 0 32px; flex-shrink: 0;">GENERAR LLAVE</button>
+                        </div>
+                        
+                        <div id="key-result-container" style="display: none; margin-top: 20px; background: rgba(251, 191, 36, 0.05); border: 1px solid rgba(251, 191, 36, 0.2); border-radius: 12px; padding: 20px; text-align: center; animation: slideInUp 0.4s ease-out;">
+                            <div style="font-size: 10px; color: #fbbf24; text-transform: uppercase; font-weight: 800; margin-bottom: 8px; letter-spacing: 1px;">Llave Permanente Generada:</div>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
+                                <code id="result-key-code" style="font-size: 28px; color: white; font-weight: 800; letter-spacing: 4px; font-family: 'Outfit', sans-serif; background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">---</code>
+                                <button id="btn-copy-key" class="user-action-btn" style="padding: 10px 20px; font-size: 12px;">COPIAR</button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 

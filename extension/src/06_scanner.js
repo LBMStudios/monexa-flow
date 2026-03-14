@@ -98,8 +98,17 @@ const Scanner = {
      * Útil cuando cambian las reglas y queremos que se apliquen retroactivamente.
      */
     async reprocess() {
+        // Limpiamos marcas de procesado y celdas inyectadas para forzar el repintado con las nuevas reglas
         const rows = document.querySelectorAll('tr[data-monexa-ready]');
-        rows.forEach(r => r.removeAttribute('data-monexa-ready'));
+        rows.forEach(r => {
+            r.removeAttribute('data-monexa-ready');
+            const cell = r.querySelector('.it-data-node');
+            if (cell) cell.remove();
+            
+            // Resetear estilos de borde/fondo previos
+            r.style.backgroundColor = "transparent";
+            r.style.borderLeft = "none";
+        });
         await this.processDOM();
     },
 
@@ -111,22 +120,88 @@ const Scanner = {
         try {
             // Cargar worker desde la raíz de la extensión
             this._worker = new Worker(chrome.runtime.getURL('src/01a_worker.js'));
+            console.log("[Monexa] Worker inicializado correctamente.");
         } catch (e) {
-            console.error("No se pudo iniciar el Monexa Worker:", e);
+            console.error("[Monexa] No se pudo iniciar el Worker, se usará fallback inline:", e);
+            this._worker = null;
         }
     },
 
     /**
+     * Matching de reglas INLINE (fallback cuando el Worker no está disponible).
+     * Replica la misma lógica que el Worker para garantizar consistencia.
+     */
+    _matchRulesInline(data, rules, dbItems) {
+        const normalizeStr = (s) => (s || '').toString().replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
+        const c_clean = normalizeStr(data.concepto);
+        const e_clean = normalizeStr(data.extra);
+
+        const parseAmount = (s) => {
+            if (!s) return NaN;
+            let clean = s.toString().replace(/[^\d,.-]/g, '');
+            if (clean.includes(',') && clean.includes('.')) {
+                clean = clean.replace(/\./g, '').replace(',', '.');
+            } else if (clean.includes(',')) {
+                clean = clean.replace(',', '.');
+            } else if (clean.includes('.')) {
+                const parts = clean.split('.');
+                const lastPart = parts[parts.length - 1];
+                if (lastPart.length === 3) {
+                    clean = clean.replace(/\./g, '');
+                }
+            }
+            return parseFloat(clean);
+        };
+
+        const sortedRules = [...rules].sort((a, b) => (b.importe ? 1 : 0) - (a.importe ? 1 : 0));
+
+        const matchRule = sortedRules.find(r => {
+            const r_pattern = normalizeStr(r.pattern);
+            if (!r_pattern) return false;
+            const inText = c_clean.indexOf(r_pattern) !== -1 || e_clean.indexOf(r_pattern) !== -1;
+            if (!inText) return false;
+            if (r.importe) {
+                const rN = parseAmount(r.importe);
+                const txN = parseAmount(data.debito) || parseAmount(data.credito);
+                return !isNaN(rN) && !isNaN(txN) && Math.abs(rN - txN) < 0.01;
+            }
+            return true;
+        });
+
+        let prediction = null;
+        if (!matchRule) {
+            prediction = DataCore.getPrediction ? DataCore.getPrediction(data.concepto, dbItems) : null;
+        }
+
+        return {
+            matchRule: matchRule ? { label: matchRule.label, note: matchRule.note, color: matchRule.color } : null,
+            prediction
+        };
+    },
+
+    /**
      * Envía una fila al worker y devuelve una promesa con el resultado.
+     * Si el Worker no está disponible, ejecuta el matching inline.
      */
     async processRowAsync(data, rules, dbItems) {
-        if (!this._worker) return { matchRule: null, prediction: null };
+        // FALLBACK: Si el worker no cargó, hacer matching inline
+        if (!this._worker) {
+            return this._matchRulesInline(data, rules, dbItems);
+        }
 
         return new Promise((resolve) => {
             const requestId = Math.random().toString(36).substring(7);
             
+            // Timeout de seguridad: si el worker no responde en 3s, usar fallback inline
+            const timeout = setTimeout(() => {
+                this._worker.removeEventListener('message', handler);
+                console.warn("[Monexa] Worker timeout, usando fallback inline para esta fila.");
+                resolve(this._matchRulesInline(data, rules, dbItems));
+            }, 3000);
+
             const handler = (e) => {
                 if (e.data.action === 'ROW_PROCESSED' && e.data.requestId === requestId) {
+                    clearTimeout(timeout);
                     this._worker.removeEventListener('message', handler);
                     resolve(e.data.result);
                 }
@@ -140,6 +215,7 @@ const Scanner = {
             });
         });
     },
+
 
     /**
      * Recorre las filas del DOM activo, genera fingerprints, aplica reglas
@@ -160,6 +236,13 @@ const Scanner = {
             }
             const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
             const rules = await DB_Engine.fetch(KEYS.RULES, []);
+
+            // Diagnóstico de reglas cargadas
+            if (rules.length > 0) {
+                console.log(`[Monexa] Motor de Reglas: ${rules.length} regla(s) activa(s)`, rules.map(r => r.pattern));
+            } else {
+                console.warn("[Monexa] Motor de Reglas: Sin reglas configuradas. Crea reglas en el panel lateral.");
+            }
 
             // --- Gestión Eficiente de Datalists ---
             const allItems = Object.values(db.items || {});
@@ -274,7 +357,11 @@ const Scanner = {
                         dbUpdated = true;
                     }
 
-                    if (matchRule && (!record.tag || record.tag.trim().toLowerCase() === 'etiqueta') && (record.status === "NONE" || record.status === "PENDING")) {
+                    const canUpdate = !record.tag || 
+                                      record.tag.trim().toLowerCase() === 'etiqueta' || 
+                                      (record.note && record.note.includes("Auto-Match"));
+
+                    if (matchRule && canUpdate && (record.status === "NONE" || record.status === "VERDE" || record.status === "PENDING")) {
                         record.tag = matchRule.label;
                         record.note = matchRule.note || "Auto-Match (Retroactivo)";
                         record.status = "VERDE";
@@ -438,10 +525,28 @@ const Scanner = {
             'NONE': '0px solid transparent'
         };
 
-        row.style.backgroundColor = rowColors[data.status] || 'transparent';
         row.style.transition = "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
-        row.style.borderLeft = statusBorder[data.status];
 
+        // Determinar colores a aplicar
+        let bgColor = rowColors[data.status] || 'transparent';
+        let borderColor = null;
+
+        if (data.ruleColor && RULE_COLORS[data.ruleColor]) {
+            const hex = RULE_COLORS[data.ruleColor].hex;
+            bgColor = hex + '18';
+            borderColor = hex;
+        } else if (data.status && data.status !== 'NONE') {
+            const statusHexMap = { 'VERDE': '#10b981', 'AMARILLO': '#f59e0b', 'ROJO': '#ef4444' };
+            borderColor = statusHexMap[data.status] || null;
+        }
+
+        // Aplicar a TODAS las celdas del renglón para forzar el color completo
+        const allCells = row.querySelectorAll('td');
+        allCells.forEach((cell, i) => {
+            cell.style.backgroundColor = bgColor;
+            cell.style.borderLeft = (i === 0 && borderColor) ? `4px solid ${borderColor}` : 'none';
+        });
+        row.style.backgroundColor = bgColor;
         // Marcar visualmente si fue detectado por el motor de reglas (V1 Premium)
         if (data.note && data.note.includes("Auto-Match")) {
             row.classList.add('mx-row-automatched');
@@ -450,30 +555,10 @@ const Scanner = {
         const td = document.createElement("td");
         td.className = "it-data-node";
         td.dataset.hash = hash;
-        td.style.cssText = `
-            border-left: 2px solid #e5e7eb;
-            padding: 0 8px;
-            white-space: nowrap;
-            vertical-align: middle;
-        `;
-
         const statusInfo =
             STATUS_MAP[
             Object.keys(STATUS_MAP).find(k => STATUS_MAP[k].id === data.status)
             ] || STATUS_MAP.PENDING;
-
-        // Estilos inline integrados al diseño Itaú pero con toque premium
-        const inputStyle = `
-            font-family: 'Outfit', sans-serif;
-            font-size: 11px;
-            color: #1f2937;
-            background: rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.05);
-            border-radius: 8px;
-            padding: 5px 10px;
-            outline: none;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        `;
 
         // Tooltip con info de quién editó y cuándo
         const auditTip = data.user && data.ts
@@ -481,7 +566,7 @@ const Scanner = {
             : 'Sin editar aún';
 
         td.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 6px; height: 100%;">
+            <div class="it-row-container">
                 <input
                     type="text"
                     class="it-field-tag"
@@ -490,9 +575,9 @@ const Scanner = {
                     list="mx-data-tags"
                     value="${DataCore.sanitizeText(data.tag || '')}"
                     title="${auditTip}"
-                style="${inputStyle} width: 70px; font-weight: 600; color: ${(data.ruleColor && RULE_COLORS[data.ruleColor]) ? RULE_COLORS[data.ruleColor].hex : '#059669'};"
+                    style="color: ${(data.ruleColor && RULE_COLORS[data.ruleColor]) ? RULE_COLORS[data.ruleColor].hex : '#059669'};"
                 >
-                <div style="position: relative; display: flex; align-items: center; width: 120px;">
+                <div class="it-note-wrapper">
                     <input
                         type="text"
                         class="it-field-note"
@@ -501,47 +586,18 @@ const Scanner = {
                         list="mx-data-notes"
                         value="${DataCore.sanitizeText(data.note || '')}"
                         title="${auditTip}"
-                        style="${inputStyle} width: 120px; font-style: ${data.note ? 'normal' : 'italic'}; color: ${data.note ? '#374151' : '#9ca3af'}; position: relative; z-index: 2; background: transparent;"
+                        style="font-style: ${data.note ? 'normal' : 'italic'}; color: ${data.note ? '#374151' : '#9ca3af'}; background: transparent; z-index: 2;"
                     >
-                    <div class="it-note-suggestion" style="position: absolute; left: 10px; top: 0; bottom: 0; display: flex; align-items: center; color: rgba(0,0,0,0.25); font-family: 'Outfit', sans-serif; font-size: 11px; pointer-events: none; z-index: 1; white-space: nowrap; overflow: hidden; width: 100px;">
+                    <div class="it-note-suggestion">
                         ${prediction ? (data.note ? '' : prediction.note) : ''}
                     </div>
                 </div>
-                <button
-                    class="it-btn-cycle"
+                <button 
+                    class="it-btn-cycle" 
                     title="${statusInfo.label}"
-                    style="
-                        background: ${statusInfo.color};
-                        color: white;
-                        border: none;
-                        border-radius: 10px;
-                        width: 26px; height: 26px;
-                        min-width: 26px;
-                        cursor: pointer;
-                        display: flex; align-items: center; justify-content: center;
-                        font-size: 12px;
-                        font-weight: 800;
-                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                        box-shadow: 0 4px 10px ${statusInfo.color}44;
-                        line-height: 1;
-                        padding: 0;
-                    "
+                    style="background: ${statusInfo.color}; box-shadow: 0 4px 10px ${statusInfo.color}44;"
                 >${statusInfo.icon}</button>
-                <button
-                    class="it-btn-del"
-                    title="Borrar registro"
-                    style="
-                        background: none;
-                        border: none;
-                        color: #d1d5db;
-                        cursor: pointer;
-                        font-size: 13px;
-                        padding: 0 2px;
-                        line-height: 1;
-                        transition: color 0.2s;
-                        opacity: 0;
-                    "
-                >×</button>
+                <button class="it-btn-del" title="Borrar registro">×</button>
             </div>
         `;
 

@@ -12,7 +12,8 @@ const Logger = {
 
     async write(message, level = "INFO", action = "") {
         try {
-            const logs = await DB_Engine.fetch(KEYS.LOGS, []);
+            let logs = await DB_Engine.fetch(KEYS.LOGS, []);
+            if (!Array.isArray(logs)) logs = [];
             const entry = {
                 timestamp: new Date().toISOString(),
                 level: level,

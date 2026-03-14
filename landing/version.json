@@ -1,6 +1,12 @@
 {
-  "version": "1.3.8",
-  "name": "Monexa Flow 1.3.8",
+  "version": "1.3.9",
+  "name": "Monexa Flow 1.3.9",
   "url": "https://monexa-flow.vercel.app/archive.zip",
-  "changelog": "Itaú Direct Access Edition: Acceso sin contraseñas, identidad premium adaptativa, motor IndexedDB unificado y acceso administrativo fail-safe."
+  "changelog": [
+    "Sovereign Edition: 100% Offline & Local",
+    "Mathematical License Activation (No Cloud)",
+    "Removed Firebase dependencies & Remote sync",
+    "Clean Landing Page (Privacy First)",
+    "Offline License Generator in Admin Panel"
+  ]
 }

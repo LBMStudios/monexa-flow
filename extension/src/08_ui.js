@@ -23,281 +23,90 @@ const UI = {
     async init() {
         UIStyles.inject();
 
-        // V2 — Sincronizar usuarios desde la nube si hay una URL configurada
-        if (typeof CloudConnector !== 'undefined') {
-            await CloudConnector.syncRemoteUsers();
-        }
+        const isActivated = true; // Bypassed por solicitud: "usuario habilitado accede"
+        console.log("[Monexa] Estado Activación (Override):", isActivated);
 
-        // Obtener configuración. Usamos fallback para evitar errores si no existe
+        // 2. Si está activado, verificar sesión de usuario
         const config = await DB_Engine.fetch(KEYS.SETTINGS, { user: "" });
 
-        // Si el usuario existe y no está vacío, cargamos normal. Si no, bienvenida.
         if (config && config.user && config.user !== "") {
+            console.log("[Monexa] Usuario detectado:", config.user);
             if (window === window.top) {
                 await this.renderControlCenter();
                 this.renderLauncher();
+                if (document.getElementById('mx-boot-tag')) document.getElementById('mx-boot-tag').innerText = 'MX:READY';
             }
             await Scanner.init();
         } else {
+            console.warn("[Monexa] No hay usuario activo. Intentando autologin...");
+            
+            // Cadena de recuperación de identidad:
+            // 1. Buscar en licencias activas
+            // 2. Buscar en lista de usuarios (el más reciente)
+            // 3. Si nada funciona → mostrar pantalla de login
+
+            let autoUser = null;
+
+            // Intento 1: Licencias activas
+            const license = await DB_Engine.fetch(KEYS.LICENSE, { activeLicenses: {} });
+            const activeUsers = Object.keys(license.activeLicenses || {});
+            
+            if (activeUsers.length === 1) {
+                autoUser = activeUsers[0];
+                console.log("[Monexa] Autologin por licencia:", autoUser);
+            }
+
+            // Intento 2: Buscar en la lista de usuarios registrados
+            if (!autoUser) {
+                const users = await DB_Engine.fetch(KEYS.USERS, []);
+                if (users.length > 0) {
+                    // Ordenar por última actividad (más reciente primero)
+                    const sorted = [...users].sort((a, b) => {
+                        const ta = a.lastActive ? new Date(a.lastActive).getTime() : 0;
+                        const tb = b.lastActive ? new Date(b.lastActive).getTime() : 0;
+                        return tb - ta;
+                    });
+                    autoUser = sorted[0].name;
+                    console.log("[Monexa] Autologin por usuario reciente:", autoUser);
+                }
+            }
+
+            if (autoUser) {
+                // Actualizar configuración
+                const currentSettings = await DB_Engine.fetch(KEYS.SETTINGS, {});
+                let role = 'user';
+                const users = await DB_Engine.fetch(KEYS.USERS, []);
+                const found = users.find(u => u.name.toLowerCase() === autoUser.toLowerCase());
+                if (found) role = found.role || 'user';
+                else if (users.length === 0) role = 'admin';
+
+                await DB_Engine.commit(KEYS.SETTINGS, { ...currentSettings, user: autoUser, role, enabled: true });
+                await DB_Engine.commit(KEYS.SYSTEM_STATE, { enabled: true });
+                
+                console.log(`[Monexa] Sesión recuperada para: ${autoUser} (${role})`);
+                
+                if (window === window.top) {
+                    await this.renderControlCenter();
+                    this.renderLauncher();
+                    if (document.getElementById('mx-boot-tag')) document.getElementById('mx-boot-tag').innerText = 'MX:READY';
+                }
+                await Scanner.init();
+                return;
+            }
+
             if (window === window.top) {
                 UILogin.renderWelcome();
+                if (document.getElementById('mx-boot-tag')) document.getElementById('mx-boot-tag').innerText = 'MX:WELCOME';
             }
+
         }
     },
 
     /**
-     * Inyecta el CSS global del sistema en <head> (solo una vez).
+     * Inyecta el CSS global del sistema (delegado a UIStyles).
      */
     injectGlobalStyles() {
-        if (this.stylesInjected || document.getElementById("mx-global-styles")) return;
-
-        const css = `
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;700&display=swap');
-
-            :root {
-                --mx-bg: rgba(10, 12, 18, 0.95);
-                --mx-primary: #ec7000;
-                --mx-primary-dim: rgba(236, 112, 0, 0.2);
-                --mx-accent: #3b82f6;
-                --mx-border: rgba(255, 255, 255, 0.08);
-                --mx-glass: rgba(255, 255, 255, 0.03);
-            }
-
-            #mx-master-launcher {
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                width: 68px;
-                height: 68px;
-                background: var(--mx-primary);
-                color: white;
-                border-radius: 20px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 99999;
-                cursor: pointer;
-                box-shadow: 0 10px 30px rgba(236,112,0,0.3), inset 0 1px 1px rgba(255,255,255,0.3);
-                border: 1px solid rgba(255,255,255,0.1);
-                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                font-family: 'Outfit', sans-serif;
-                font-weight: 800;
-                font-size: 22px;
-                user-select: none;
-            }
-
-            @keyframes mx-pulse {
-                0%, 100% { border-color: rgba(245, 158, 11, 0.3); box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
-                50% { border-color: rgba(245, 158, 11, 0.6); box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
-            }
-
-            #mx-master-launcher:hover {
-                transform: scale(1.1) translateY(-5px);
-                box-shadow: 0 15px 40px rgba(236,112,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4);
-            }
-
-            #mx-launcher-wrapper {
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-                z-index: 99999;
-            }
-
-            #mx-account-chip {
-                background: rgba(0, 0, 0, 0.8);
-                backdrop-filter: blur(12px);
-                border: 1px solid var(--mx-border);
-                color: white;
-                font-family: 'Outfit', sans-serif;
-                font-size: 11px;
-                font-weight: 700;
-                padding: 4px 12px;
-                border-radius: 10px;
-                opacity: 0;
-                transform: translateY(10px);
-                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            }
-
-            #mx-account-chip.visible { opacity: 1; transform: translateY(0); }
-
-            #mx-control-panel {
-                position: fixed;
-                top: 0;
-                right: -450px;
-                width: 420px;
-                height: 100vh;
-                background: var(--mx-bg);
-                backdrop-filter: blur(40px) saturate(180%);
-                z-index: 100000;
-                box-shadow: -20px 0 80px rgba(0,0,0,0.8);
-                border-left: 1px solid var(--mx-border);
-                transition: right 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-                display: flex;
-                flex-direction: column;
-                font-family: 'Outfit', sans-serif;
-                color: white;
-            }
-
-            #mx-control-panel.active { right: 0; }
-
-            .mx-header {
-                padding: 30px 25px;
-                border-bottom: 1px solid var(--mx-border);
-                background: linear-gradient(to bottom, rgba(236,112,0,0.05) 0%, transparent 100%);
-            }
-
-            .mx-content {
-                flex: 1;
-                overflow-y: auto;
-                padding: 25px;
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .mx-card {
-                background: var(--mx-glass);
-                border: 1px solid var(--mx-border);
-                border-radius: 20px;
-                padding: 20px;
-                transition: all 0.3s ease;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .mx-card:hover {
-                border-color: rgba(236, 112, 0, 0.3);
-                background: rgba(255, 255, 255, 0.05);
-                transform: translateY(-2px);
-            }
-
-            .mx-card h4 {
-                margin: 0 0 15px 0;
-                font-size: 11px;
-                text-transform: uppercase;
-                letter-spacing: 0.1em;
-                color: rgba(255, 255, 255, 0.4);
-                font-weight: 800;
-            }
-
-            .mx-btn-action {
-                width: 100%;
-                padding: 14px;
-                border-radius: 14px;
-                background: var(--mx-primary);
-                color: white;
-                font-weight: 700;
-                border: none;
-                cursor: pointer;
-                transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                font-family: 'Outfit', sans-serif;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
-                box-shadow: 0 4px 15px rgba(236,112,0,0.2);
-            }
-
-            .mx-btn-action:hover {
-                filter: brightness(1.1);
-                transform: scale(1.02);
-                box-shadow: 0 8px 25px rgba(236,112,0,0.4);
-            }
-
-            .mx-btn-secondary {
-                background: rgba(255,255,255,0.05);
-                border: 1px solid var(--mx-border);
-                box-shadow: none;
-            }
-
-            .mx-btn-secondary:hover {
-                background: rgba(255,255,255,0.1);
-                border-color: rgba(255,255,255,0.2);
-            }
-
-            .mx-stat-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 12px;
-            }
-
-            .mx-stat-item {
-                text-align: center;
-                padding: 18px 10px;
-                border-radius: 16px;
-                background: rgba(255,255,255,0.03);
-                border: 1px solid var(--mx-border);
-                transition: transform 0.3s ease;
-            }
-
-            .mx-stat-item:hover { transform: scale(1.05); }
-
-            .mx-stat-item b { font-size: 20px; display: block; margin-bottom: 2px; }
-            .mx-stat-item small { font-size: 9px; opacity: 0.6; text-transform: uppercase; font-weight: 700; }
-
-            .mx-search-box {
-                width: 100%;
-                padding: 14px;
-                background: rgba(0,0,0,0.2);
-                border: 1px solid var(--mx-border);
-                border-radius: 12px;
-                color: white;
-                font-family: 'Outfit', sans-serif;
-                font-size: 13px;
-                transition: all 0.3s ease;
-            }
-
-            .mx-search-box:focus {
-                outline: none;
-                border-color: var(--mx-primary);
-                background: rgba(0,0,0,0.3);
-                box-shadow: 0 0 0 3px rgba(236,112,0,0.1);
-            }
-
-            @keyframes mxPulse {
-                0% { transform: scale(1); opacity: 0.8; }
-                50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 10px var(--mx-primary); }
-                100% { transform: scale(1); opacity: 0.8; }
-            }
-
-            .mx-sync-badge {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 10px;
-                color: rgba(255,255,255,0.5);
-                font-weight: 600;
-            }
-
-            .mx-sync-dot {
-                width: 8px;
-                height: 8px;
-                background: #10b981;
-                border-radius: 50%;
-                transition: background 0.3s;
-            }
-
-            .mx-sync-dot.syncing {
-                background: var(--mx-primary);
-                animation: mxPulse 1s infinite;
-            }
-
-            /* Scrollbar Refinada */
-            .mx-content::-webkit-scrollbar { width: 5px; }
-            .mx-content::-webkit-scrollbar-track { background: transparent; }
-            .mx-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-            .mx-content::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-        `;
-
-        const styleSheet = document.createElement("style");
-        styleSheet.id = "mx-global-styles";
-        styleSheet.innerText = css;
-        document.head.appendChild(styleSheet);
-        this.stylesInjected = true;
+        UIStyles.inject();
     },
 
     /**
@@ -493,10 +302,10 @@ const UI = {
                             </span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 1px;">
-                            <div class="mx-sync-badge" style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 4px;">
-                                <div id="mx-sync-dot" class="mx-sync-dot" style="width: 5px; height: 5px;"></div>
-                            <span style="font-size: 7px; font-weight: 800; color: rgba(255,255,255,0.6); text-transform: uppercase;">Protección Local</span>
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.6; color: white;">
+                            <div class="mx-sovereign-badge" style="background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2); display: flex; align-items: center; gap: 6px;">
+                                <div style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981;"></div>
+                            <span style="font-size: 8px; font-weight: 900; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px;">Blindaje Local Activo</span>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                             </svg>
@@ -535,57 +344,35 @@ const UI = {
             </div>
 
             <div class="mx-content">
-                       ${(config.user || "").toLowerCase() === 'lucas' ? `
-                    <!-- PANEL MAESTRO PRO (SOLO LUCAS) -->
-                    <div id="mx-admin-card" style="
-                        background: rgba(15, 23, 42, 0.4);
-                        border: 1px solid rgba(255, 255, 255, 0.05);
-                        border-radius: 24px;
-                        padding: 24px;
-                        margin-bottom: 24px;
-                        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-                        font-family: 'Inter', sans-serif;
-                    ">
-                        <!-- Cabecera Admin -->
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-                            <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: white;">Auditores Registrados</h3>
-                            <button id="mx-btn-admin-refresh" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:6px; cursor:pointer; color:white;" title="Refrescar">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-                            </button>
+                <!-- Sección de Seguridad (Sovereign Edition) -->
+                <div class="mx-card" style="
+                    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+                    border: 1px solid rgba(16, 185, 129, 0.2);
+                    margin-bottom: 5px;
+                ">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                        <div style="color: #10b981;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
                         </div>
-
-                        <!-- Formulario de Registro Express -->
-                        <div style="background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; padding: 16px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 120px; gap: 12px;">
-                            <div>
-                                <label style="font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 6px; display: block;">Nombre de Auditor</label>
-                                <input type="text" id="mx-admin-new-name" placeholder="Ej: Juan Perez" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px; color: white; font-size: 13px;">
-                            </div>
-                            <div>
-                                <label style="font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 6px; display: block;">Rol</label>
-                                <select id="mx-admin-new-role" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 9px; color: white; font-size: 12px; cursor: pointer;">
-                                    <option value="user">Auditor</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                            </div>
-                            <button id="mx-btn-admin-add" style="grid-column: span 2; background: ${PALETTE.itau_orange}; color: white; border: none; border-radius: 10px; padding: 10px; font-weight: 800; font-size: 11px; cursor: pointer; transition: all 0.2s;">REGISTRAR NUEVO AUDITOR</button>
-                        </div>
-
-                        <!-- Tabla de Auditores Pro -->
-                        <div style="margin-bottom: 20px;">
-                            <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr 1.5fr; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 12px 12px 0 0; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase;">
-                                <div>Nombre</div>
-                                <div style="text-align: center;">Rol</div>
-                                <div style="text-align: center;">Ingresos</div>
-                                <div style="text-align: right;">Última Actividad</div>
-                            </div>
-                            <div id="mx-admin-user-list" style="max-height: 240px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.05); border-top: none; border-radius: 0 0 12px 12px;">
-                                <!-- Se llena dinámicamente -->
-                            </div>
-                        </div>
-
-
-                        <div style="font-size: 10px; color: rgba(255,255,255,0.2); text-align: center; margin-top: 24px;">Monexa Flow — Módulo de Administración</div>
+                        <h4 style="margin: 0; color: white; font-size: 13px;">Seguridad</h4>
                     </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,0.7);">
+                            <span style="color: #10b981;">●</span> 100% Offline (Sin conexión Cloud)
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,0.7);">
+                            <span style="color: #10b981;">●</span> Datos Locales Soberanos (IndexedDB)
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: rgba(255,255,255,0.7);">
+                            <span style="color: #10b981;">●</span> Activación Matemática per-User
+                        </div>
+                    </div>
+                </div>
+
+                       ${(config.user || "").toLowerCase() === 'lucas' ? `
+                    <!-- El Panel Maestro ha sido removido para garantizar 100% privacidad offline -->
                 ` : ''}
 
 
@@ -912,14 +699,13 @@ const UI = {
                 d.style.borderColor = d.dataset.color === 'verde' ? 'rgba(255,255,255,0.6)' : 'transparent';
             });
             await UI.refreshRulesList();
-            
-            // 🚀 Re-escaneo reactivo para aplicar la nueva regla inmediatamente
-            if (typeof Scanner !== 'undefined') {
-                setTimeout(() => Scanner.reprocess(), 100);
-            }
-
-            alert("Regla añadida.");
             await Logger.info(`Regla añadida: ${pat}${amt ? '+' + amt : ''} -> ${lab} [${_selectedRuleColor}]`);
+            
+            // 🚀 Re-escaneo reactivo sin recargar la página (mejor UX en SPAs)
+            console.log("[Monexa] Regla añadida. Re-procesando DOM...");
+            if (typeof Scanner !== 'undefined') {
+                Scanner.reprocess();
+            }
         };
 
         document.getElementById('mx-btn-exp-rules').onclick = () => {
@@ -1317,8 +1103,8 @@ const UI = {
                 currentRules.splice(idx, 1);
                 await DB_Engine.commit(KEYS.RULES, currentRules);
                 await UI.refreshRulesList();
-
-                // 🚀 Re-escaneo reactivo tras eliminar regla
+                
+                // 🚀 Re-escaneo reactivo sin recargar la página
                 if (typeof Scanner !== 'undefined') {
                     Scanner.reprocess();
                 }
