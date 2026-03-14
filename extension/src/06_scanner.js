@@ -782,7 +782,19 @@ const Scanner = {
     initModalWatcher() {
         if (this._modalWatcher) return;
 
+        let lastMarkedBody = null;
+
         this._modalWatcher = new MutationObserver((mutations) => {
+            // Filtrado rápido: solo procesar si hubo cambios en los nodos hijos
+            let hasRelevantChanges = false;
+            for (const m of mutations) {
+                if (m.addedNodes.length > 0 || m.removedNodes.length > 0) {
+                    hasRelevantChanges = true;
+                    break;
+                }
+            }
+            if (!hasRelevantChanges) return;
+
             const titleElement = document.querySelector('.content-comprobante, #mySmallModalLabel');
             if (titleElement && titleElement.offsetParent !== null) {
                 const modalContainer = titleElement.closest('.modal-content, .modal-dialog, #commonModal, #detallesModal') || titleElement.parentElement;
@@ -791,9 +803,13 @@ const Scanner = {
                 if (body && !body.hasAttribute('data-it-node')) {
                     this.scrapeModalContent(body);
                     body.setAttribute('data-it-node', 'true');
+                    lastMarkedBody = body;
                 }
             } else {
-                document.querySelectorAll('[data-it-node]').forEach(el => el.removeAttribute('data-it-node'));
+                if (lastMarkedBody) {
+                    lastMarkedBody.removeAttribute('data-it-node');
+                    lastMarkedBody = null;
+                }
             }
         });
 
