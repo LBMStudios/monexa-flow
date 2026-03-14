@@ -469,36 +469,36 @@ const UI = {
                         </svg>
                         Motor de Reglas Inteligentes
                     </h4>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <input type="text" id="mx-rule-pat" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Si el concepto contiene...">
-                        <input type="text" id="mx-rule-amt" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Importe (Ej: 1540.00)">
-                        <input type="text" id="mx-rule-lab" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Asignar etiqueta...">
-                        <input type="text" id="mx-rule-not" class="mx-search-box" style="padding: 10px; font-size: 13px;" placeholder="Nota adicional (Ej: MUÑOZ)">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <input type="text" id="mx-rule-pat" class="mx-search-box" style="padding: 8px 10px; font-size: 12px;" placeholder="Si el concepto contiene...">
+                        <input type="text" id="mx-rule-amt" class="mx-search-box" style="padding: 8px 10px; font-size: 12px;" placeholder="Importe (Ej: 1540.00)">
+                        <input type="text" id="mx-rule-lab" class="mx-search-box" style="padding: 8px 10px; font-size: 12px;" placeholder="Asignar etiqueta...">
+                        <input type="text" id="mx-rule-not" class="mx-search-box" style="padding: 8px 10px; font-size: 12px;" placeholder="Nota adicional (Ej: MUÑOZ)">
                         
-                        <div style="margin: 10px 0;">
-                            <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Color del Marcador:</div>
-                            <div id="mx-rule-colors" style="display: flex; gap: 10px;">
+                        <div style="margin: 6px 0 4px;">
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.4); margin-bottom: 6px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Color del Marcador:</div>
+                            <div id="mx-rule-colors" style="display: flex; gap: 8px;">
                                 ${Object.entries(RULE_COLORS).map(([key, c]) => `
                                     <div class="mx-color-dot" data-color="${key}" title="${c.label}" style="
-                                        width: 28px; height: 28px;
-                                        border-radius: 10px;
+                                        width: 24px; height: 24px;
+                                        border-radius: 8px;
                                         background: ${c.hex};
                                         cursor: pointer;
                                         border: 2px solid ${key === 'verde' ? 'white' : 'transparent'};
                                         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                                        box-shadow: 0 4px 10px ${c.hex}44;
-                                    " onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+                                        box-shadow: 0 3px 8px ${c.hex}44;
+                                    " onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <button id="mx-btn-add-rule" class="mx-btn-action" style="margin-top: 5px;">+ Crear Regla Automática</button>
+                        <button id="mx-btn-add-rule" class="mx-btn-action" style="margin-top: 2px;">+ Crear Regla Automática</button>
                         
-                        <div id="mx-rules-list" style="margin-top: 15px; max-height: 180px; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 6px;"></div>
+                        <div id="mx-rules-list" style="margin-top: 10px; max-height: 150px; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 6px;"></div>
 
-                        <div style="display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px; margin-top: 10px;">
-                            <button id="mx-btn-exp-rules" class="mx-btn-action mx-btn-secondary" style="flex:1; padding: 10px; font-size: 11px;">Exportar</button>
-                            <button id="mx-btn-imp-rules" class="mx-btn-action mx-btn-secondary" style="flex:1; padding: 10px; font-size: 11px;">Importar</button>
+                        <div style="display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 6px;">
+                            <button id="mx-btn-exp-rules" class="mx-btn-action mx-btn-secondary" style="flex:1; padding: 8px; font-size: 11px;">Exportar</button>
+                            <button id="mx-btn-imp-rules" class="mx-btn-action mx-btn-secondary" style="flex:1; padding: 8px; font-size: 11px;">Importar</button>
                             <input type="file" id="mx-file-rules" style="display:none" accept=".csv">
                         </div>
                     </div>

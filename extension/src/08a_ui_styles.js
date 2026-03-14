@@ -125,6 +125,7 @@ const UIStyles = {
                 overflow-y: auto;
                 overflow-x: hidden;
                 padding: 20px;
+                padding-bottom: 40px;
                 background: transparent;
                 scrollbar-width: thin;
                 scrollbar-color: rgba(255,255,255,0.1) transparent;
