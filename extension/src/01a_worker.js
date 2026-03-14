@@ -3,6 +3,11 @@
  * Procesamiento Off-Main-Thread para matching de reglas y Predictive UX.
  */
 
+/**
+ * Normaliza texto para comparaciones robustas: elimina NBSP, colapsa espacios, trim y Uppercase.
+ */
+const normalizeText = (s) => (s || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
+
 self.onmessage = function(e) {
     const { action, data } = e.data;
 
@@ -10,54 +15,21 @@ self.onmessage = function(e) {
         const { concepto, extra, debito, credito, rules, dbItems } = data;
         
         // 1. Matching de Reglas (Lógica de 06_scanner.js movida aquí)
-        const normalizeStr = (s) => (s || '').toString().replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
-        const c_clean = normalizeStr(concepto);
-        const e_clean = normalizeStr(extra);
-
-        const parseAmount = (s) => {
-            if (!s) return NaN;
-            // Limpieza específica para Itaú Uruguay: 
-            // 1. Quitar moneda y espacios, dejando solo dígitos, comas, puntos y signos
-            let clean = s.toString().replace(/[^\d,.-]/g, '');
-            
-            // 2. Si hay comas y puntos (1.250,50), es formato ES/UY: limpiar puntos (miles) y cambiar coma por punto (decimal)
-            if (clean.includes(',') && clean.includes('.')) {
-                clean = clean.replace(/\./g, '').replace(',', '.');
-            } 
-            // 3. Si hay solo comas (1250,5), es decimal
-            else if (clean.includes(',')) {
-                clean = clean.replace(',', '.');
-            }
-            // 4. Si hay solo puntos (1.500 o 1500.00)
-            // En Uruguay/Itaú el punto suele ser miles. PERO en JS/HTML inputs suele ser decimal.
-            // Heurística: Si hay 3 dígitos después del último punto, es miles. Si no, es decimal.
-            else if (clean.includes('.')) {
-                const parts = clean.split('.');
-                const lastPart = parts[parts.length - 1];
-                if (lastPart.length === 3) {
-                    clean = clean.replace(/\./g, ''); // Era miles
-                } else {
-                    // Es decimal (formato internacional), lo dejamos como está
-                }
-            }
-            return parseFloat(clean);
-        };
-
+        const c_clean = normalizeText(concepto);
+        const e_clean = normalizeText(extra);
+        const normalizeAmt = (s) => (s || '').replace(/[.\s]/g, '').replace(/,/g, '').trim();
         const sortedRules = [...rules].sort((a, b) => (b.importe ? 1 : 0) - (a.importe ? 1 : 0));
 
         const matchRule = sortedRules.find(r => {
-            const r_pattern = normalizeStr(r.pattern);
-            if (!r_pattern) return false;
-
-            // Matching parcial de texto (v1.1 logic)
-            const inText = c_clean.indexOf(r_pattern) !== -1 || e_clean.indexOf(r_pattern) !== -1;
-            if (!inText) return false;
-
-            // Si hay importe en la regla, debe coincidir
+            const r_clean = normalizeText(r.pattern);
+            if (!r_clean) return false;
+            const matchConcepto = c_clean.includes(r_clean);
+            const matchExtra = e_clean.includes(r_clean);
+            if (!matchConcepto && !matchExtra) return false;
             if (r.importe) {
-                const rN = parseAmount(r.importe);
-                const txN = parseAmount(debito) || parseAmount(credito);
-                return !isNaN(rN) && !isNaN(txN) && Math.abs(rN - txN) < 0.01;
+                const rAmt = normalizeAmt(r.importe);
+                const txAmt = normalizeAmt(debito) || normalizeAmt(credito);
+                return rAmt === txAmt;
             }
             return true;
         });
@@ -70,7 +42,6 @@ self.onmessage = function(e) {
 
         self.postMessage({
             action: 'ROW_PROCESSED',
-            requestId: e.data.requestId, // 🛠️ FIJACIÓN CRÍTICA: Retornar ID para que el Scanner escuche
             result: {
                 matchRule: matchRule ? { label: matchRule.label, note: matchRule.note, color: matchRule.color } : null,
                 prediction
@@ -81,13 +52,13 @@ self.onmessage = function(e) {
 
 function getPrediction(concepto, dbItems) {
     if (!concepto || !dbItems) return null;
-    const c_target = concepto.toUpperCase().trim();
+    const c_target = normalizeText(concepto);
     const scores = {};
 
     for (const hash in dbItems) {
         const item = dbItems[hash];
         if (!item.tag || item.status === 'NONE') continue;
-        const c_hist = (item.concepto || "").toUpperCase().trim();
+        const c_hist = normalizeText(item.concepto);
         if (!c_hist) continue;
 
         let matchScore = 0;
