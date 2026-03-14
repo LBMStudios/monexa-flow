@@ -37,6 +37,8 @@ const UpdateSystem = {
             }
 
             // PRIORIDAD 2: Recurso estático (GitHub) como fallback
+            // [DISABLED] Fetch externo desactivado para entorno local estricto.
+            /*
             if (!latestVersion) {
                 const response = await fetch(this.UPDATE_URL + "?t=" + now);
                 if (response.ok) {
@@ -46,6 +48,7 @@ const UpdateSystem = {
                     zipUrl = data.url || "";
                 }
             }
+            */
 
             if (latestVersion && latestVersion !== VERSION) {
                 status.newVersion = latestVersion;

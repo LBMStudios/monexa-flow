@@ -88,6 +88,8 @@ async function checkUpdate() {
         }
 
         // 2. Fallback a GitHub (Landing)
+        // [DISABLED] Fetch externo desactivado para entorno local estricto.
+        /*
         if (!latestVersion) {
             const UPDATE_URL = "https://raw.githubusercontent.com/lbmstudios/monexa-flow/main/landing/version.json"; 
             const response = await fetch(UPDATE_URL + "?t=" + Date.now());
@@ -96,6 +98,7 @@ async function checkUpdate() {
                 latestVersion = data.version;
             }
         }
+        */
 
         if (latestVersion && latestVersion !== currentVersion) {
             const banner = document.getElementById('mx-update-banner');
