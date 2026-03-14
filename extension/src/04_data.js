@@ -24,10 +24,8 @@ const DataCore = {
         const seed = `${safeCuenta}|${safeMoneda}|${safeFecha}|${safeConcepto}|${safeImporte}|${safeSaldo}`;
         let hash = 0;
 
-        for (let i = 0; i < seed.length; i++) {
-            const char = seed.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
+        for (let i = 0, len = seed.length; i < len; i++) {
+            hash = ((hash << 5) - hash) + seed.charCodeAt(i) | 0;
         }
 
         return `it_acc_${Math.abs(hash)}`;
