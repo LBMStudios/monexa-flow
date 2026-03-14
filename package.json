@@ -1,0 +1,27 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "Monexa Flow es una extensión de Chrome profesional diseñada para la **automatización y auditoría de movimientos bancarios** (Itaú Uruguay). Permite capturar transacciones directamente desde el portal bancario y organizarlas en un dashboard premium de consulta local.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LBMStudios/monexa-flow.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/LBMStudios/monexa-flow/issues"
+  },
+  "homepage": "https://github.com/LBMStudios/monexa-flow#readme",
+  "devDependencies": {
+    "jest": "^30.3.0"
+  }
+}

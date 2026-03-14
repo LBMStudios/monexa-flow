@@ -12,21 +12,19 @@ const Logger = {
 
     async write(message, level = "INFO", action = "") {
         try {
-            let logs = await DB_Engine.fetch(KEYS.LOGS, []);
-            if (!Array.isArray(logs)) logs = [];
+            const logs = await DB_Engine.fetch(KEYS.LOGS, []);
             const entry = {
                 timestamp: new Date().toISOString(),
                 level: level,
                 action: action,
                 msg: String(message),
-                version: VERSION
+                version: typeof VERSION !== 'undefined' ? VERSION : "unknown"
             };
-            logs.push(entry);
-            if (logs.length > this.MAX_ENTRIES) logs.shift();
-            await DB_Engine.commit(KEYS.LOGS, logs);
-        } catch (err) {
-            console.error("Logger failure:", err);
-        }
+
+            logs.unshift(entry);
+            if (logs.length > this.MAX_ENTRIES) logs.length = this.MAX_ENTRIES;
+            await DB_Engine.commit(KEYS.LOGS, logs, false);
+        } catch(e) { /* Failsafe, no loop de logs */ }
     },
 
     info(m, action = "")  { return this.write(m, "INFO", action); },
