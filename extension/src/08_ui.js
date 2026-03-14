@@ -1136,6 +1136,10 @@ const UI = {
      * Muestra un menú de acciones rápidas al hacer clic en un importe.
      * (V1 Premium - Audit Layer)
      */
+    // Estado para debouncing de base de datos
+    _pendingDbUpdates: {},
+    _saveTimeout: null,
+
     showQuickActions(event, data, hash) {
         // Eliminar si ya existe uno
         const existing = document.getElementById('mx-quick-actions');
@@ -1191,21 +1195,42 @@ const UI = {
             btn.onmouseenter = () => btn.style.background = 'rgba(255,255,255,0.05)';
             btn.onmouseleave = () => btn.style.background = 'none';
             btn.onclick = async () => {
-                // Simular el clic en el botón de ciclo de la fila
                 const row = document.querySelector(`tr[data-monexa-hash="${hash}"]`);
                 if (row) {
-                    const cycleBtn = row.querySelector('.mx-btn-cycle');
-                    // Esta lógica es simplificada, realmente debería llamar a Scanner.updateRecord
-                    // pero para la demo delegaremos al evento del botón real si lo encontramos
-                    // o emitiremos una actualización manual.
                     data.status = act.id;
                     data.ts = new Date().toLocaleString();
-                    const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
-                    db.items[hash] = data;
-                    await DB_Engine.commit(KEYS.TRANSACTIONS, db);
 
-                    // Forzar refresco visual
-                    location.reload();
+                    // Optimistic UI Update
+                    const statusColors = { 'VERDE': 'rgba(16, 185, 129, 0.08)', 'AMARILLO': 'rgba(245, 158, 11, 0.08)', 'ROJO': 'rgba(225, 29, 72, 0.08)', 'NONE': 'transparent' };
+                    const statusBorders = { 'VERDE': '4px solid #10b981', 'AMARILLO': '4px solid #f59e0b', 'ROJO': '4px solid #ef4444', 'NONE': '0px solid transparent' };
+                    row.style.backgroundColor = statusColors[act.id] || 'transparent';
+                    row.style.borderLeft = statusBorders[act.id] || '0 solid transparent';
+
+                    // Add to pending updates for debounced batch save
+                    UI._pendingDbUpdates[hash] = data;
+
+                    if (UI._saveTimeout) clearTimeout(UI._saveTimeout);
+
+                    if (typeof UI.setSyncing === 'function') {
+                        UI.setSyncing(true);
+                    }
+
+                    UI._saveTimeout = setTimeout(async () => {
+                        const updatesToProcess = { ...UI._pendingDbUpdates };
+                        UI._pendingDbUpdates = {};
+
+                        const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+                        Object.assign(db.items, updatesToProcess);
+                        await DB_Engine.commit(KEYS.TRANSACTIONS, db);
+
+                        if (typeof UI.setSyncing === 'function') {
+                            UI.setSyncing(false);
+                        }
+
+                        if (typeof UI.refreshDashboard === 'function') {
+                            await UI.refreshDashboard();
+                        }
+                    }, 500);
                 }
                 menu.remove();
             };
