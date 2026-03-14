@@ -405,6 +405,128 @@ const UIStyles = {
                 border: none !important;
                 box-shadow: none !important;
             }
+
+            /* Rules Reordering Styles */
+            .mx-rule-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background: rgba(255,255,255,0.03);
+                border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 10px;
+                padding: 7px 8px 7px 6px;
+                transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                cursor: default;
+            }
+
+            .mx-rule-item:hover {
+                background: rgba(255,255,255,0.06);
+                border-color: rgba(255,255,255,0.12);
+            }
+
+            .mx-rule-item.dragging {
+                opacity: 0.35;
+                background: rgba(236,112,0,0.08);
+                border: 1px dashed rgba(236,112,0,0.4);
+                transform: scale(0.97);
+            }
+
+            .mx-rule-handle {
+                cursor: grab;
+                padding: 2px 3px;
+                color: rgba(255,255,255,0.15);
+                user-select: none;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                border-radius: 4px;
+                transition: all 0.2s;
+            }
+
+            .mx-rule-handle:hover {
+                color: rgba(255,255,255,0.45);
+                background: rgba(255,255,255,0.05);
+            }
+
+            .mx-rule-handle:active {
+                cursor: grabbing;
+                color: ${PALETTE.itau_orange};
+            }
+
+            .mx-rule-body {
+                font-size: 11px;
+                color: rgba(255,255,255,0.7);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                flex: 1;
+                min-width: 0;
+            }
+
+            .mx-rule-controls {
+                display: flex;
+                align-items: center;
+                gap: 3px;
+                flex-shrink: 0;
+                opacity: 0;
+                transition: opacity 0.2s;
+            }
+
+            .mx-rule-item:hover .mx-rule-controls {
+                opacity: 1;
+            }
+
+            .mx-move-group {
+                display: flex;
+                flex-direction: column;
+                gap: 0px;
+            }
+
+            .mx-btn-move {
+                background: none;
+                border: 1px solid transparent;
+                color: rgba(255,255,255,0.35);
+                cursor: pointer;
+                padding: 2px 3px;
+                line-height: 0;
+                transition: all 0.2s;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .mx-btn-move:hover:not(:disabled) {
+                color: ${PALETTE.itau_orange};
+                background: rgba(236,112,0,0.1);
+                border-color: rgba(236,112,0,0.2);
+            }
+
+            .mx-btn-move:disabled {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .mx-btn-delete-rule {
+                background: none;
+                border: 1px solid transparent;
+                color: rgba(255,255,255,0.2);
+                cursor: pointer;
+                padding: 3px;
+                line-height: 0;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                margin-left: 2px;
+            }
+
+            .mx-btn-delete-rule:hover {
+                color: #f87171;
+                background: rgba(248,113,113,0.1);
+                border-color: rgba(248,113,113,0.2);
+            }
         `;
 
         const style = document.createElement('style');

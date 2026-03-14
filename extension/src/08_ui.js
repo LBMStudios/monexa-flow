@@ -1094,31 +1094,119 @@ const UI = {
             const ruleColor = RULE_COLORS[ruleColorKey] || RULE_COLORS.verde;
             const amtText = r.importe ? ` + $${escapeStr(r.importe)}` : '';
             const noteText = r.note ? ` <i style="opacity:0.6;">(${escapeStr(r.note)})</i>` : '';
+            
             return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:6px 10px; margin-bottom:6px;">
-                        <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(255,255,255,0.7); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeStr(r.pattern)}${r.importe ? ' + ' + escapeStr(r.importe) : ''} → ${escapeStr(r.label)}${r.note ? ' [' + escapeStr(r.note) + ']' : ''} (${ruleColor.label})">
-                            <b style="color:rgba(255,255,255,0.9);">${escapeStr(r.pattern)}</b>${amtText} → <span style="background:${ruleColor.hex}; color:white; padding:2px 6px; border-radius:99px; font-weight:700; font-size:9px; vertical-align:middle; margin-left:4px;">${escapeStr(r.label)}</span>${noteText}
+                    <div class="mx-rule-item" draggable="true" data-index="${i}">
+                        <div class="mx-rule-handle" title="Arrastrar para reordenar">
+                            <svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor"><circle cx="2" cy="2" r="1.2"/><circle cx="6" cy="2" r="1.2"/><circle cx="2" cy="7" r="1.2"/><circle cx="6" cy="7" r="1.2"/><circle cx="2" cy="12" r="1.2"/><circle cx="6" cy="12" r="1.2"/></svg>
                         </div>
-                        <button class="mx-btn-delete-rule" data-index="${i}" style="background:none; border:none; color:#f87171; font-size:16px; cursor:pointer; padding:0 4px; line-height:1; transition:color 0.2s; opacity:0.7;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.7'" title="Eliminar regla">&times;</button>
+                        <div class="mx-rule-body" title="${escapeStr(r.pattern)}${r.importe ? ' + ' + escapeStr(r.importe) : ''} → ${escapeStr(r.label)}${r.note ? ' [' + escapeStr(r.note) + ']' : ''} (${ruleColor.label})">
+                            <b style="color:rgba(255,255,255,0.9);">${escapeStr(r.pattern)}</b>${amtText} → <span style="background:${ruleColor.hex}; color:white; padding:1px 6px; border-radius:99px; font-weight:700; font-size:9px; vertical-align:middle; margin-left:2px;">${escapeStr(r.label)}</span>${noteText}
+                        </div>
+                        <div class="mx-rule-controls">
+                            <div class="mx-move-group">
+                                <button class="mx-btn-move mx-btn-up" data-index="${i}" title="Subir" ${i === 0 ? 'disabled' : ''}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg></button>
+                                <button class="mx-btn-move mx-btn-down" data-index="${i}" title="Bajar" ${i === rules.length - 1 ? 'disabled' : ''}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+                            </div>
+                            <button class="mx-btn-delete-rule" data-index="${i}" title="Eliminar regla"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                        </div>
                     </div>`;
         }).join('');
 
+        // Eventos de botones
         const deleteBtns = document.querySelectorAll('.mx-btn-delete-rule');
         deleteBtns.forEach(btn => {
             //@ts-ignore
-            btn.onclick = async () => {
+            btn.onclick = async (e) => {
+                e.preventDefault();
                 const idx = parseInt(btn.getAttribute('data-index'), 10);
                 const currentRules = await DB_Engine.fetch(KEYS.RULES, []);
                 currentRules.splice(idx, 1);
                 await DB_Engine.commit(KEYS.RULES, currentRules);
                 await UI.refreshRulesList();
-                
-                // 🚀 Re-escaneo reactivo sin recargar la página
-                if (typeof Scanner !== 'undefined') {
-                    Scanner.reprocess();
-                }
+                if (typeof Scanner !== 'undefined') Scanner.reprocess();
             };
         });
+
+        const upBtns = document.querySelectorAll('.mx-btn-up');
+        upBtns.forEach(btn => {
+            //@ts-ignore
+            btn.onclick = async (e) => {
+                e.preventDefault();
+                const idx = parseInt(btn.getAttribute('data-index'), 10);
+                if (idx > 0) await UI.reorderRule(idx, idx - 1);
+            };
+        });
+
+        const downBtns = document.querySelectorAll('.mx-btn-down');
+        downBtns.forEach(btn => {
+            //@ts-ignore
+            btn.onclick = async (e) => {
+                e.preventDefault();
+                const idx = parseInt(btn.getAttribute('data-index'), 10);
+                const currentRules = await DB_Engine.fetch(KEYS.RULES, []);
+                if (idx < currentRules.length - 1) await UI.reorderRule(idx, idx + 1);
+            };
+        });
+
+        // Drag & Drop
+        const items = rulesListDiv.querySelectorAll('.mx-rule-item');
+        items.forEach(item => {
+            item.addEventListener('dragstart', () => item.classList.add('dragging'));
+            item.addEventListener('dragend', () => item.classList.remove('dragging'));
+        });
+
+        rulesListDiv.addEventListener('dragover', e => {
+            e.preventDefault();
+            const draggingItem = rulesListDiv.querySelector('.dragging');
+            const afterElement = UI.getDragAfterElement(rulesListDiv, e.clientY);
+            if (afterElement == null) {
+                rulesListDiv.appendChild(draggingItem);
+            } else {
+                rulesListDiv.insertBefore(draggingItem, afterElement);
+            }
+        });
+
+        rulesListDiv.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            const items = Array.from(rulesListDiv.querySelectorAll('.mx-rule-item'));
+            const newOrder = items.map(item => parseInt(item.getAttribute('data-index'), 10));
+            
+            const currentRules = await DB_Engine.fetch(KEYS.RULES, []);
+            const sortedRules = newOrder.map(idx => currentRules[idx]);
+            
+            await DB_Engine.commit(KEYS.RULES, sortedRules);
+            await UI.refreshRulesList();
+            if (typeof Scanner !== 'undefined') Scanner.reprocess();
+        });
+    },
+
+    /**
+     * Lógica para mover una regla en el array
+     */
+    async reorderRule(oldIdx, newIdx) {
+        const rules = await DB_Engine.fetch(KEYS.RULES, []);
+        const rule = rules.splice(oldIdx, 1)[0];
+        rules.splice(newIdx, 0, rule);
+        await DB_Engine.commit(KEYS.RULES, rules);
+        await UI.refreshRulesList();
+        if (typeof Scanner !== 'undefined') Scanner.reprocess();
+    },
+
+    /**
+     * Helper para Drag & Drop: encontrar el elemento después del cual insertar
+     */
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.mx-rule-item:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     },
 
     /**
