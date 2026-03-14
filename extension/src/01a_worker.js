@@ -3,6 +3,11 @@
  * Procesamiento Off-Main-Thread para matching de reglas y Predictive UX.
  */
 
+/**
+ * Normaliza texto para comparaciones robustas: elimina NBSP, colapsa espacios, trim y Uppercase.
+ */
+const normalizeText = (s) => (s || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
+
 self.onmessage = function(e) {
     const { action, data } = e.data;
 
@@ -10,13 +15,13 @@ self.onmessage = function(e) {
         const { concepto, extra, debito, credito, rules, dbItems } = data;
         
         // 1. Matching de Reglas (Lógica de 06_scanner.js movida aquí)
-        const c_clean = concepto.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
-        const e_clean = extra.replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
+        const c_clean = normalizeText(concepto);
+        const e_clean = normalizeText(extra);
         const normalizeAmt = (s) => (s || '').replace(/[.\s]/g, '').replace(/,/g, '').trim();
         const sortedRules = [...rules].sort((a, b) => (b.importe ? 1 : 0) - (a.importe ? 1 : 0));
 
         const matchRule = sortedRules.find(r => {
-            const r_clean = (r.pattern || "").replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
+            const r_clean = normalizeText(r.pattern);
             if (!r_clean) return false;
             const matchConcepto = c_clean.includes(r_clean);
             const matchExtra = e_clean.includes(r_clean);
@@ -47,13 +52,13 @@ self.onmessage = function(e) {
 
 function getPrediction(concepto, dbItems) {
     if (!concepto || !dbItems) return null;
-    const c_target = concepto.toUpperCase().trim();
+    const c_target = normalizeText(concepto);
     const scores = {};
 
     for (const hash in dbItems) {
         const item = dbItems[hash];
         if (!item.tag || item.status === 'NONE') continue;
-        const c_hist = (item.concepto || "").toUpperCase().trim();
+        const c_hist = normalizeText(item.concepto);
         if (!c_hist) continue;
 
         let matchScore = 0;
