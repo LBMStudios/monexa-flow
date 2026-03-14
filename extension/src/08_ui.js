@@ -420,55 +420,6 @@ const UI = {
                     <!-- El sistema ahora está siempre activo en Itaú Direct Edition -->
                 `}
 
-                <!-- Integridad Contable (Gap Detection) -->
-                <div class="mx-card" id="mx-integrity-card" style="border-left: 4px solid #64748b; transition: all 0.3s;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                        <h4 style="margin: 0;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            </svg>
-                            Integridad Contable
-                        </h4>
-                        <div id="mx-integrity-status" style="font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6);">PENDIENTE</div>
-                    </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5);">
-                            <span>Saldo Oficial (Banco):</span>
-                            <span id="mx-official-val" style="color: white; font-weight: 700;">---</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5);">
-                            <span>Saldo Calculado:</span>
-                            <span id="mx-internal-val" style="color: white; font-weight: 700;">---</span>
-                        </div>
-                        <div id="mx-gap-row" style="display: none; justify-content: space-between; font-size: 13px; font-weight: 800; padding-top: 6px; border-top: 1px dashed var(--mx-border);">
-                            <span>Diferencia (Brecha):</span>
-                            <span id="mx-gap-val">---</span>
-                        </div>
-                    </div>
-
-                    <button id="mx-btn-audit-sign" class="mx-btn-action" style="
-                        background: rgba(255,255,255,0.05);
-                        border: 1px solid var(--mx-border);
-                        color: white;
-                        font-size: 12px;
-                        font-weight: 700;
-                        padding: 10px;
-                        width: 100%;
-                        border-radius: 12px;
-                        cursor: pointer;
-                        display: flex; align-items: center; justify-content: center; gap: 8px;
-                        transition: all 0.3s;
-                    " onmouseenter="this.style.background='rgba(59, 130, 246, 0.1)'; this.style.borderColor='var(--mx-accent)';"
-                       onmouseleave="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='var(--mx-border)';"
-                    >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                        </svg>
-                        Generar Firma de Auditoría
-                    </button>
-                    <div id="mx-sign-output" style="font-family: 'Courier New', Courier, monospace; font-size: 10px; color: var(--mx-accent); margin-top: 8px; text-align: center; word-break: break-all; opacity: 0;"></div>
-                </div>
 
                 <!-- Resumen de auditoría -->
                 <div class="mx-card">
@@ -551,6 +502,56 @@ const UI = {
                             <input type="file" id="mx-file-rules" style="display:none" accept=".csv">
                         </div>
                     </div>
+                </div>
+
+                <!-- Integridad Contable (Gap Detection) -->
+                <div class="mx-card" id="mx-integrity-card" style="border-left: 4px solid #64748b; transition: all 0.3s;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <h4 style="margin: 0;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                            Integridad Contable
+                        </h4>
+                        <div id="mx-integrity-status" style="font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6);">PENDIENTE</div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5);">
+                            <span>Saldo Oficial (Banco):</span>
+                            <span id="mx-official-val" style="color: white; font-weight: 700;">---</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.5);">
+                            <span>Saldo Calculado:</span>
+                            <span id="mx-internal-val" style="color: white; font-weight: 700;">---</span>
+                        </div>
+                        <div id="mx-gap-row" style="display: none; justify-content: space-between; font-size: 13px; font-weight: 800; padding-top: 6px; border-top: 1px dashed var(--mx-border);">
+                            <span>Diferencia (Brecha):</span>
+                            <span id="mx-gap-val">---</span>
+                        </div>
+                    </div>
+
+                    <button id="mx-btn-audit-sign" class="mx-btn-action" style="
+                        background: rgba(255,255,255,0.05);
+                        border: 1px solid var(--mx-border);
+                        color: white;
+                        font-size: 12px;
+                        font-weight: 700;
+                        padding: 10px;
+                        width: 100%;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        display: flex; align-items: center; justify-content: center; gap: 8px;
+                        transition: all 0.3s;
+                    " onmouseenter="this.style.background='rgba(59, 130, 246, 0.1)'; this.style.borderColor='var(--mx-accent)';"
+                       onmouseleave="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='var(--mx-border)';"
+                    >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        Generar Firma de Auditoría
+                    </button>
+                    <div id="mx-sign-output" style="font-family: 'Courier New', Courier, monospace; font-size: 10px; color: var(--mx-accent); margin-top: 8px; text-align: center; word-break: break-all; opacity: 0;"></div>
                 </div>
             </div>
 
