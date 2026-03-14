@@ -497,8 +497,8 @@ const UI = {
                         <div id="mx-rules-list" style="margin-top: 10px; max-height: 150px; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column; gap: 6px;"></div>
 
                         <div style="display: flex; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; margin-top: 6px;">
-                            <button id="mx-btn-exp-rules" class="mx-btn-action mx-btn-secondary" style="flex:1; padding: 8px; font-size: 11px;">Exportar</button>
-                            <button id="mx-btn-imp-rules" class="mx-btn-action mx-btn-secondary" style="flex:1; padding: 8px; font-size: 11px;">Importar</button>
+                            <button id="mx-btn-exp-rules" class="mx-btn-action mx-btn-secondary" style="flex:1; padding: 8px; font-size: 11px;">Exportar Reglas</button>
+                            <button id="mx-btn-imp-rules" class="mx-btn-action mx-btn-secondary" style="flex:1; padding: 8px; font-size: 11px;">Importar Reglas</button>
                             <input type="file" id="mx-file-rules" style="display:none" accept=".csv">
                         </div>
                     </div>
