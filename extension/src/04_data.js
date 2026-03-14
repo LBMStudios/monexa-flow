@@ -142,5 +142,62 @@ const DataCore = {
         }
 
         return null;
+    },
+
+    /**
+     * Detección Local de Anomalías (Tendencia Global: Seguridad Predictiva).
+     * Analiza el historial para alertar si un nuevo movimiento supera
+     * significativamente el promedio histórico para ese mismo concepto.
+     *
+     * @param {Object} transaction - La transacción actual (con concepto, importe, moneda).
+     * @param {Object|Array} historyItems - Colección de transacciones históricas.
+     * @param {number} thresholdMultiplier - Multiplicador sobre el promedio para considerar anomalía (ej: 2 = 200%).
+     * @returns {Object|null} - Devuelve objeto con detalles de la anomalía o null si es normal.
+     */
+    detectAnomaly(transaction, historyItems, thresholdMultiplier = 2) {
+        if (!transaction || !transaction.concepto || !transaction.importe || !historyItems) return null;
+
+        const c_target = transaction.concepto.toUpperCase().trim();
+        const t_amount = Math.abs(parseFloat(transaction.importe));
+        const t_currency = transaction.moneda || 'UYU';
+
+        if (isNaN(t_amount) || t_amount === 0) return null;
+
+        let totalAmount = 0;
+        let count = 0;
+
+        // Iterar sobre el historial (soporta Array u Object)
+        const items = Array.isArray(historyItems) ? historyItems : Object.values(historyItems);
+
+        for (const item of items) {
+            if (!item.concepto || !item.importe) continue;
+
+            const c_hist = item.concepto.toUpperCase().trim();
+            const i_currency = item.moneda || 'UYU';
+
+            // Solo comparamos transacciones similares y en la misma moneda
+            if (c_hist === c_target && i_currency === t_currency) {
+                const amount = Math.abs(parseFloat(item.importe));
+                if (!isNaN(amount) && amount > 0) {
+                    totalAmount += amount;
+                    count++;
+                }
+            }
+        }
+
+        // Necesitamos un mínimo de historial para establecer un patrón (ej. 3 transacciones)
+        if (count >= 3) {
+            const average = totalAmount / count;
+            if (t_amount > average * thresholdMultiplier) {
+                return {
+                    isAnomaly: true,
+                    average: average.toFixed(2),
+                    currentAmount: t_amount.toFixed(2),
+                    multiplier: (t_amount / average).toFixed(1) + 'x'
+                };
+            }
+        }
+
+        return null;
     }
 };
