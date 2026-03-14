@@ -24,10 +24,11 @@ const DataCore = {
         const seed = `${safeCuenta}|${safeMoneda}|${safeFecha}|${safeConcepto}|${safeImporte}|${safeSaldo}`;
         let hash = 0;
 
-        for (let i = 0; i < seed.length; i++) {
+        const len = seed.length;
+        for (let i = 0; i < len; i++) {
             const char = seed.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
+            hash = hash | 0;
         }
 
         return `it_acc_${Math.abs(hash)}`;
@@ -71,9 +72,10 @@ const DataCore = {
     generateAuditSignature(data) {
         const seed = JSON.stringify(data);
         let hash = 0;
-        for (let i = 0; i < seed.length; i++) {
+        const len = seed.length;
+        for (let i = 0; i < len; i++) {
             hash = ((hash << 5) - hash) + seed.charCodeAt(i);
-            hash |= 0;
+            hash = hash | 0;
         }
         const hex = Math.abs(hash).toString(16).toUpperCase();
         return `SIG-IT-${hex}-${new Date().getTime().toString(36).toUpperCase()}`;

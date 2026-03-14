@@ -34,8 +34,16 @@ const Scanner = {
             // Si las mutaciones no involucran elementos dentro de tablas (<TR>, <TBODY>), las ignoramos de plano.
             let relevantMutation = false;
             for (const m of mutations) {
-                if (m.addedNodes) {
+                if (m.addedNodes && m.addedNodes.length > 0) {
                     for (const node of m.addedNodes) {
+                        if (node.nodeName === 'TR' || node.nodeName === 'TBODY' || (node.querySelector && node.querySelector('tr'))) {
+                            relevantMutation = true;
+                            break;
+                        }
+                    }
+                }
+                if (!relevantMutation && m.removedNodes && m.removedNodes.length > 0) {
+                    for (const node of m.removedNodes) {
                         if (node.nodeName === 'TR' || node.nodeName === 'TBODY' || (node.querySelector && node.querySelector('tr'))) {
                             relevantMutation = true;
                             break;
@@ -743,6 +751,9 @@ const Scanner = {
         });
     },
 
+    _pendingUpdates: {},
+    _updateTimer: null,
+
     /**
      * Actualiza el registro en la DB y refresca visualmente la fila específica.
      */
@@ -750,17 +761,7 @@ const Scanner = {
         const config = await DB_Engine.fetch(KEYS.SETTINGS, { user: "Auditor" });
         record.user = config.user;
 
-        const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
-        db.items[hash] = record;
-
-        if (typeof UI !== 'undefined') UI.setSyncing(true);
-        await DB_Engine.commit(KEYS.TRANSACTIONS, db);
-        if (typeof UI !== 'undefined') {
-            setTimeout(() => UI.setSyncing(false), 500);
-            await UI.refreshDashboard();
-        }
-
-        // Refresco visual de la fila
+        // Refresco visual de la fila (Optimistic update)
         const statusColors = { 'VERDE': 'rgba(16, 185, 129, 0.08)', 'AMARILLO': 'rgba(245, 158, 11, 0.08)', 'ROJO': 'rgba(225, 29, 72, 0.08)', 'NONE': 'transparent' };
         const statusBorders = { 'VERDE': '4px solid #10b981', 'AMARILLO': '4px solid #f59e0b', 'ROJO': '4px solid #ef4444', 'NONE': '0px solid transparent' };
         
@@ -774,6 +775,26 @@ const Scanner = {
             btn.innerText = statusInfo.icon;
             btn.title = statusInfo.label;
         }
+
+        // Batch update
+        this._pendingUpdates[hash] = record;
+
+        if (this._updateTimer) clearTimeout(this._updateTimer);
+        this._updateTimer = setTimeout(async () => {
+            if (typeof UI !== 'undefined') UI.setSyncing(true);
+            const db = await DB_Engine.fetch(KEYS.TRANSACTIONS, { items: {} });
+
+            for (const [h, rec] of Object.entries(this._pendingUpdates)) {
+                db.items[h] = rec;
+            }
+            this._pendingUpdates = {};
+
+            await DB_Engine.commit(KEYS.TRANSACTIONS, db);
+            if (typeof UI !== 'undefined') {
+                setTimeout(() => UI.setSyncing(false), 500);
+                await UI.refreshDashboard();
+            }
+        }, 500); // 500ms debounce
     },
 
     /**

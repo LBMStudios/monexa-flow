@@ -31,9 +31,10 @@ const FileSystem = {
      */
     _reportHash(str) {
         let h = 0;
-        for (let i = 0; i < str.length; i++) {
+        const len = str.length;
+        for (let i = 0; i < len; i++) {
             h = ((h << 5) - h) + str.charCodeAt(i);
-            h = h & h;
+            h = h | 0;
         }
         return 'MX-' + Math.abs(h).toString(36).toUpperCase();
     },
