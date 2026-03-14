@@ -203,8 +203,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (fSearch) fSearch.addEventListener('input', applyFiltersAndRender);
     if (fStatus) fStatus.addEventListener('change', applyFiltersAndRender);
     if (fTag) fTag.addEventListener('change', applyFiltersAndRender);
-    if (fAccount) fAccount.addEventListener('change', applyFiltersAndRender);
-    if (fCurrency) fCurrency.addEventListener('change', applyFiltersAndRender);
+    if (fAccount) fAccount.addEventListener('change', () => {
+        // Al cambiar de cuenta, resetear período a "Todo" para evitar filtros cruzados vacíos
+        resetPeriodToAll();
+        applyFiltersAndRender();
+    });
+    if (fCurrency) fCurrency.addEventListener('change', () => {
+        resetPeriodToAll();
+        applyFiltersAndRender();
+    });
 
     // Delegación de eventos para la tabla (Detalles Extra)
     const movementsTbody = document.getElementById('movements-tbody');
@@ -290,6 +297,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Presets de fecha
 // ============================================================
 let activePeriod = 'all';
+
+function resetPeriodToAll() {
+    activePeriod = 'all';
+    document.getElementById('filter-date-from').value = '';
+    document.getElementById('filter-date-to').value = '';
+    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('active'));
+    const allBtn = document.querySelector('.date-preset[data-period="all"]');
+    if (allBtn) allBtn.classList.add('active');
+    document.getElementById('date-range-group').style.display = 'none';
+    document.getElementById('date-apply-group').style.display = 'none';
+}
 
 function handlePresetClick(btn) {
     const period = btn.dataset.period;
