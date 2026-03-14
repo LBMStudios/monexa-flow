@@ -23,8 +23,8 @@ const UI = {
     async init() {
         UIStyles.inject();
 
-        const isActivated = true; // Bypassed por solicitud: "usuario habilitado accede"
-        console.log("[Monexa] Estado Activación (Override):", isActivated);
+        const isActivated = await LicenseSystem.isActivated();
+        console.log("[Monexa] Estado Activación:", isActivated);
 
         // 2. Si está activado, verificar sesión de usuario
         const config = await DB_Engine.fetch(KEYS.SETTINGS, { user: "" });
@@ -371,7 +371,7 @@ const UI = {
                     </div>
                 </div>
 
-                       ${(config.user || "").toLowerCase() === 'lucas' ? `
+                       ${config.role === 'admin' ? `
                     <!-- El Panel Maestro ha sido removido para garantizar 100% privacidad offline -->
                 ` : ''}
 
@@ -785,7 +785,7 @@ const UI = {
         };
 
 
-        if ((config.user || "").toLowerCase() === 'lucas') {
+        if (config.role === 'admin') {
             await this.refreshAdminUserList();
             this.bindAdminPanelEvents();
         }
