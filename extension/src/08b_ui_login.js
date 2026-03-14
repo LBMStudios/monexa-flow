@@ -116,12 +116,13 @@ const UILogin = {
                 <span>VERIFICANDO...</span>
             `;
 
-            // 1. VALIDACIÓN PERMANENTE (v1.4.0) - Bypass por solicitud: "sacrificar seguridad"
+            // 1. VALIDACIÓN PERMANENTE (v1.4.0)
             const isNameActivated = await LicenseSystem.isActivated(user);
             
-            if (!isNameActivated && user.toUpperCase() !== 'LUCAS' && user.toUpperCase() !== 'JAVIERB') {
+            if (!isNameActivated) {
                 console.warn("[Monexa] Usuario no activado matemáticamente:", user);
-                // Por ahora dejamos pasar para no bloquear la operación
+                await this.renderActivation();
+                return;
             }
 
             // 2. Lógica de registro en base de datos local (Auditoría)
@@ -143,7 +144,10 @@ const UILogin = {
                 }
 
                 if (!foundUser.enabled) {
-                    showErrorScreen('🚫', 'Acceso Denegado', `El usuario <b>"${user}"</b> está inhabilitado localmente.`);
+                    alert(`Acceso Denegado: El usuario "${user}" está inhabilitado localmente.`);
+                    loginBtn.disabled = false;
+                    loginBtn.style.opacity = '1';
+                    loginBtn.innerHTML = '<span>INGRESAR AL SISTEMA</span>';
                     return;
                 }
 
