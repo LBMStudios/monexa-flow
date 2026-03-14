@@ -543,10 +543,23 @@ const Scanner = {
         // Aplicar a TODAS las celdas del renglón para forzar el color completo
         const allCells = row.querySelectorAll('td');
         allCells.forEach((cell, i) => {
-            cell.style.backgroundColor = bgColor;
-            cell.style.borderLeft = (i === 0 && borderColor) ? `4px solid ${borderColor}` : 'none';
+            cell.style.setProperty('background-color', bgColor, 'important');
+            
+            // Matamos CUALQUIER rastro de bordes, sombras o brillos del banco
+            cell.style.setProperty('border-left', 'none', 'important');
+            cell.style.setProperty('box-shadow', 'none', 'important');
+            cell.style.setProperty('outline', 'none', 'important');
+            
+            // Solo la primera celda real lleva el color de la regla (más gruesa para que tape todo)
+            if (i === 0 && borderColor) {
+                cell.style.setProperty('border-left', `6px solid ${borderColor}`, 'important');
+            }
         });
-        row.style.backgroundColor = bgColor;
+
+        // Limpieza extra en el renglón
+        row.style.setProperty('background-color', bgColor, 'important');
+        row.style.setProperty('border', 'none', 'important');
+        row.style.setProperty('box-shadow', 'none', 'important');
         // Marcar visualmente si fue detectado por el motor de reglas (V1 Premium)
         if (data.note && data.note.includes("Auto-Match")) {
             row.classList.add('mx-row-automatched');

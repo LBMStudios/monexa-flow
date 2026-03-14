@@ -397,6 +397,13 @@ const UIStyles = {
                 overflow: hidden;
                 opacity: 0.5;
             }
+            /* Kill bank decorations */
+            tr::before, tr::after, td::before, td::after {
+                display: none !important;
+                background: none !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
         `;
 
         const style = document.createElement('style');
