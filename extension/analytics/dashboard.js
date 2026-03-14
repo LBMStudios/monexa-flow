@@ -1160,17 +1160,17 @@ ${filterNote}
   <td colspan="5" style="border:none;"></td>
 </tr>`;
 
-    ['VERDE', 'AMARILLO', 'ROJO', 'NONE'].forEach(k => {
+    html += ['VERDE', 'AMARILLO', 'ROJO', 'NONE'].map(k => {
         const sc = stColors[k];
         const icons = { VERDE: '&#10003;', AMARILLO: '!', ROJO: '&times;', NONE: '&#9675;' };
         const names = { VERDE: 'Validados', AMARILLO: 'Observados', ROJO: 'Rechazados', NONE: 'Sin revisar' };
-        html += `<tr>
+        return `<tr>
   <td colspan="2" style="${cb}">${icons[k]} ${names[k]}</td>
   <td style="${cb} text-align:center; background:${sc.bg}; color:${sc.fg}; font-weight:700;">${stats[k]}</td>
   <td style="${cb} text-align:center;">${pct(stats[k])}</td>
   <td colspan="5" style="border:none;"></td>
 </tr>`;
-    });
+    }).join('');
 
     html += `<tr><td colspan="9" style="height:16px; border:none;"></td></tr>
 <tr><td colspan="9" style="${bf} font-size:11pt; font-weight:700; color:#1E293B; background:#F1F5F9; border:1px solid #D1D5DB; padding:10px 14px;">&#128203; DETALLE DE MOVIMIENTOS</td></tr>
@@ -1188,14 +1188,14 @@ ${filterNote}
   <td style="${cb} background:#EC7000; color:#FFF; font-weight:700; width:130px;">FECHA AUD.</td>
 </tr>`;
 
-    sorted.forEach((r, i) => {
+    html += sorted.map((r, i) => {
         const z = i % 2 === 0 ? '#FFFFFF' : '#F9FAFB';
         const sk = r.status in stColors ? r.status : 'NONE';
         const sc = stColors[sk];
         const deb = r.debito || '';
         const hab = r.credito || '';
         const sal = r.saldo || r.importe || '';
-        html += `<tr>
+        return `<tr>
   <td style="${cb} background:${z}; text-align:center; color:#9CA3AF;">${i + 1}</td>
   <td style="${cb} background:${z};">${e(r.fecha || '')}</td>
   <td style="${cb} background:${z};">${e(r.concepto || '')}</td>
@@ -1208,7 +1208,7 @@ ${filterNote}
   <td style="${cb} background:${z};">${e(r.user || '')}</td>
   <td style="${cb} background:${z}; color:#9CA3AF; font-size:9pt;">${e(r.ts || '')}</td>
 </tr>`;
-    });
+    }).join('');
 
     html += `
 <tr><td colspan="11" style="height:18px; border:none;"></td></tr>
