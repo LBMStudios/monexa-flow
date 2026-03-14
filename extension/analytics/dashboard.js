@@ -681,35 +681,42 @@ function parseCurrency(str) {
 
 function renderTags(records) {
     const tagMap = {};
-    let untaggedData = { count: 0, sum: 0 };
+    let totalAbsolute = 0;
+    let taggedAbsolute = 0;
+    let untaggedCount = 0;
 
     records.forEach(r => {
         const t = r.tag || '(Sin etiqueta)';
         const d = parseCurrency(r.debito);
         const c = parseCurrency(r.credito);
+        const absVal = Math.abs(c - d);
+
+        totalAbsolute += absVal;
 
         if (t === '(Sin etiqueta)') {
-            untaggedData.count++;
-            untaggedData.sum += Math.abs(c - d);
+            untaggedCount++;
         } else {
             if (!tagMap[t]) tagMap[t] = { count: 0, sum: 0 };
             tagMap[t].count++;
             tagMap[t].sum += (c - d);
+            taggedAbsolute += absVal;
         }
     });
+
+    const untaggedSum = totalAbsolute - taggedAbsolute;
 
     const sorted = Object.entries(tagMap).sort((a, b) => b[1].count - a[1].count);
     const container = document.getElementById('tags-list');
 
-    if (sorted.length === 0 && untaggedData.count === 0) {
+    if (sorted.length === 0 && untaggedCount === 0) {
         container.innerHTML = '<div class="tags-empty">Sin etiquetas registradas.</div>';
         return;
     }
 
     let html = '';
 
-    // Primera fila separada: volumen sin etiquetar (valor absoluto)
-    if (untaggedData.count > 0) {
+    // Primera fila separada: volumen sin etiquetar (total - etiquetado)
+    if (untaggedCount > 0) {
         html += `
         <div class="tag-item" style="border-bottom: 1px dashed rgba(255,255,255,0.1); margin-bottom: 12px; padding-bottom: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; padding: 8px;">
             <div class="tag-name" style="color: rgba(255,255,255,0.5);">
@@ -718,9 +725,9 @@ function renderTags(records) {
             </div>
             <div class="tag-meta" style="gap:24px;">
                 <span class="tag-sum" style="font-weight:700; color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums;">
-                    $ ${untaggedData.sum.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    $ ${untaggedSum.toLocaleString('es-UY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <span class="tag-count" style="width: 55px; text-align: right; color: rgba(255,255,255,0.4);">${untaggedData.count} mov.</span>
+                <span class="tag-count" style="width: 55px; text-align: right; color: rgba(255,255,255,0.4);">${untaggedCount} mov.</span>
             </div>
         </div>
         `;
