@@ -38,15 +38,20 @@ const PALETTE = {
     zinc: "#f4f4f5",
     border: "#e4e4e7",
     text_main: "#0f172a",
-    muted: "#64748b"
+    muted: "#64748b",
+    blue: "#2563eb",
+    violet: "#7c3aed",
+    red: "#dc2626",
+    orange: "#ea580c",
+    slate_400: "#94a3b8"
 };
 
 // Mapa de estados de auditoría
 const STATUS_MAP = {
-    'PENDING': { id: 'NONE', color: '#94a3b8', label: 'Sin Revisar', icon: '○' },
-    'VALID': { id: 'VERDE', color: '#10b981', label: 'Validado', icon: '✓' },
-    'WARN': { id: 'AMARILLO', color: '#f59e0b', label: 'Observado', icon: '!' },
-    'CRIT': { id: 'ROJO', color: '#e11d48', label: 'Rechazado', icon: '×' }
+    'PENDING': { id: 'NONE', color: PALETTE.slate_400, label: 'Sin Revisar', icon: '○' },
+    'VALID': { id: 'VERDE', color: PALETTE.success, label: 'Validado', icon: '✓' },
+    'WARN': { id: 'AMARILLO', color: PALETTE.amber, label: 'Observado', icon: '!' },
+    'CRIT': { id: 'ROJO', color: PALETTE.rose, label: 'Rechazado', icon: '×' }
 };
 
 // Ciclo de transición de estados
@@ -59,12 +64,12 @@ const STATE_NEXT = {
 
 // Paleta de colores disponibles para reglas de auto-etiquetado
 const RULE_COLORS = {
-    verde: { hex: '#10b981', label: 'Verde' },
-    azul: { hex: '#2563eb', label: 'Azul' },
-    morado: { hex: '#7c3aed', label: 'Morado' },
-    rojo: { hex: '#dc2626', label: 'Rojo' },
-    naranja: { hex: '#ea580c', label: 'Naranja' },
-    gris: { hex: '#64748b', label: 'Gris' }
+    verde: { hex: PALETTE.success, label: 'Verde' },
+    azul: { hex: PALETTE.blue, label: 'Azul' },
+    morado: { hex: PALETTE.violet, label: 'Morado' },
+    rojo: { hex: PALETTE.red, label: 'Rojo' },
+    naranja: { hex: PALETTE.orange, label: 'Naranja' },
+    gris: { hex: PALETTE.muted, label: 'Gris' }
 };
 
 
