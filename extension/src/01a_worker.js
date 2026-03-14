@@ -6,7 +6,7 @@
 /**
  * Normaliza texto para comparaciones robustas: elimina NBSP, colapsa espacios, trim y Uppercase.
  */
-const normalizeText = (s) => (s || '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
+const normalizeText = (s) => (s || '').toString().replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase();
 
 self.onmessage = function(e) {
     const { action, data } = e.data;
