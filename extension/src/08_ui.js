@@ -1075,7 +1075,7 @@ const UI = {
                         <!-- Nombre -->
                         <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
                             <div style="width: 6px; height: 6px; border-radius: 50%; background: ${user.enabled ? '#10b981' : '#64748b'}; flex-shrink: 0;"></div>
-                            <span style="font-size: 13px; font-weight: 700; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${user.name}</span>
+                            <span style="font-size: 13px; font-weight: 700; color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${DataCore.sanitizeText(user.name)}</span>
                         </div>
 
                         <!-- Rol Badge -->
@@ -1103,7 +1103,7 @@ const UI = {
                 `;
             }).join('');
         } catch (e) {
-            container.innerHTML = `<div style="font-size: 10px; color: #ef4444; text-align: center; padding: 10px;">Error al cargar: ${e.message}</div>`;
+            container.innerHTML = `<div style="font-size: 10px; color: #ef4444; text-align: center; padding: 10px;">Error al cargar: ${DataCore.sanitizeText(e.message)}</div>`;
         }
     },
 
