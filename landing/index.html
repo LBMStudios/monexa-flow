@@ -37,6 +37,36 @@
             background: rgba(239, 68, 68, 0.2);
             transform: translateY(-1px);
         }
+
+        /* Scanning animation on bank mockup */
+        .bank-mockup-bg { position: relative; overflow: hidden; }
+        .scan-line {
+            position: absolute;
+            left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(16,185,129,0.8), transparent);
+            box-shadow: 0 0 16px rgba(16,185,129,0.5), 0 0 40px rgba(16,185,129,0.2);
+            z-index: 10;
+            animation: scan-sweep 3s ease-in-out infinite;
+            border-radius: 2px;
+        }
+        @keyframes scan-sweep {
+            0%   { top: 10%; opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { top: 92%; opacity: 0; }
+        }
+        .bank-row { transition: background 0.3s; }
+        .bank-mockup-bg .bank-row:nth-child(2) { animation: row-pulse 3s ease-in-out 0.5s infinite; }
+        .bank-mockup-bg .bank-row:nth-child(3) { animation: row-pulse 3s ease-in-out 1s infinite; }
+        .bank-mockup-bg .bank-row:nth-child(4) { animation: row-pulse 3s ease-in-out 1.5s infinite; }
+        .bank-mockup-bg .bank-row:nth-child(5) { animation: row-pulse 3s ease-in-out 2s infinite; }
+        @keyframes row-pulse {
+            0%, 100% { background: transparent; }
+            30% { background: rgba(16,185,129,0.06); }
+            60% { background: transparent; }
+        }
+
     </style>
     <script defer src="assets/js/main.js"></script>
 </head>
@@ -80,7 +110,7 @@
             <div class="hero-content">
                 <div class="badge-new">
                     <span class="badge-pulse"></span>
-                    v1.3.8 disponible ahora (Itaú Direct Access Edition)
+                    v1.3.9 disponible ahora
                 </div>
                 <h1 class="hero-title">Tu flujo bancario, finalmente bajo control.</h1>
                 <p class="hero-subtitle">
@@ -107,6 +137,7 @@
                 
                 <!-- Mockup del Banco (Itaú Style) -->
                 <div class="bank-mockup-bg">
+                    <div class="scan-line"></div>
                     <div style="height: 60px; background: #fff; border-bottom: 2px solid #EC7000; margin-bottom: 25px; display: flex; align-items: center; padding: 0 20px;">
                         <div class="bank-skeleton" style="width: 80px;"></div>
                         <div class="bank-skeleton" style="width: 120px; margin-left: auto;"></div>
@@ -254,135 +285,7 @@
         </div>
     </section>
 
-    <!-- Sección Control de Usuarios (Panel Maestro) -->
-    <section id="admin-section" style="padding: 6rem 0; position: relative;">
-        <div class="container" style="max-width: 900px;">
-            <div style="text-align: center; margin-bottom: 3rem;">
-                <h2 style="font-weight: 800; letter-spacing: -2px; font-size: 2.8rem; margin-bottom: 1rem;">Control de Usuarios</h2>
-                <p style="color: var(--text-dim); font-size: 1.1rem;">Gestión de auditores y permisos de acceso.</p>
-            </div>
 
-            <!-- Panel del Usuario Activo -->
-            <div class="glass-card" style="padding: 30px; margin-bottom: 30px; border: 1px solid rgba(16,185,129,0.15); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <div style="width: 56px; height: 56px; background: rgba(0,0,0,0.3); border: 2px solid rgba(236,112,0,0.4); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: var(--primary);">J</div>
-                        <div>
-                            <div style="font-size: 20px; font-weight: 900; color: white; letter-spacing: -0.5px;">JAVIER B.</div>
-                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-                                <div style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;"></div>
-                                <span style="font-size: 10px; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Administrador · Sesión Activa</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="font-size: 9px; font-weight: 900; background: rgba(16,185,129,0.12); color: #10b981; padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.2); text-transform: uppercase; letter-spacing: 1px;">PERMANENTE</div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px;">
-                    <div>
-                        <div style="font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">Código de Activación</div>
-                        <div style="font-size: 14px; color: #fbbf24; font-weight: 800; font-family: 'Courier New', monospace; letter-spacing: 2px;">7FA3C9E21B</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">ID Instalación</div>
-                        <div style="font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 2px;">X4K-9P2-TBN</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">Activado</div>
-                        <div style="font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 600;">01/03/2026</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">Vence</div>
-                        <div style="font-size: 14px; color: #fbbf24; font-weight: 700;">31/03/2026</div>
-                    </div>
-                </div>
-
-                <!-- Barra de progreso del período -->
-                <div style="margin-top: 16px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 6px; font-weight: 700;">
-                        <span>Período Mensual</span>
-                        <span style="color: #10b981; font-weight: 800;">17 días restantes</span>
-                    </div>
-                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden;">
-                        <div style="width: 55%; height: 100%; background: linear-gradient(90deg, #10b981, #fbbf24); border-radius: 6px;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Lista de Auditores -->
-            <div style="margin-bottom: 30px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="font-size: 13px; font-weight: 900; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Lista de Auditores</h3>
-                    <div style="font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 600;">3 Auditores · 3 Activos</div>
-                </div>
-                
-                <!-- Auditor: Lucas -->
-                <div class="glass-card" style="padding: 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <div style="width: 44px; height: 44px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--primary); position: relative;">
-                            L
-                            <div style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0a0f19; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 15px; font-weight: 800; color: white;">Lucas <span style="font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-left: 8px;">OFFLINE</span></div>
-                            <div style="font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 2px;">Role: MAESTRO</div>
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 4px;">Acceso</div>
-                        <div style="width: 44px; height: 24px; background: #10b981; border-radius: 34px; position: relative;"><div style="position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: white; border-radius: 50%;"></div></div>
-                    </div>
-                </div>
-
-                <!-- Auditor: JavierB -->
-                <div class="glass-card" style="padding: 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <div style="width: 44px; height: 44px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--primary); position: relative;">
-                            J
-                            <div style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0a0f19; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 15px; font-weight: 800; color: white;">JavierB <span style="font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-left: 8px;">OFFLINE</span></div>
-                            <div style="font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 2px;">Role: MAESTRO</div>
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 4px;">Acceso</div>
-                        <div style="width: 44px; height: 24px; background: #10b981; border-radius: 34px; position: relative;"><div style="position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: white; border-radius: 50%;"></div></div>
-                    </div>
-                </div>
-
-                <!-- Auditor: LucasB -->
-                <div class="glass-card" style="padding: 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <div style="width: 44px; height: 44px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--primary); position: relative;">
-                            L
-                            <div style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0a0f19; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 15px; font-weight: 800; color: white;">LucasB <span style="font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-left: 8px;">OFFLINE</span></div>
-                            <div style="font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 2px;">Role: MAESTRO</div>
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 4px;">Acceso</div>
-                        <div style="width: 44px; height: 24px; background: #10b981; border-radius: 34px; position: relative;"><div style="position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: white; border-radius: 50%;"></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Generador de Llaves -->
-            <div class="glass-card" style="padding: 30px;">
-                <h3 style="font-size: 14px; font-weight: 900; color: white; margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">🔑 GENERADOR DE LLAVES DE ACCESO (OFFLINE)</h3>
-                <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 20px;">Ingresa el ID de Instalación del cliente y el nombre del auditor para generar la <b>Llave Maestra</b> permanente.</p>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <input type="text" placeholder="Ej: ABC-123-XYZ" style="flex: 1; min-width: 200px; padding: 14px 18px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-size: 14px; font-family: 'Inter', sans-serif; outline: none;">
-                    <input type="text" placeholder="Nombre del Auditor" style="flex: 1; min-width: 200px; padding: 14px 18px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-size: 14px; font-family: 'Inter', sans-serif; outline: none;">
-                    <button style="padding: 14px 32px; background: var(--primary); color: black; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; white-space: nowrap;" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 10px 30px rgba(236,112,0,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow=''">GENERAR TOKEN</button>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Call to action final -->
     <section class="bottom-cta" id="descarga">
@@ -587,5 +490,7 @@
 
 
     </script>
+
+
 </body>
 </html>

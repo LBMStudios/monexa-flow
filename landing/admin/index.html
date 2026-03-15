@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monexa Flow | Admin — Control de Usuarios</title>
+    <meta name="description" content="Panel de administración de Monexa Flow. Gestión de auditores y permisos de acceso.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        /* Admin Login Gate */
+        .admin-gate {
+            max-width: 440px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+        }
+        .admin-gate .gate-icon {
+            width: 64px; height: 64px;
+            background: rgba(236,112,0,0.1);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 28px;
+        }
+        .admin-gate h3 {
+            font-size: 1.4rem; font-weight: 800; color: white; margin-bottom: 8px;
+        }
+        .admin-gate p {
+            font-size: 0.9rem; color: var(--text-dim); margin-bottom: 28px;
+        }
+        .admin-gate input {
+            width: 100%; padding: 14px 18px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white; font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none; margin-bottom: 12px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        .admin-gate input:focus {
+            border-color: var(--primary);
+        }
+        .admin-gate input::placeholder { color: rgba(255,255,255,0.3); }
+        .admin-gate .gate-btn {
+            width: 100%; padding: 14px;
+            background: var(--primary); color: black;
+            border: none; border-radius: 12px;
+            font-weight: 800; font-size: 14px;
+            cursor: pointer; transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+            margin-top: 4px;
+        }
+        .admin-gate .gate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(236,112,0,0.3);
+        }
+        .admin-gate .gate-error {
+            color: var(--rose); font-size: 12px; font-weight: 700;
+            margin-top: 12px; opacity: 0; transition: opacity 0.3s;
+        }
+        .admin-gate .gate-error.visible { opacity: 1; }
+        #admin-content { display: none; }
+        #admin-content.unlocked { display: block; animation: fade-up 0.6s ease; }
+        @keyframes fade-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 0.85rem; font-weight: 600;
+            color: var(--text-dim);
+            background: rgba(255,255,255,0.05);
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .btn-back:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateY(-1px);
+        }
+        .btn-logout-admin {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-size: 0.8rem; font-weight: 700;
+            color: var(--rose);
+            background: rgba(239, 68, 68, 0.08);
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            cursor: pointer; transition: all 0.3s;
+        }
+        .btn-logout-admin:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <!-- Fondo Super-Premium -->
+    <div class="premium-bg"></div>
+    <div class="grid-overlay"></div>
+    
+    <!-- Orbes de Luz Background -->
+    <div class="orb-background">
+        <div class="orb orb-amber"></div>
+        <div class="orb orb-green"></div>
+        <div class="orb-mouse" id="mouse-glow"></div>
+    </div>
+
+    <!-- Navegación -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo-area" style="cursor: pointer; text-decoration: none;">
+                <div class="logo-orb">
+                    <svg viewBox="0 0 100 100" class="monexa-orbit-svg">
+                        <ellipse class="orbit-ring ring-1" cx="50" cy="50" rx="45" ry="18" transform="rotate(-30 50 50)" />
+                        <ellipse class="orbit-ring ring-2" cx="50" cy="50" rx="32" ry="13" transform="rotate(-30 50 50)" />
+                        <ellipse class="orbit-ring ring-3" cx="50" cy="50" rx="18" ry="7" transform="rotate(-30 50 50)" />
+                    </svg>
+                </div>
+                <span class="logo-text">Monexa Flow</span>
+            </a>
+            <div class="nav-links">
+                <a href="/" class="btn-back">← Volver al Inicio</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Section -->
+    <section style="padding: 8rem 0 4rem; position: relative; min-height: 100vh;">
+        <div class="container" style="max-width: 900px;">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h1 style="font-weight: 800; letter-spacing: -2px; font-size: 2.8rem; margin-bottom: 1rem;">Control de Usuarios</h1>
+                <p style="color: var(--text-dim); font-size: 1.1rem;">Área restringida para administradores autorizados.</p>
+            </div>
+
+            <!-- Login Gate -->
+            <div id="admin-gate" class="admin-gate">
+                <div class="gate-icon">🔐</div>
+                <h3>Acceso Restringido</h3>
+                <p>Ingresá tus credenciales de administrador para acceder al panel de control.</p>
+                <input type="text" id="gate-user" placeholder="Usuario" autocomplete="off">
+                <input type="password" id="gate-pass" placeholder="Contraseña" autocomplete="off">
+                <button class="gate-btn" id="gate-submit">Ingresar</button>
+                <div class="gate-error" id="gate-error">⚠ Credenciales incorrectas</div>
+            </div>
+
+            <!-- Protected Content -->
+            <div id="admin-content">
+
+                <!-- Logged-in header -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+                    <button class="btn-logout-admin" id="admin-logout">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Cerrar Sesión
+                    </button>
+                </div>
+
+                <!-- Panel del Usuario Activo -->
+                <div class="glass-card" style="padding: 30px; margin-bottom: 30px; border: 1px solid rgba(16,185,129,0.15); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 56px; height: 56px; background: rgba(0,0,0,0.3); border: 2px solid rgba(236,112,0,0.4); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: var(--primary);">J</div>
+                            <div>
+                                <div style="font-size: 20px; font-weight: 900; color: white; letter-spacing: -0.5px;">JAVIER B.</div>
+                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                    <div style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;"></div>
+                                    <span style="font-size: 10px; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Administrador · Sesión Activa</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size: 9px; font-weight: 900; background: rgba(16,185,129,0.12); color: #10b981; padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.2); text-transform: uppercase; letter-spacing: 1px;">PERMANENTE</div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px;">
+                        <div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">Código de Activación</div>
+                            <div style="font-size: 14px; color: #fbbf24; font-weight: 800; font-family: 'Courier New', monospace; letter-spacing: 2px;">7FA3C9E21B</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">ID Instalación</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.85); font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 2px;">X4K-9P2-TBN</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">Activado</div>
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 600;">01/03/2026</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.35); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.5px;">Vence</div>
+                            <div style="font-size: 14px; color: #fbbf24; font-weight: 700;">31/03/2026</div>
+                        </div>
+                    </div>
+
+                    <!-- Barra de progreso del período -->
+                    <div style="margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 6px; font-weight: 700;">
+                            <span>Período Mensual</span>
+                            <span style="color: #10b981; font-weight: 800;">17 días restantes</span>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.06); border-radius: 6px; overflow: hidden;">
+                            <div style="width: 55%; height: 100%; background: linear-gradient(90deg, #10b981, #fbbf24); border-radius: 6px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de Auditores -->
+                <div style="margin-bottom: 30px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="font-size: 13px; font-weight: 900; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px;">Lista de Auditores</h3>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 600;">3 Auditores · 3 Activos</div>
+                    </div>
+                    
+                    <!-- Auditor: Lucas -->
+                    <div class="glass-card" style="padding: 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 44px; height: 44px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--primary); position: relative;">
+                                L
+                                <div style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0a0f19; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 800; color: white;">Lucas <span style="font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-left: 8px;">OFFLINE</span></div>
+                                <div style="font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 2px;">Role: MAESTRO</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 4px;">Acceso</div>
+                            <div style="width: 44px; height: 24px; background: #10b981; border-radius: 34px; position: relative;"><div style="position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: white; border-radius: 50%;"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Auditor: JavierB -->
+                    <div class="glass-card" style="padding: 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 44px; height: 44px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--primary); position: relative;">
+                                J
+                                <div style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0a0f19; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 800; color: white;">JavierB <span style="font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-left: 8px;">OFFLINE</span></div>
+                                <div style="font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 2px;">Role: MAESTRO</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 4px;">Acceso</div>
+                            <div style="width: 44px; height: 24px; background: #10b981; border-radius: 34px; position: relative;"><div style="position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: white; border-radius: 50%;"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Auditor: LucasB -->
+                    <div class="glass-card" style="padding: 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 44px; height: 44px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: var(--primary); position: relative;">
+                                L
+                                <div style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #0a0f19; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
+                            </div>
+                            <div>
+                                <div style="font-size: 15px; font-weight: 800; color: white;">LucasB <span style="font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.3); letter-spacing: 1px; margin-left: 8px;">OFFLINE</span></div>
+                                <div style="font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 2px;">Role: MAESTRO</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 9px; font-weight: 800; color: #10b981; text-transform: uppercase; margin-bottom: 4px;">Acceso</div>
+                            <div style="width: 44px; height: 24px; background: #10b981; border-radius: 34px; position: relative;"><div style="position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: white; border-radius: 50%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generador de Llaves -->
+                <div class="glass-card" style="padding: 30px;">
+                    <h3 style="font-size: 14px; font-weight: 900; color: white; margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">🔑 GENERADOR DE LLAVES DE ACCESO (OFFLINE)</h3>
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 20px;">Ingresa el ID de Instalación del cliente y el nombre del auditor para generar la <b>Llave Maestra</b> permanente.</p>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <input type="text" placeholder="Ej: ABC-123-XYZ" style="flex: 1; min-width: 200px; padding: 14px 18px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-size: 14px; font-family: 'Inter', sans-serif; outline: none;">
+                        <input type="text" placeholder="Nombre del Auditor" style="flex: 1; min-width: 200px; padding: 14px 18px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-size: 14px; font-family: 'Inter', sans-serif; outline: none;">
+                        <button style="padding: 14px 32px; background: var(--primary); color: black; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; white-space: nowrap;" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 10px 30px rgba(236,112,0,0.3)'" onmouseout="this.style.transform='';this.style.boxShadow=''">GENERAR TOKEN</button>
+                    </div>
+                </div>
+
+            </div><!-- /admin-content -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <div class="logo-orb small">
+                     <svg viewBox="0 0 100 100" class="monexa-orbit-svg">
+                        <ellipse class="orbit-ring ring-1" cx="50" cy="50" rx="45" ry="18" transform="rotate(-30 50 50)" />
+                        <ellipse class="orbit-ring ring-2" cx="50" cy="50" rx="32" ry="13" transform="rotate(-30 50 50)" />
+                        <ellipse class="orbit-ring ring-3" cx="50" cy="50" rx="18" ry="7" transform="rotate(-30 50 50)" />
+                    </svg>
+                </div>
+                <span>Monexa Flow</span>
+            </div>
+            <div class="footer-links">
+                <a href="/#terminos">Términos</a>
+                <a href="/#seguridad">Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Admin Gate Logic -->
+    <script>
+        (function() {
+            const VALID_USERS = ['lucas', 'javier'];
+            const VALID_PASS = '123456789';
+
+            const gate = document.getElementById('admin-gate');
+            const content = document.getElementById('admin-content');
+            const submitBtn = document.getElementById('gate-submit');
+            const userInput = document.getElementById('gate-user');
+            const passInput = document.getElementById('gate-pass');
+            const errorMsg = document.getElementById('gate-error');
+            const logoutBtn = document.getElementById('admin-logout');
+
+            // Check if already authenticated this session
+            if (sessionStorage.getItem('mx_admin_auth') === 'true') {
+                gate.style.display = 'none';
+                content.classList.add('unlocked');
+            }
+
+            function attemptLogin() {
+                const user = (userInput.value || '').trim().toLowerCase();
+                const pass = (passInput.value || '').trim();
+
+                if (VALID_USERS.includes(user) && pass === VALID_PASS) {
+                    errorMsg.classList.remove('visible');
+                    submitBtn.textContent = '✓ Acceso concedido';
+                    submitBtn.style.background = '#10b981';
+                    sessionStorage.setItem('mx_admin_auth', 'true');
+
+                    setTimeout(() => {
+                        gate.style.opacity = '0';
+                        gate.style.transform = 'translateY(-10px)';
+                        gate.style.transition = 'all 0.4s ease';
+                    }, 400);
+
+                    setTimeout(() => {
+                        gate.style.display = 'none';
+                        content.classList.add('unlocked');
+                    }, 800);
+                } else {
+                    errorMsg.classList.add('visible');
+                    userInput.style.borderColor = 'var(--rose)';
+                    passInput.style.borderColor = 'var(--rose)';
+                    setTimeout(() => {
+                        userInput.style.borderColor = '';
+                        passInput.style.borderColor = '';
+                    }, 1500);
+                }
+            }
+
+            submitBtn.addEventListener('click', attemptLogin);
+            passInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptLogin(); });
+            userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') passInput.focus(); });
+
+            // Logout
+            logoutBtn.addEventListener('click', () => {
+                sessionStorage.removeItem('mx_admin_auth');
+                content.classList.remove('unlocked');
+                content.style.display = 'none';
+                gate.style.display = '';
+                gate.style.opacity = '1';
+                gate.style.transform = '';
+                submitBtn.textContent = 'Ingresar';
+                submitBtn.style.background = '';
+                userInput.value = '';
+                passInput.value = '';
+                errorMsg.classList.remove('visible');
+            });
+        })();
+    </script>
+
+    <!-- Mouse Glow -->
+    <script>
+        const mouseGlow = document.getElementById('mouse-glow');
+        let mouseX = 0, mouseY = 0, glowX = 0, glowY = 0, glowVisible = false;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX; mouseY = e.clientY;
+            if (!glowVisible) { glowVisible = true; mouseGlow.style.opacity = "0.25"; }
+        });
+        window.addEventListener('mouseout', () => { glowVisible = false; mouseGlow.style.opacity = "0"; });
+        function animateGlow() {
+            if (glowVisible || Math.abs(mouseX - glowX) > 1 || Math.abs(mouseY - glowY) > 1) {
+                glowX += (mouseX - glowX) * 0.18;
+                glowY += (mouseY - glowY) * 0.18;
+                mouseGlow.style.transform = `translate(${glowX}px, ${glowY}px)`;
+            }
+            requestAnimationFrame(animateGlow);
+        }
+        animateGlow();
+    </script>
+</body>
+</html>
