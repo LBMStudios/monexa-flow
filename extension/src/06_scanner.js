@@ -620,9 +620,10 @@ const Scanner = {
                 <button 
                     class="it-btn-cycle" 
                     title="${statusInfo.label}"
+                    aria-label="${statusInfo.label}"
                     style="background: ${statusInfo.color}; box-shadow: 0 4px 10px ${statusInfo.color}44;"
                 >${statusInfo.icon}</button>
-                <button class="it-btn-del" title="Borrar registro">×</button>
+                <button class="it-btn-del" title="Borrar registro" aria-label="Borrar registro">×</button>
             </div>
         `;
 
@@ -685,6 +686,7 @@ const Scanner = {
                 if (btnPulse) {
                     btnPulse.style.background = STATUS_MAP.PENDING.color;
                     btnPulse.innerText = STATUS_MAP.PENDING.icon;
+                    btnPulse.setAttribute('aria-label', STATUS_MAP.PENDING.label);
                 }
 
                 await UI.refreshDashboard();
@@ -778,6 +780,7 @@ const Scanner = {
             btn.style.background = statusInfo.color;
             btn.innerText = statusInfo.icon;
             btn.title = statusInfo.label;
+            btn.setAttribute('aria-label', statusInfo.label);
         }
 
         // Batch update
