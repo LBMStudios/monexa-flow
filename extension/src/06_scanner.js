@@ -810,17 +810,38 @@ const Scanner = {
         let lastMarkedBody = null;
 
         this._modalWatcher = new MutationObserver((mutations) => {
-            // Filtrado rápido: solo procesar si hubo cambios en los nodos hijos
-            let hasRelevantChanges = false;
+            let newlyAddedTitle = null;
+            let checkRemoval = false;
+
             for (const m of mutations) {
-                if (m.addedNodes.length > 0 || m.removedNodes.length > 0) {
-                    hasRelevantChanges = true;
-                    break;
+                if (m.addedNodes.length > 0) {
+                    for (const node of m.addedNodes) {
+                        if (node.nodeType === 1) { // Element Node
+                            if (node.matches && node.matches('.content-comprobante, #mySmallModalLabel')) {
+                                newlyAddedTitle = node;
+                            } else if (node.querySelector) {
+                                const found = node.querySelector('.content-comprobante, #mySmallModalLabel');
+                                if (found) newlyAddedTitle = found;
+                            }
+                        }
+                    }
+                }
+                if (m.removedNodes.length > 0) {
+                    checkRemoval = true;
                 }
             }
-            if (!hasRelevantChanges) return;
 
-            const titleElement = document.querySelector('.content-comprobante, #mySmallModalLabel');
+            if (!newlyAddedTitle && !checkRemoval) return;
+
+            let titleElement = newlyAddedTitle;
+
+            if (!titleElement && lastMarkedBody) {
+                const container = lastMarkedBody.closest('.modal-content, .modal-dialog, #commonModal, #detallesModal') || lastMarkedBody.parentElement;
+                if (container) {
+                    titleElement = container.querySelector('.content-comprobante, #mySmallModalLabel');
+                }
+            }
+
             if (titleElement && titleElement.offsetParent !== null) {
                 const modalContainer = titleElement.closest('.modal-content, .modal-dialog, #commonModal, #detallesModal') || titleElement.parentElement;
                 const body = modalContainer?.querySelector('.modal-body, .content-comprobante-body, #imprimir-comprobante, #detalle-comprobante') || modalContainer;
