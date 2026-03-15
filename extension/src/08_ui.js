@@ -336,7 +336,7 @@ const UI = {
                         </svg>
                     </a>
 
-                    <button id="mx-panel-close" title="Cerrar Panel" style="
+                    <button id="mx-panel-close" title="Cerrar Panel" aria-label="Cerrar Panel" style="
                         background: rgba(0,0,0,0.3);
                         border: 1px solid rgba(255,255,255,0.1);
                         color: white; width: 32px; height: 32px;
@@ -851,7 +851,7 @@ const UI = {
                         <div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
                             <span style="font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 600;">${formattedTime}</span>
                             ${user.role !== 'admin' ? `
-                                <button onclick="UI.deleteAdminUser(${idx})" style="background:none; border:none; color:#ef4444; font-size:16px; cursor:pointer;" title="Eliminar">&times;</button>
+                                <button onclick="UI.deleteAdminUser(${idx})" style="background:none; border:none; color:#ef4444; font-size:16px; cursor:pointer;" title="Eliminar" aria-label="Eliminar">&times;</button>
                             ` : '<div style="width:16px;"></div>'}
                         </div>
                     </div>
@@ -1105,10 +1105,10 @@ const UI = {
                         </div>
                         <div class="mx-rule-controls">
                             <div class="mx-move-group">
-                                <button class="mx-btn-move mx-btn-up" data-index="${i}" title="Subir" ${i === 0 ? 'disabled' : ''}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg></button>
-                                <button class="mx-btn-move mx-btn-down" data-index="${i}" title="Bajar" ${i === rules.length - 1 ? 'disabled' : ''}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+                                <button class="mx-btn-move mx-btn-up" data-index="${i}" title="Subir" aria-label="Subir" ${i === 0 ? 'disabled' : ''}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg></button>
+                                <button class="mx-btn-move mx-btn-down" data-index="${i}" title="Bajar" aria-label="Bajar" ${i === rules.length - 1 ? 'disabled' : ''}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
                             </div>
-                            <button class="mx-btn-delete-rule" data-index="${i}" title="Eliminar regla"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                            <button class="mx-btn-delete-rule" data-index="${i}" title="Eliminar regla" aria-label="Eliminar regla"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                         </div>
                     </div>`;
         }).join('');
